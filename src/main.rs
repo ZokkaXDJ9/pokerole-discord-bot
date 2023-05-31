@@ -1,22 +1,12 @@
+mod commands;
+mod data;
+
 use std::collections::HashMap;
 use std::sync::{Arc};
 use std::fmt::Write;
-use futures::Stream;
 use poise::serenity_prelude as serenity;
 use serde::Deserialize;
-use futures::StreamExt;
-
-struct Data {
-    pub moves: Arc<HashMap<String, PokeMove>>
-} // User data, which is stored and accessible in all command invocations
-type Error = Box<dyn std::error::Error + Send + Sync>;
-type Context<'a> = poise::Context<'a, Data, Error>;
-
-#[poise::command(slash_command)]
-async fn ping(ctx: Context<'_>) -> Result<(), Error> {
-    ctx.say("pong").await?;
-    Ok(())
-}
+use crate::data::Data;
 
 #[derive(Debug, Clone, Copy, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -147,25 +137,8 @@ pub struct PokeMove {
     pub accuracy_stat: Option<SecondaryStat>,
     pub secondary_stat: Option<SecondaryStat>,
     pub target: Target,
+    pub effect: String,
     pub description: String,
-}
-
-/// Receive Magicarps' blessings!
-#[poise::command(slash_command, rename = "move")]
-async fn poke_move(
-    ctx: Context<'_>,
-    #[description = "Which move?"]
-    #[rename = "move"]
-    #[autocomplete = "autocomplete_move"]
-    poke_move_name: String,
-) -> Result<(), Error> {
-    if let Some(poke_move) = ctx.data().moves.get(&poke_move_name) {
-        ctx.say(std::format!("{:?}", poke_move)).await?;
-        return Ok(());
-    }
-
-    ctx.say("Move not found. Oh no!").await?;
-    Ok(())
 }
 
 fn load_pokerole_moves(path: &str) -> Vec<PokeMove> {
@@ -184,6 +157,7 @@ fn load_pokerole_moves(path: &str) -> Vec<PokeMove> {
         "accuracy_stat",
         "secondary_stat",
         "target",
+        "effect",
         "description",
     ]);
 
@@ -197,31 +171,20 @@ fn load_pokerole_moves(path: &str) -> Vec<PokeMove> {
     return moves;
 }
 
-async fn autocomplete_move<'a>(
-    _ctx: Context<'_>,
-    partial: &'a str,
-) -> impl Stream<Item = String> + 'a {
-    let moves = &_ctx.data().moves;
-    let names : Vec<String> = moves.iter().map(|x| x.0.clone()).collect();
-    let stream = futures::stream::iter(names);
-
-    // TODO: ignore case
-    stream
-        .filter(move |x| futures::future::ready(x.starts_with(partial)))
-}
-
 #[tokio::main]
 async fn main() {
     let mut move_hash_map = HashMap::default();
-    let mut moves = load_pokerole_moves("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv");
+    let mut move_names = Vec::default();
+    let moves = load_pokerole_moves("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv");
 
     for x in moves {
+        move_names.push(x.name.clone());
         move_hash_map.insert(x.name.clone(), x);
     }
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![ping(), poke_move()],
+            commands: vec![commands::ping(), commands::poke_move()],
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
@@ -230,7 +193,8 @@ async fn main() {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 Ok(Data {
-                    moves: Arc::new(move_hash_map)
+                    moves: Arc::new(move_hash_map),
+                    move_names: Arc::new(move_names)
                 })
             })
         });
