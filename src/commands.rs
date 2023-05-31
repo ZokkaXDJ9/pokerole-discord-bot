@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use futures::StreamExt;
 use crate::data::Data;
+use crate::{MoveType, PokeType};
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -32,12 +33,6 @@ async fn autocomplete_move<'a>(
     return result;
 }
 
-#[poise::command(slash_command)]
-pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
-    ctx.say("pong").await?;
-    Ok(())
-}
-
 /// Receive Magicarps' blessings!
 #[poise::command(slash_command, rename = "move")]
 pub async fn poke_move(
@@ -48,7 +43,49 @@ pub async fn poke_move(
     poke_move_name: String,
 ) -> Result<(), Error> {
     if let Some(poke_move) = ctx.data().moves.get(&poke_move_name) {
-        ctx.say(std::format!("{:?}", poke_move)).await?;
+        let mut result : String = std::format!("__**{}**__\n", &poke_move.name);
+        if let Some(description) = &poke_move.description {
+            result.push_str("*");
+            result.push_str(description);
+            result.push_str("*\n");
+        }
+
+        result.push_str("**Type**: ");
+        if poke_move.typing == PokeType::Typeless {
+            result.push_str("None");
+        } else {
+            result.push_str(std::format!("{:?}", poke_move.typing).as_str());
+        }
+        result.push_str(" — **");
+        result.push_str(std::format!("{:?}", poke_move.move_type).as_str());
+        result.push_str("**\n");
+
+        result.push_str("**Target**: ");
+        result.push_str(std::format!("{:?}", poke_move.target).as_str());
+        result.push_str("\n");
+
+        result.push_str("**Damage Dice**: ");
+        if let Some(stat) = poke_move.base_stat {
+            result.push_str(std::format!("{:?}", stat).as_str());
+            result.push_str(" + ");
+        }
+        result.push_str(&std::format!("{}\n", poke_move.base_power));
+
+        result.push_str("**Accuracy Dice**: ");
+        if let Some(stat) = poke_move.accuracy_stat {
+            result.push_str(std::format!("{:?}", stat).as_str());
+
+            if let Some(secondary) = poke_move.secondary_stat {
+                result.push_str(" + Rank");
+//                result.push_str(std::format!("{:?}", secondary).as_str());
+            }
+        }
+        result.push_str("\n");
+
+        result.push_str("**Effect**: ");
+        result.push_str(&poke_move.effect);
+
+        ctx.say(result).await?;
         return Ok(());
     }
 

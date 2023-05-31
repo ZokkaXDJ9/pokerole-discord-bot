@@ -3,12 +3,11 @@ mod data;
 
 use std::collections::HashMap;
 use std::sync::{Arc};
-use std::fmt::Write;
 use poise::serenity_prelude as serenity;
 use serde::Deserialize;
 use crate::data::Data;
 
-#[derive(Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum PokeType {
     Normal,
@@ -138,7 +137,7 @@ pub struct PokeMove {
     pub secondary_stat: Option<SecondaryStat>,
     pub target: Target,
     pub effect: String,
-    pub description: String,
+    pub description: Option<String>,
 }
 
 fn load_pokerole_moves(path: &str) -> Vec<PokeMove> {
@@ -184,7 +183,7 @@ async fn main() {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::ping(), commands::poke_move()],
+            commands: vec![commands::poke_move()],
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
