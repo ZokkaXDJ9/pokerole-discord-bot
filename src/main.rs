@@ -4,6 +4,7 @@ mod data;
 use std::collections::HashMap;
 use std::sync::{Arc};
 use csv::ByteRecord;
+use log::debug;
 use poise::serenity_prelude as serenity;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
@@ -190,6 +191,21 @@ pub enum PokeRoleRank {
     Champion
 }
 
+impl PokeRoleRank {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "Starter" => Some(PokeRoleRank::Starter),
+            "Beginner" => Some(PokeRoleRank::Beginner),
+            "Amateur" => Some(PokeRoleRank::Amateur),
+            "Ace" => Some(PokeRoleRank::Ace),
+            "Pro" => Some(PokeRoleRank::Pro),
+            "Master" => Some(PokeRoleRank::Master),
+            "Champion" => Some(PokeRoleRank::Champion),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Deserialize)]
 pub struct PokeStats {
     #[serde(rename = "No.")]
@@ -263,6 +279,47 @@ fn load_pokerole_learns(path: &str) -> Vec<RawPokeLearns> {
     return collection
 }
 
+struct PokeLearn<'a> {
+    pokemon_name: String,
+    moves: Vec<PokeLearnEntry<'a>>,
+}
+
+struct PokeLearnEntry<'a> {
+    rank: PokeRoleRank,
+    poke_move: &'a PokeMove,
+}
+
+fn parse_pokerole_learns(raw: Vec<RawPokeLearns>, moves: &Vec<PokeMove>) -> Vec<PokeLearn> {
+    let mut result = Vec::new();
+    for raw_learns in raw {
+        let mut learns : Vec<PokeLearnEntry> = Vec::new();
+
+        for chunk in raw_learns.moves.chunks(2) {
+            if chunk[0].is_empty() || chunk[1].is_empty() {
+                continue;
+            }
+
+            if let Some(referenced_move) = moves.iter().find(|x| x.name.to_lowercase() == chunk[0].to_lowercase()) {
+                learns.push(PokeLearnEntry {
+                    poke_move: referenced_move,
+                    rank: PokeRoleRank::from_str(chunk[1].as_str()).unwrap(),
+                })
+            } else {
+                debug!("Move not found: {}", chunk[0]);
+            }
+
+
+        }
+
+        result.push(PokeLearn {
+            pokemon_name: String::new(),
+            moves: learns
+        })
+    }
+
+    result
+}
+
 fn load_generic<T: DeserializeOwned>(path: &str) -> Vec<T> {
     let mut results = Vec::new();
 
@@ -315,7 +372,8 @@ async fn main() {
     let moves = load_pokerole_moves("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv");
     let abilities : Vec<PokeAbility> = load_generic("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv");
     let poke : Vec<PokeStats> = load_generic("/home/jacudibu/code/pokerole-csv/PokeroleStats.csv");
-    let learns = load_pokerole_learns("/home/jacudibu/code/pokerole-csv/PokeLearnMovesFull.csv");
+    let raw_learns = load_pokerole_learns("/home/jacudibu/code/pokerole-csv/PokeLearnMovesFull.csv");
+    let learns = parse_pokerole_learns(raw_learns, &moves);
 
     let mut move_names = Vec::default();
     let mut move_hash_map = HashMap::default();
