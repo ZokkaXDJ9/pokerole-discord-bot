@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use std::sync::Arc;
 use futures::StreamExt;
 use crate::data::Data;
-use crate::MovePokemonType;
+use crate::{MovePokemonType, PokeRoleRank};
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -147,7 +147,7 @@ fn print_stat(result: &mut String, attribute: &str, min: u8, max: u8) {
     result.push_str(&std::format!(" `{}/{}`\n", min, max));
 }
 
-/// Display an Ability
+/// Display Pokemon stats
 #[poise::command(slash_command)]
 pub async fn stats(
     ctx: Context<'_>,
@@ -187,6 +187,69 @@ pub async fn stats(
             }
             result.push_str("\n");
         }
+
+        ctx.say(result).await?;
+        return Ok(());
+    }
+
+    ctx.say("Pokemon not found. Oh no!").await?;
+    Ok(())
+}
+
+/// Display Pokemon moves
+#[poise::command(slash_command)]
+pub async fn pokelearns(
+    ctx: Context<'_>,
+    #[description = "Which pokemon?"]
+    #[rename = "pokemon"]
+    #[autocomplete = "autocomplete_pokemon"]
+    pokemon_name: String,
+) -> Result<(), Error> {
+    if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name) {
+        let lowercase = pokemon_name.to_lowercase();
+
+        let learns = ctx.data().pokemon_learns.iter().find(|x| x.pokemon_name.to_lowercase().contains(&lowercase)).unwrap();
+        let mut result = std::format!("{} __{}__\n", pokemon.id, pokemon.name);
+
+        result.push_str("**Bronze**\n");
+        result.push_str(&learns.moves.iter()
+            .filter(|x| x.rank == PokeRoleRank::Starter || x.rank == PokeRoleRank::Beginner)
+            .map(|x| x.poke_move.clone())
+            .collect::<Vec<String>>()
+            .join("  |  "));
+        result.push('\n');
+
+        result.push_str("**Silver**\n");
+        result.push_str(&learns.moves.iter()
+            .filter(|x| x.rank == PokeRoleRank::Amateur)
+            .map(|x| x.poke_move.clone())
+            .collect::<Vec<String>>()
+            .join("  |  "));
+        result.push('\n');
+
+        result.push_str("**Gold**\n");
+        result.push_str(&learns.moves.iter()
+            .filter(|x| x.rank == PokeRoleRank::Ace)
+            .map(|x| x.poke_move.clone())
+            .collect::<Vec<String>>()
+            .join("  |  "));
+        result.push('\n');
+
+        result.push_str("**Platinum**\n");
+        result.push_str(&learns.moves.iter()
+            .filter(|x| x.rank == PokeRoleRank::Pro)
+            .map(|x| x.poke_move.clone())
+            .collect::<Vec<String>>()
+            .join("  |  "));
+        result.push('\n');
+
+        result.push_str("**Diamond**\n");
+        result.push_str(&learns.moves.iter()
+            .filter(|x| x.rank == PokeRoleRank::Master || x.rank == PokeRoleRank::Champion)
+            .map(|x| x.poke_move.clone())
+            .collect::<Vec<String>>()
+            .join("  |  "));
+        result.push('\n');
 
         ctx.say(result).await?;
         return Ok(());

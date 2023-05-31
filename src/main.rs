@@ -258,7 +258,7 @@ pub struct PokeStats {
 
 #[derive(Debug, Deserialize)]
 struct RawPokeLearns {
-    number: String,
+    number_and_name: String,
     moves: Vec<String>,
 }
 
@@ -279,17 +279,17 @@ fn load_pokerole_learns(path: &str) -> Vec<RawPokeLearns> {
     return collection
 }
 
-struct PokeLearn<'a> {
+pub struct PokeLearn {
     pokemon_name: String,
-    moves: Vec<PokeLearnEntry<'a>>,
+    moves: Vec<PokeLearnEntry>,
 }
 
-struct PokeLearnEntry<'a> {
+pub struct PokeLearnEntry {
     rank: PokeRoleRank,
-    poke_move: &'a PokeMove,
+    poke_move: String,
 }
 
-fn parse_pokerole_learns(raw: Vec<RawPokeLearns>, moves: &Vec<PokeMove>) -> Vec<PokeLearn> {
+fn parse_pokerole_learns(raw: Vec<RawPokeLearns>) -> Vec<PokeLearn> {
     let mut result = Vec::new();
     for raw_learns in raw {
         let mut learns : Vec<PokeLearnEntry> = Vec::new();
@@ -299,20 +299,14 @@ fn parse_pokerole_learns(raw: Vec<RawPokeLearns>, moves: &Vec<PokeMove>) -> Vec<
                 continue;
             }
 
-            if let Some(referenced_move) = moves.iter().find(|x| x.name.to_lowercase() == chunk[0].to_lowercase()) {
-                learns.push(PokeLearnEntry {
-                    poke_move: referenced_move,
-                    rank: PokeRoleRank::from_str(chunk[1].as_str()).unwrap(),
-                })
-            } else {
-                debug!("Move not found: {}", chunk[0]);
-            }
-
-
+            learns.push(PokeLearnEntry {
+                poke_move: chunk[0].clone(),
+                rank: PokeRoleRank::from_str(chunk[1].as_str()).unwrap(),
+            })
         }
 
         result.push(PokeLearn {
-            pokemon_name: String::new(),
+            pokemon_name: raw_learns.number_and_name,
             moves: learns
         })
     }
@@ -373,7 +367,7 @@ async fn main() {
     let abilities : Vec<PokeAbility> = load_generic("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv");
     let poke : Vec<PokeStats> = load_generic("/home/jacudibu/code/pokerole-csv/PokeroleStats.csv");
     let raw_learns = load_pokerole_learns("/home/jacudibu/code/pokerole-csv/PokeLearnMovesFull.csv");
-    let learns = parse_pokerole_learns(raw_learns, &moves);
+    let pokemon_learns = parse_pokerole_learns(raw_learns);
 
     let mut move_names = Vec::default();
     let mut move_hash_map = HashMap::default();
@@ -399,7 +393,7 @@ async fn main() {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::poke_move(), commands::ability(), commands::stats()],
+            commands: vec![commands::poke_move(), commands::ability(), commands::stats(), commands::pokelearns()],
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
@@ -414,6 +408,7 @@ async fn main() {
                     move_names: Arc::new(move_names),
                     pokemon: Arc::new(pokemon),
                     pokemon_names: Arc::new(pokemon_names),
+                    pokemon_learns: Arc::new(pokemon_learns),
                 })
             })
         });
