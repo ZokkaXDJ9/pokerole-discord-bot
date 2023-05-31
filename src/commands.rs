@@ -1,20 +1,16 @@
 use std::cmp::Ordering;
+use std::sync::Arc;
 use futures::StreamExt;
 use crate::data::Data;
-use crate::{MoveType, PokeType};
+use crate::PokeType;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
-async fn autocomplete_move<'a>(
-    _ctx: Context<'a>,
-    partial: &'a str,
-) -> Vec<String> {
-    let names = &_ctx.data().move_names;
-
+fn autocomplete(partial: &str, commands: &Arc<Vec<String>>) -> Vec<String> {
     let lower_case = &partial.to_lowercase();
 
-    let mut result: Vec<String> = names.iter()
+    let mut result: Vec<String> = commands.iter()
         .filter(move |x| x.to_lowercase().contains(lower_case))
         .map(|x| x.clone())
         .collect();
@@ -31,36 +27,23 @@ async fn autocomplete_move<'a>(
     });
 
     return result;
+}
+
+async fn autocomplete_move<'a>(
+    _ctx: Context<'a>,
+    partial: &'a str,
+) -> Vec<String> {
+    autocomplete(partial, &_ctx.data().move_names)
 }
 
 async fn autocomplete_ability<'a>(
     _ctx: Context<'a>,
     partial: &'a str,
 ) -> Vec<String> {
-    let names = &_ctx.data().ability_names;
-
-    let lower_case = &partial.to_lowercase();
-
-    let mut result: Vec<String> = names.iter()
-        .filter(move |x| x.to_lowercase().contains(lower_case))
-        .map(|x| x.clone())
-        .collect();
-
-    result.sort_by(|a, b| {
-        if a.to_lowercase().starts_with(lower_case) {
-            return Ordering::Less;
-        }
-        if b.to_lowercase().starts_with(lower_case) {
-            return Ordering::Greater;
-        }
-
-        Ordering::Equal
-    });
-
-    return result;
+    autocomplete(partial, &_ctx.data().ability_names)
 }
 
-/// Receive Magicarps' blessings!
+/// Display a move
 #[poise::command(slash_command, rename = "move")]
 pub async fn poke_move(
     ctx: Context<'_>,
@@ -120,8 +103,8 @@ pub async fn poke_move(
     Ok(())
 }
 
-/// Receive Magicarps' blessings!
-#[poise::command(slash_command, rename = "move")]
+/// Display an Ability
+#[poise::command(slash_command)]
 pub async fn ability(
     ctx: Context<'_>,
     #[description = "Which ability?"]
