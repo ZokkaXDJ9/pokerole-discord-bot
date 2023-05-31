@@ -3,6 +3,7 @@ mod data;
 
 use std::collections::HashMap;
 use std::sync::{Arc};
+use csv::ByteRecord;
 use poise::serenity_prelude as serenity;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
@@ -239,6 +240,29 @@ pub struct PokeStats {
     pub gender_type: Option<GenderType>,
 }
 
+#[derive(Debug, Deserialize)]
+struct RawPokeLearns {
+    number: String,
+    moves: Vec<String>,
+}
+
+fn load_pokerole_learns(path: &str) -> Vec<RawPokeLearns> {
+    let reader = csv::ReaderBuilder::new()
+        .has_headers(false)
+        .from_path(path);
+
+
+    let mut collection = Vec::new();
+    for result in reader.expect(path).byte_records() {
+        let record: ByteRecord = result.expect("");
+        let learns: RawPokeLearns = record.deserialize(None).expect("");
+        collection.push(learns);
+        //println!("{:?}", learns);
+    }
+
+    return collection
+}
+
 fn load_generic<T: DeserializeOwned>(path: &str) -> Vec<T> {
     let mut results = Vec::new();
 
@@ -291,6 +315,7 @@ async fn main() {
     let moves = load_pokerole_moves("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv");
     let abilities : Vec<PokeAbility> = load_generic("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv");
     let poke : Vec<PokeStats> = load_generic("/home/jacudibu/code/pokerole-csv/PokeroleStats.csv");
+    let learns = load_pokerole_learns("/home/jacudibu/code/pokerole-csv/PokeLearnMovesFull.csv");
 
     let mut move_names = Vec::default();
     let mut move_hash_map = HashMap::default();
