@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 use std::sync::{Arc};
+use std::fmt::Write;
+use futures::Stream;
 use poise::serenity_prelude as serenity;
 use serde::Deserialize;
+use futures::StreamExt;
 
 struct Data {
     pub moves: Arc<HashMap<String, PokeMove>>
@@ -151,7 +154,10 @@ pub struct PokeMove {
 #[poise::command(slash_command, rename = "move")]
 async fn poke_move(
     ctx: Context<'_>,
-    #[description = "Which move?"] #[rename = "move"] poke_move_name: String,
+    #[description = "Which move?"]
+    #[rename = "move"]
+    #[autocomplete = "autocomplete_move"]
+    poke_move_name: String,
 ) -> Result<(), Error> {
     if let Some(poke_move) = ctx.data().moves.get(&poke_move_name) {
         ctx.say(std::format!("{:?}", poke_move)).await?;
@@ -162,14 +168,11 @@ async fn poke_move(
     Ok(())
 }
 
-#[tokio::main]
-async fn main() {
-    let mut move_hash_map = HashMap::default();
-    let mut moves : Vec<PokeMove> = Vec::new();
-
-    let mut reader = csv::ReaderBuilder::new()
+fn load_pokerole_moves(path: &str) -> Vec<PokeMove> {
+    let mut moves = Vec::new();
+    let reader = csv::ReaderBuilder::new()
         .has_headers(false)
-        .from_path("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv");
+        .from_path(path);
 
     let headers = csv::StringRecord::from(vec![
         "name",
@@ -190,6 +193,27 @@ async fn main() {
             moves.push(poke_move);
         };
     }
+
+    return moves;
+}
+
+async fn autocomplete_move<'a>(
+    _ctx: Context<'_>,
+    partial: &'a str,
+) -> impl Stream<Item = String> + 'a {
+    let moves = &_ctx.data().moves;
+    let names : Vec<String> = moves.iter().map(|x| x.0.clone()).collect();
+    let stream = futures::stream::iter(names);
+
+    // TODO: ignore case
+    stream
+        .filter(move |x| futures::future::ready(x.starts_with(partial)))
+}
+
+#[tokio::main]
+async fn main() {
+    let mut move_hash_map = HashMap::default();
+    let mut moves = load_pokerole_moves("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv");
 
     for x in moves {
         move_hash_map.insert(x.name.clone(), x);

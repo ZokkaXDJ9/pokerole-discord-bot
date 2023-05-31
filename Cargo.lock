@@ -733,6 +733,7 @@ name = "pokerole-discord-bot"
 version = "0.1.0"
 dependencies = [
  "csv",
+ "futures",
  "poise",
  "serde",
  "serenity",
