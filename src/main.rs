@@ -140,6 +140,31 @@ pub struct PokeMove {
     pub description: Option<String>,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct PokeAbility {
+    pub name: String,
+    pub effect: String,
+    pub description: String,
+}
+
+fn load_pokerole_abilities(path: &str) -> Vec<PokeAbility> {
+    let mut abilities = Vec::new();
+
+    let reader = csv::ReaderBuilder::new()
+        .has_headers(true)
+        .from_path(path);
+
+    for result in reader.expect("Ability path should be valid!").records() {
+        if let Ok(record) = result {
+            let value: PokeAbility = record.deserialize(None).expect("Csv should be parsable!");
+            abilities.push(value);
+        };
+    }
+
+    return abilities;
+}
+
 fn load_pokerole_moves(path: &str) -> Vec<PokeMove> {
     let mut moves = Vec::new();
     let reader = csv::ReaderBuilder::new()
@@ -172,18 +197,26 @@ fn load_pokerole_moves(path: &str) -> Vec<PokeMove> {
 
 #[tokio::main]
 async fn main() {
-    let mut move_hash_map = HashMap::default();
-    let mut move_names = Vec::default();
     let moves = load_pokerole_moves("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv");
+    let abilities = load_pokerole_abilities("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv");
 
+    let mut move_names = Vec::default();
+    let mut move_hash_map = HashMap::default();
     for x in moves {
         move_names.push(x.name.clone());
         move_hash_map.insert(x.name.clone(), x);
     }
 
+    let mut ability_names = Vec::default();
+    let mut ability_hash_map = HashMap::default();
+    for x in abilities {
+        ability_names.push(x.name.clone());
+        ability_hash_map.insert(x.name.clone(), x);
+    }
+
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::poke_move()],
+            commands: vec![commands::poke_move(), commands::ability()],
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
@@ -192,8 +225,10 @@ async fn main() {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 Ok(Data {
+                    abilities: Arc::new(ability_hash_map),
+                    ability_names: Arc::new(ability_names),
                     moves: Arc::new(move_hash_map),
-                    move_names: Arc::new(move_names)
+                    move_names: Arc::new(move_names),
                 })
             })
         });

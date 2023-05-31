@@ -33,6 +33,33 @@ async fn autocomplete_move<'a>(
     return result;
 }
 
+async fn autocomplete_ability<'a>(
+    _ctx: Context<'a>,
+    partial: &'a str,
+) -> Vec<String> {
+    let names = &_ctx.data().ability_names;
+
+    let lower_case = &partial.to_lowercase();
+
+    let mut result: Vec<String> = names.iter()
+        .filter(move |x| x.to_lowercase().contains(lower_case))
+        .map(|x| x.clone())
+        .collect();
+
+    result.sort_by(|a, b| {
+        if a.to_lowercase().starts_with(lower_case) {
+            return Ordering::Less;
+        }
+        if b.to_lowercase().starts_with(lower_case) {
+            return Ordering::Greater;
+        }
+
+        Ordering::Equal
+    });
+
+    return result;
+}
+
 /// Receive Magicarps' blessings!
 #[poise::command(slash_command, rename = "move")]
 pub async fn poke_move(
@@ -90,5 +117,24 @@ pub async fn poke_move(
     }
 
     ctx.say("Move not found. Oh no!").await?;
+    Ok(())
+}
+
+/// Receive Magicarps' blessings!
+#[poise::command(slash_command, rename = "move")]
+pub async fn ability(
+    ctx: Context<'_>,
+    #[description = "Which ability?"]
+    #[rename = "ability"]
+    #[autocomplete = "autocomplete_ability"]
+    ability_name: String,
+) -> Result<(), Error> {
+    if let Some(ability) = ctx.data().abilities.get(&ability_name) {
+        let mut result : String = std::format!("**{}**: {}\n*{}*", &ability.name, &ability.effect, ability.description);
+        ctx.say(result).await?;
+        return Ok(());
+    }
+
+    ctx.say("Ability not found. Oh no!").await?;
     Ok(())
 }
