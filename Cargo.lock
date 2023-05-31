@@ -736,6 +736,7 @@ dependencies = [
  "futures",
  "log",
  "poise",
+ "rand",
  "serde",
  "serenity",
  "tokio",

@@ -393,7 +393,7 @@ async fn main() {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::poke_move(), commands::ability(), commands::stats(), commands::pokelearns()],
+            commands: vec![commands::roll(), commands::poke_move(), commands::ability(), commands::stats(), commands::pokelearns()],
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
