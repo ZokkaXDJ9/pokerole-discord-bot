@@ -134,6 +134,19 @@ pub async fn ability(
 }
 
 
+fn print_stat(result: &mut String, attribute: &str, min: u8, max: u8) {
+    result.push_str(&std::format!("**{}**: ", attribute));
+
+    for _ in 0..min {
+        result.push_str("⬤");
+    }
+    for _ in 0..max-min {
+        result.push_str("⭘");
+    }
+
+    result.push_str(&std::format!(" `{}/{}`\n", min, max));
+}
+
 /// Display an Ability
 #[poise::command(slash_command)]
 pub async fn stats(
@@ -144,7 +157,38 @@ pub async fn stats(
     pokemon_name: String,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name) {
-        ctx.say(std::format!("{:?}", pokemon)).await?;
+        let mut result = std::format!("{} __{}__\n", pokemon.id, pokemon.name);
+        if let Some(type1) = pokemon.type1 {
+            result.push_str("**Type**: ");
+            result.push_str(std::format!("{:?}", type1).as_str());
+            if let Some(type2) = pokemon.type2 {
+                result.push_str(std::format!(" / {:?}", type2).as_str())
+            }
+            result.push_str("\n");
+        }
+
+        result.push_str(&std::format!("**Base HP**: {}\n", pokemon.base_hp));
+
+        print_stat(&mut result, "Strength", pokemon.strength, pokemon.max_strength);
+        print_stat(&mut result, "Dexterity", pokemon.dexterity, pokemon.max_dexterity);
+        print_stat(&mut result, "Vitality", pokemon.vitality, pokemon.max_vitality);
+        print_stat(&mut result, "Special", pokemon.special, pokemon.max_special);
+        print_stat(&mut result, "Insight", pokemon.insight, pokemon.max_insight);
+
+        if let Some(ability1) = &pokemon.ability1 {
+            result.push_str("**Ability**: ");
+            result.push_str(&std::format!("{}", ability1));
+            if let Some(ability2) = &pokemon.ability2 {
+                result.push_str(&std::format!(" / {}", ability2))
+            }
+
+            if let Some(hidden) = &pokemon.ability_hidden {
+                result.push_str(&std::format!(" ({})", hidden))
+            }
+            result.push_str("\n");
+        }
+
+        ctx.say(result).await?;
         return Ok(());
     }
 

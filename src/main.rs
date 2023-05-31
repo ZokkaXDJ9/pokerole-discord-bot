@@ -200,7 +200,7 @@ pub struct PokeStats {
     #[serde(rename = "Type 2")]
     pub type2: Option<PokemonType>,
     #[serde(rename = "HP")]
-    pub hp: u8,
+    pub base_hp: u8,
     #[serde(rename = "Strength")]
     pub strength: u8,
     #[serde(rename = "Max Strength")]
