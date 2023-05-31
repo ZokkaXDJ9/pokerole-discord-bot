@@ -4,12 +4,35 @@ mod data;
 use std::collections::HashMap;
 use std::sync::{Arc};
 use poise::serenity_prelude as serenity;
+use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use crate::data::Data;
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "PascalCase")]
+pub enum PokemonType {
+    Normal,
+    Fighting,
+    Flying, Poison,
+    Ground,
+    Rock,
+    Bug,
+    Ghost,
+    Steel,
+    Fire,
+    Water,
+    Grass,
+    Electric,
+    Psychic,
+    Ice,
+    Dragon,
+    Dark,
+    Fairy,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
-pub enum PokeType {
+pub enum MovePokemonType {
     Normal,
     Fighting,
     Flying, Poison,
@@ -128,7 +151,7 @@ pub enum Target {
 #[derive(Debug, Deserialize)]
 pub struct PokeMove {
     pub name: String,
-    pub typing: PokeType,
+    pub typing: MovePokemonType,
     pub move_type: MoveType,
     pub base_power: u8,
     pub base_stat: Option<Stat>,
@@ -148,21 +171,89 @@ pub struct PokeAbility {
     pub description: String,
 }
 
-fn load_pokerole_abilities(path: &str) -> Vec<PokeAbility> {
-    let mut abilities = Vec::new();
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+pub enum GenderType {
+    M,
+    F,
+    N
+}
+
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+pub enum PokeRoleRank {
+    Starter,
+    Beginner,
+    Amateur,
+    Ace,
+    Pro,
+    Master,
+    Champion
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PokeStats {
+    #[serde(rename = "No.")]
+    pub id: String,
+    #[serde(rename = "Name")]
+    pub name: String,
+    #[serde(rename = "Type 1")]
+    pub type1: Option<PokemonType> ,
+    #[serde(rename = "Type 2")]
+    pub type2: Option<PokemonType>,
+    #[serde(rename = "HP")]
+    pub hp: u8,
+    #[serde(rename = "Strength")]
+    pub strength: u8,
+    #[serde(rename = "Max Strength")]
+    pub max_strength: u8,
+    #[serde(rename = "Dexterity")]
+    pub dexterity: u8,
+    #[serde(rename = "Max Dexterity")]
+    pub max_dexterity: u8,
+    #[serde(rename = "Vitality")]
+    pub vitality: u8,
+    #[serde(rename = "Max Vitality")]
+    pub max_vitality: u8,
+    #[serde(rename = "Special")]
+    pub special: u8,
+    #[serde(rename = "Max Special")]
+    pub max_special: u8,
+    #[serde(rename = "Insight")]
+    pub insight: u8,
+    #[serde(rename = "Max Insight")]
+    pub max_insight: u8,
+    #[serde(rename = "Ability 1")]
+    pub ability1: Option<String>,
+    #[serde(rename = "Ability 2")]
+    pub ability2: Option<String>,
+    #[serde(rename = "Hidden Ability")]
+    pub ability_hidden: Option<String>,
+    #[serde(rename = "Event Ability")]
+    pub ability_event: Option<String>,
+    #[serde(rename = "Unevolved?")]
+    pub is_unevolved: Option<String>,
+    #[serde(rename = "Has a form?")]
+    pub has_form: Option<String>,
+    #[serde(rename = "Recommended Rank")]
+    pub rank: PokeRoleRank,
+    #[serde(rename = "Gender Type")]
+    pub gender_type: Option<GenderType>,
+}
+
+fn load_generic<T: DeserializeOwned>(path: &str) -> Vec<T> {
+    let mut results = Vec::new();
 
     let reader = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(path);
 
-    for result in reader.expect("Ability path should be valid!").records() {
+    for result in reader.expect(path).records() {
         if let Ok(record) = result {
-            let value: PokeAbility = record.deserialize(None).expect("Csv should be parsable!");
-            abilities.push(value);
+            let value: T = record.deserialize(None).expect("Unable to parse csv row");
+            results.push(value);
         };
     }
 
-    return abilities;
+    return results;
 }
 
 fn load_pokerole_moves(path: &str) -> Vec<PokeMove> {
@@ -198,10 +289,12 @@ fn load_pokerole_moves(path: &str) -> Vec<PokeMove> {
 #[tokio::main]
 async fn main() {
     let moves = load_pokerole_moves("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv");
-    let abilities = load_pokerole_abilities("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv");
+    let abilities : Vec<PokeAbility> = load_generic("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv");
+    let poke : Vec<PokeStats> = load_generic("/home/jacudibu/code/pokerole-csv/PokeroleStats.csv");
 
     let mut move_names = Vec::default();
     let mut move_hash_map = HashMap::default();
+
     for x in moves {
         move_names.push(x.name.clone());
         move_hash_map.insert(x.name.clone(), x);
@@ -214,9 +307,16 @@ async fn main() {
         ability_hash_map.insert(x.name.clone(), x);
     }
 
+    let mut pokemon_names = Vec::default();
+    let mut pokemon = HashMap::default();
+    for x in poke {
+        pokemon_names.push(x.name.clone());
+        pokemon.insert(x.name.clone(), x);
+    }
+
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::poke_move(), commands::ability()],
+            commands: vec![commands::poke_move(), commands::ability(), commands::stats()],
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
@@ -229,6 +329,8 @@ async fn main() {
                     ability_names: Arc::new(ability_names),
                     moves: Arc::new(move_hash_map),
                     move_names: Arc::new(move_names),
+                    pokemon: Arc::new(pokemon),
+                    pokemon_names: Arc::new(pokemon_names),
                 })
             })
         });

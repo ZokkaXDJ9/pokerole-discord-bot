@@ -2,12 +2,16 @@ use std::cmp::Ordering;
 use std::sync::Arc;
 use futures::StreamExt;
 use crate::data::Data;
-use crate::PokeType;
+use crate::MovePokemonType;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
 fn autocomplete(partial: &str, commands: &Arc<Vec<String>>) -> Vec<String> {
+    if partial.len() < 2 {
+        return Vec::default();
+    }
+
     let lower_case = &partial.to_lowercase();
 
     let mut result: Vec<String> = commands.iter()
@@ -43,6 +47,13 @@ async fn autocomplete_ability<'a>(
     autocomplete(partial, &_ctx.data().ability_names)
 }
 
+async fn autocomplete_pokemon<'a>(
+    _ctx: Context<'a>,
+    partial: &'a str,
+) -> Vec<String> {
+    autocomplete(partial, &_ctx.data().pokemon_names)
+}
+
 /// Display a move
 #[poise::command(slash_command, rename = "move")]
 pub async fn poke_move(
@@ -61,7 +72,7 @@ pub async fn poke_move(
         }
 
         result.push_str("**Type**: ");
-        if poke_move.typing == PokeType::Typeless {
+        if poke_move.typing == MovePokemonType::Typeless {
             result.push_str("None");
         } else {
             result.push_str(std::format!("{:?}", poke_move.typing).as_str());
@@ -119,5 +130,24 @@ pub async fn ability(
     }
 
     ctx.say("Ability not found. Oh no!").await?;
+    Ok(())
+}
+
+
+/// Display an Ability
+#[poise::command(slash_command)]
+pub async fn stats(
+    ctx: Context<'_>,
+    #[description = "Which pokemon?"]
+    #[rename = "pokemon"]
+    #[autocomplete = "autocomplete_pokemon"]
+    pokemon_name: String,
+) -> Result<(), Error> {
+    if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name) {
+        ctx.say(std::format!("{:?}", pokemon)).await?;
+        return Ok(());
+    }
+
+    ctx.say("Pokemon not found. Oh no!").await?;
     Ok(())
 }
