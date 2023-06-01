@@ -344,12 +344,12 @@ pub async fn pokelearns(
                 result.push_str("\n**(Unable to find learnable game moves. Maybe something's not linked up properly, lemme know if this happens.)**\n");
             } else {
                 let option = options.pop().unwrap();
-                result.push_str(&std::format!("\nStruggling to find TM Moves. Quickfix found the following:\n- {} (used here)\n", option));
+                let all_learnable_moves = ctx.data().all_learnable_moves.get(&option).unwrap();
+                result.push_str(&std::format!("\nStruggling to find TM Moves. Quickfix found the following:\n- {} (used here)\n", all_learnable_moves.pokemon_name));
                 for x in options {
                     result.push_str(&std::format!("- {}\n", x));
                 }
 
-                let all_learnable_moves = ctx.data().all_learnable_moves.get(&option).unwrap();
                 append_moves(&mut result, "\n**TM Moves**\n", all_learnable_moves.machine.iter().map(|x| x.move_name.clone()).collect());
                 append_moves(&mut result, "\n**Egg Moves**\n", all_learnable_moves.egg.iter().map(|x| x.move_name.clone()).collect());
                 append_moves(&mut result, "\n**Tutor**\n", all_learnable_moves.tutor.iter().map(|x| x.move_name.clone()).collect());
