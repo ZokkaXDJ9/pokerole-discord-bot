@@ -55,19 +55,20 @@ async fn autocomplete_pokemon<'a>(
     autocomplete(partial, &_ctx.data().pokemon_names)
 }
 
+async fn autocomplete_item<'a>(
+    _ctx: Context<'a>,
+    partial: &'a str,
+) -> Vec<String> { autocomplete(partial, &_ctx.data().item_names) }
+
 async fn autocomplete_weather<'a>(
     _ctx: Context<'a>,
     partial: &'a str,
-) -> Vec<String> {
-    autocomplete(partial, &_ctx.data().weather_names)
-}
+) -> Vec<String> { autocomplete(partial, &_ctx.data().weather_names) }
 
 async fn autocomplete_status_effect<'a>(
     _ctx: Context<'a>,
     partial: &'a str,
-) -> Vec<String> {
-    autocomplete(partial, &_ctx.data().status_effects_names)
-}
+) -> Vec<String> { autocomplete(partial, &_ctx.data().status_effects_names) }
 
 /// Display a move
 #[poise::command(slash_command, rename = "move")]
@@ -177,7 +178,7 @@ pub async fn status(
     status_name: String,
 ) -> Result<(), Error> {
     if let Some(status_effect) = ctx.data().status_effects.get(&status_name) {
-        let mut result : String = std::format!("**{}**\n*{}*\n- {}\n- {}\n- {}",
+        let mut result : String = std::format!("**__{}__**\n*{}*\n- {}\n- {}\n- {}",
                                                &status_effect.name, &status_effect.description, &status_effect.resist, &status_effect.effect, &status_effect.duration);
         ctx.say(result).await?;
         return Ok(());
@@ -187,6 +188,37 @@ pub async fn status(
     Ok(())
 }
 
+/// Display item description
+#[poise::command(slash_command)]
+pub async fn item(
+    ctx: Context<'_>,
+    #[description = "Which item?"]
+    #[rename = "name"]
+    #[autocomplete = "autocomplete_item"]
+    name: String,
+) -> Result<(), Error> {
+    if let Some(item) = ctx.data().items.get(&name) {
+        let mut result: String = std::format!("**__{}__**\n", &item.name);
+
+        if let Some(price) = &item.suggested_price {
+            if (price != "Not for Sale") {
+                result.push_str(&format!("**Price**: {}\n", price));
+            }
+        }
+
+        if let Some(price) = &item.pmd_price {
+            result.push_str(&format!("**Price in PMD**: {}\n", price));
+        }
+
+        result.push_str(&item.description);
+
+        ctx.say(result).await?;
+        return Ok(());
+    }
+
+    ctx.say("Item not found. Oh no!").await?;
+    Ok(())
+}
 
 fn print_stat(result: &mut String, attribute: &str, min: u8, max: u8) {
     result.push_str(&std::format!("**{}**: ", attribute));

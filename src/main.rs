@@ -305,6 +305,34 @@ pub struct PokeLearnEntry {
     poke_move: String,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct PokeItem {
+    name: String,
+    description: String,
+    #[serde(rename = "Type Bonus")]
+    type_bonus: Option<String>,
+    value: Option<String>,
+    strength: Option<String>,
+    dexterity: Option<String>,
+    vitality: Option<String>,
+    special: Option<String>,
+    insight: Option<String>,
+    defense: Option<String>,
+    #[serde(rename = "Special Defense")]
+    special_defense: Option<String>,
+    evasion: Option<String>,
+    accuracy: Option<String>,
+    #[serde(rename = "Specific Pokemon")]
+    specific_pokemon: Option<String>,
+    #[serde(rename = "Heal Amount")]
+    heal_amount: Option<String>,
+    #[serde(rename = "Suggested Price")]
+    suggested_price: Option<String>,
+    #[serde(rename = "PMD Price")]
+    pmd_price: Option<String>
+}
+
 fn parse_pokerole_learns(raw: Vec<RawPokeLearns>) -> Vec<PokeLearn> {
     let mut result = Vec::new();
     for raw_learns in raw {
@@ -391,6 +419,7 @@ async fn main() {
         "effect",
         "description",
     ]);
+    let raw_items: Vec<PokeItem> = load_pokerule_csv("/home/jacudibu/code/pokerole-csv/PokeRoleItems.csv");
     let abilities : Vec<PokeAbility> = load_pokerule_csv("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv");
     let poke : Vec<PokeStats> = load_pokerule_csv("/home/jacudibu/code/pokerole-csv/PokeroleStats.csv");
     let raw_learns = load_pokerole_learns("/home/jacudibu/code/pokerole-csv/PokeLearnMovesFull.csv");
@@ -431,11 +460,23 @@ async fn main() {
         status_hash_map.insert(x.name.clone(), x);
     }
 
+    let mut item_names = Vec::default();
+    let mut item_hash_map = HashMap::default();
+    for x in raw_items {
+        if x.description.is_empty() {
+            continue;
+        }
+
+        item_names.push(x.name.clone());
+        item_hash_map.insert(x.name.clone(), x);
+    }
+
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: vec![commands::roll(),
                            commands::poke_move(),
                            commands::ability(),
+                           commands::item(),
                            commands::stats(),
                            commands::status(),
                            commands::pokelearns(),
@@ -450,6 +491,8 @@ async fn main() {
                 Ok(Data {
                     abilities: Arc::new(ability_hash_map),
                     ability_names: Arc::new(ability_names),
+                    items: Arc::new(item_hash_map),
+                    item_names: Arc::new(item_names),
                     moves: Arc::new(move_hash_map),
                     move_names: Arc::new(move_names),
                     pokemon: Arc::new(pokemon),
