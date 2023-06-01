@@ -398,7 +398,7 @@ fn load_csv_with_custom_headers<T: DeserializeOwned>(path: &str, headers: Vec<&s
 
 #[tokio::main]
 async fn main() {
-    init_logging().expect("Logging should be set up successfully!");
+    //init_logging().expect("Logging should be set up successfully!");
     let all_learnable_moves = parse_pokemon_api();
     let raw_weather: Vec<PokeWeather> = load_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/weather.csv", vec![
         "name",
@@ -455,6 +455,10 @@ async fn main() {
     let mut pokemon_names = Vec::default();
     let mut pokemon = HashMap::default();
     for x in poke {
+        if x.name.starts_with("Delta ") {
+            continue;
+        }
+
         pokemon_names.push(x.name.clone());
         pokemon.insert(x.name.to_lowercase(), x);
     }
