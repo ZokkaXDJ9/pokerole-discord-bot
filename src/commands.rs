@@ -457,3 +457,11 @@ pub async fn roll(
     Ok(())
 }
 
+
+/// Blah blah blah
+pub async fn about(
+    ctx: Context<'_>,
+) -> Result<(), Error> {
+    ctx.say("Movepools courtesy by pokeapi (https://github.com/PokeAPI/pokeapi).").await?;
+    Ok(())
+}
