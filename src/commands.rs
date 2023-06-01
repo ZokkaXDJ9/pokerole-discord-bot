@@ -55,6 +55,13 @@ async fn autocomplete_pokemon<'a>(
     autocomplete(partial, &_ctx.data().pokemon_names)
 }
 
+async fn autocomplete_weather<'a>(
+    _ctx: Context<'a>,
+    partial: &'a str,
+) -> Vec<String> {
+    autocomplete(partial, &_ctx.data().weather_names)
+}
+
 /// Display a move
 #[poise::command(slash_command, rename = "move")]
 pub async fn poke_move(
@@ -131,6 +138,25 @@ pub async fn ability(
     }
 
     ctx.say("Ability not found. Oh no!").await?;
+    Ok(())
+}
+
+/// Display the Weather
+#[poise::command(slash_command)]
+pub async fn weather(
+    ctx: Context<'_>,
+    #[description = "Which weather?"]
+    #[rename = "name"]
+    #[autocomplete = "autocomplete_weather"]
+    weather_name: String,
+) -> Result<(), Error> {
+    if let Some(weather) = ctx.data().weather.get(&weather_name) {
+        let mut result : String = std::format!("**{}**:\n*{}*\n{}", &weather.name, &weather.description, &weather.effect);
+        ctx.say(result).await?;
+        return Ok(());
+    }
+
+    ctx.say("Weather not found. Oh no!").await?;
     Ok(())
 }
 

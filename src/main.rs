@@ -174,7 +174,7 @@ pub struct PokeAbility {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Weather {
+pub struct PokeWeather {
     pub name: String,
     pub description: String,
     pub effect: String,
@@ -357,6 +357,11 @@ fn load_pokerules_csv_with_custom_headers<T: DeserializeOwned>(path: &str, heade
 
 #[tokio::main]
 async fn main() {
+    let raw_weather: Vec<PokeWeather> = load_pokerules_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/weather.csv", vec![
+        "name",
+        "description",
+        "effect"
+    ]);
     let moves: Vec<PokeMove> = load_pokerules_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv", vec![
         "name",
         "typing",
@@ -377,7 +382,6 @@ async fn main() {
 
     let mut move_names = Vec::default();
     let mut move_hash_map = HashMap::default();
-
     for x in moves {
         move_names.push(x.name.clone());
         move_hash_map.insert(x.name.clone(), x);
@@ -390,6 +394,13 @@ async fn main() {
         ability_hash_map.insert(x.name.clone(), x);
     }
 
+    let mut weather_names = Vec::default();
+    let mut weather_hash_map = HashMap::default();
+    for x in raw_weather {
+        weather_names.push(x.name.clone());
+        weather_hash_map.insert(x.name.clone(), x);
+    }
+
     let mut pokemon_names = Vec::default();
     let mut pokemon = HashMap::default();
     for x in poke {
@@ -399,7 +410,7 @@ async fn main() {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::roll(), commands::poke_move(), commands::ability(), commands::stats(), commands::pokelearns()],
+            commands: vec![commands::roll(), commands::poke_move(), commands::ability(), commands::stats(), commands::pokelearns(), commands::weather()],
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
@@ -415,6 +426,8 @@ async fn main() {
                     pokemon: Arc::new(pokemon),
                     pokemon_names: Arc::new(pokemon_names),
                     pokemon_learns: Arc::new(pokemon_learns),
+                    weather: Arc::new(weather_hash_map),
+                    weather_names: Arc::new(weather_names),
                 })
             })
         });
