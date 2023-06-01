@@ -62,6 +62,13 @@ async fn autocomplete_weather<'a>(
     autocomplete(partial, &_ctx.data().weather_names)
 }
 
+async fn autocomplete_status_effect<'a>(
+    _ctx: Context<'a>,
+    partial: &'a str,
+) -> Vec<String> {
+    autocomplete(partial, &_ctx.data().status_effects_names)
+}
+
 /// Display a move
 #[poise::command(slash_command, rename = "move")]
 pub async fn poke_move(
@@ -152,6 +159,26 @@ pub async fn weather(
 ) -> Result<(), Error> {
     if let Some(weather) = ctx.data().weather.get(&weather_name) {
         let mut result : String = std::format!("**{}**:\n*{}*\n{}", &weather.name, &weather.description, &weather.effect);
+        ctx.say(result).await?;
+        return Ok(());
+    }
+
+    ctx.say("Weather not found. Oh no!").await?;
+    Ok(())
+}
+
+/// Display status effects
+#[poise::command(slash_command)]
+pub async fn status(
+    ctx: Context<'_>,
+    #[description = "Which status effect?"]
+    #[rename = "name"]
+    #[autocomplete = "autocomplete_status_effect"]
+    status_name: String,
+) -> Result<(), Error> {
+    if let Some(status_effect) = ctx.data().status_effects.get(&status_name) {
+        let mut result : String = std::format!("**{}**\n*{}*\n- {}\n- {}\n- {}",
+                                               &status_effect.name, &status_effect.description, &status_effect.resist, &status_effect.effect, &status_effect.duration);
         ctx.say(result).await?;
         return Ok(());
     }

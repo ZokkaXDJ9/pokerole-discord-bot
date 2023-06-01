@@ -180,6 +180,15 @@ pub struct PokeWeather {
     pub effect: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct PokeStatus {
+    pub name: String,
+    pub description: String,
+    pub resist: String,
+    pub effect: String,
+    pub duration: String,
+}
+
 #[derive(Debug, Deserialize, PartialEq, Eq)]
 pub enum GenderType {
     M,
@@ -362,6 +371,13 @@ async fn main() {
         "description",
         "effect"
     ]);
+    let raw_status_effects: Vec<PokeStatus> = load_pokerules_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/status.csv", vec![
+        "name",
+        "description",
+        "resist",
+        "effect",
+        "duration",
+    ]);
     let moves: Vec<PokeMove> = load_pokerules_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv", vec![
         "name",
         "typing",
@@ -408,9 +424,22 @@ async fn main() {
         pokemon.insert(x.name.clone(), x);
     }
 
+    let mut status_names = Vec::default();
+    let mut status_hash_map = HashMap::default();
+    for x in raw_status_effects {
+        status_names.push(x.name.clone());
+        status_hash_map.insert(x.name.clone(), x);
+    }
+
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::roll(), commands::poke_move(), commands::ability(), commands::stats(), commands::pokelearns(), commands::weather()],
+            commands: vec![commands::roll(),
+                           commands::poke_move(),
+                           commands::ability(),
+                           commands::stats(),
+                           commands::status(),
+                           commands::pokelearns(),
+                           commands::weather()],
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
@@ -426,6 +455,8 @@ async fn main() {
                     pokemon: Arc::new(pokemon),
                     pokemon_names: Arc::new(pokemon_names),
                     pokemon_learns: Arc::new(pokemon_learns),
+                    status_effects: Arc::new(status_hash_map),
+                    status_effects_names: Arc::new(status_names),
                     weather: Arc::new(weather_hash_map),
                     weather_names: Arc::new(weather_names),
                 })
