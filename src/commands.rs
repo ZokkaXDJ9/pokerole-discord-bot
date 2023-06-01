@@ -4,6 +4,7 @@ use futures::StreamExt;
 use rand::Rng;
 use crate::data::Data;
 use crate::{MovePokemonType, PokeLearn, PokeLearnEntry, PokeRoleRank};
+use crate::pokemon_api_parser::PokemonLearnableMoves;
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -334,7 +335,30 @@ pub async fn pokelearns(
                 .map(|x| x.move_name.clone())
                 .collect());
         } else {
-            result.push_str("\n**(Unable to find learnable game moves. Dev done goofed?!)**\n");
+            let mut options: Vec<String> = ctx.data().all_learnable_moves.keys()
+                .filter(|x| x.contains(&pokemon.name))
+                .map(|x| x.clone())
+                .collect();
+
+            if options.is_empty() {
+                result.push_str("\n**(Unable to find learnable game moves. Maybe something's not linked up properly, lemme know if this happens.)**\n");
+            } else {
+                let option = options.pop().unwrap();
+                result.push_str(&std::format!("\nStruggling to find TM Moves. Quickfix found the following:\n- {} (used here)\n", option));
+                for x in options {
+                    result.push_str(&std::format!("- {}\n", x));
+                }
+
+                let all_learnable_moves = ctx.data().all_learnable_moves.get(&option).unwrap();
+                append_moves(&mut result, "\n**TM Moves**\n", all_learnable_moves.machine.iter().map(|x| x.move_name.clone()).collect());
+                append_moves(&mut result, "\n**Egg Moves**\n", all_learnable_moves.egg.iter().map(|x| x.move_name.clone()).collect());
+                append_moves(&mut result, "\n**Tutor**\n", all_learnable_moves.tutor.iter().map(|x| x.move_name.clone()).collect());
+                append_moves(&mut result, "\n**Learned in Game through level up, but not here**\n", all_learnable_moves.egg.iter()
+                        .filter(|x| learns.moves.iter().any(|learn| learn.poke_move == x.move_name))
+                        .map(|x| x.move_name.clone())
+                        .collect());
+            }
+
         }
 
         ctx.say(result).await?;
