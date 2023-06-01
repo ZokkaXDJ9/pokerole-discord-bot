@@ -62,18 +62,29 @@ pub struct MoveNames {
 
 #[derive(Debug)]
 pub struct MoveEntry {
-    move_name: String,
-    method: String,
-    generation_id: u8,
+    pub move_name: String,
+    pub generation_id: u8,
 }
 
 #[derive(Debug)]
-pub struct ParsedResult {
-    pokemon_name: String,
-    moves: Vec<MoveEntry>,
+pub struct PokemonLearnableMoves {
+    pub pokemon_name: String,
+    pub level_up: Vec<MoveEntry>,
+    pub machine: Vec<MoveEntry>,
+    pub tutor: Vec<MoveEntry>,
+    pub egg: Vec<MoveEntry>,
 }
 
-pub fn parse_pokemon_api() -> HashMap<String, Vec<MoveEntry>> {
+impl PokemonLearnableMoves {
+    fn has_move(&self, name: String) -> bool {
+        self.level_up.iter().any(|x| x.move_name == name)
+            || self.machine.iter().any(|x| x.move_name == name)
+            || self.tutor.iter().any(|x| x.move_name == name)
+            || self.egg.iter().any(|x| x.move_name == name)
+    }
+}
+
+pub fn parse_pokemon_api() -> HashMap<String, PokemonLearnableMoves> {
     let english_language_id:u8 = 9;
     let version_groups: Vec<VersionGroups> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/version_groups.csv");
     let pokemon_moves: Vec<PokemonMoves> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_moves.csv");
@@ -119,11 +130,17 @@ pub fn parse_pokemon_api() -> HashMap<String, Vec<MoveEntry>> {
         version_group_id_to_generation_id.insert(x.id, x.generation_id);
     }
 
-    let mut result: HashMap<String, Vec<MoveEntry>> = HashMap::default();
+    let mut result: HashMap<String, PokemonLearnableMoves> = HashMap::default();
     for pokemon_move in pokemon_moves {
         if let Some(pokemon_name) = pokemon_id_to_name.get(&pokemon_move.pokemon_id) {
             if !result.contains_key(pokemon_name) {
-                result.insert(pokemon_name.clone(), Vec::default());
+                result.insert(pokemon_name.clone(), PokemonLearnableMoves {
+                    pokemon_name: pokemon_name.clone(),
+                    level_up: Vec::default(),
+                    machine: Vec::default(),
+                    tutor: Vec::default(),
+                    egg: Vec::default(),
+                });
             }
 
             let move_name_option = move_id_to_name.get(&pokemon_move.move_id);
@@ -133,17 +150,24 @@ pub fn parse_pokemon_api() -> HashMap<String, Vec<MoveEntry>> {
             }
             let move_name = move_name_option.unwrap().clone();
 
-            let move_entry = result.get_mut(pokemon_name).unwrap();
-            if move_entry.iter().any(|x| x.move_name == move_name) {
+            let mut pokemon_entry = result.get_mut(pokemon_name).unwrap();
+            if pokemon_entry.has_move(move_name.clone()) {
                 continue;
             }
 
-
-            move_entry.push(MoveEntry {
+            let new_move_entry = MoveEntry{
                 move_name,
-                method: method_id_to_name.get(&pokemon_move.pokemon_move_method_id).expect("All learning method names should be set").clone(),
                 generation_id: version_group_id_to_generation_id.get(&pokemon_move.version_group_id).expect("All generation ids should be set").clone(),
-            })
+            };
+
+            let learn_method = method_id_to_name.get(&pokemon_move.pokemon_move_method_id).unwrap().clone();
+            match learn_method.as_str() {
+                "level-up" => pokemon_entry.level_up.push(new_move_entry),
+                "egg" => pokemon_entry.egg.push(new_move_entry),
+                "tutor" => pokemon_entry.tutor.push(new_move_entry),
+                "machine" => pokemon_entry.machine.push(new_move_entry),
+                _ => {}
+            }
         } else {
             log::warn!("unable to assign a pokemon to {:?}", pokemon_move);
         }

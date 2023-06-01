@@ -284,11 +284,16 @@ pub async fn stats(
 
 fn filter_moves<F>(result: &mut String, title: &str, learns: &PokeLearn, filter: F)
     where F: Fn(&PokeLearnEntry) -> bool {
-    let text : String = learns.moves.iter()
+    let moves = learns.moves.iter()
         .filter(|x| filter(x))
         .map(|x| x.poke_move.clone())
-        .collect::<Vec<String>>()
-        .join("  |  ");
+        .collect::<Vec<String>>();
+
+    append_moves(result, title, moves);
+}
+
+fn append_moves(result: &mut String, title: &str, moves: Vec<String>) {
+    let text = moves.join("  |  ");
 
     if text.is_empty() {
         return;
@@ -319,6 +324,18 @@ pub async fn pokelearns(
         filter_moves(&mut result, "**Gold**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Ace);
         filter_moves(&mut result, "**Platinum**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Pro);
         filter_moves(&mut result, "**Diamond**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Master || x.rank == PokeRoleRank::Champion);
+
+        if let Some(all_learnable_moves) = ctx.data().all_learnable_moves.get(&pokemon.name) {
+            append_moves(&mut result, "\n**TM Moves**\n", all_learnable_moves.machine.iter().map(|x| x.move_name.clone()).collect());
+            append_moves(&mut result, "\n**Egg Moves**\n", all_learnable_moves.egg.iter().map(|x| x.move_name.clone()).collect());
+            append_moves(&mut result, "\n**Tutor**\n", all_learnable_moves.tutor.iter().map(|x| x.move_name.clone()).collect());
+            append_moves(&mut result, "\n**Learned in Game through level up, but not here**\n", all_learnable_moves.egg.iter()
+                .filter(|x| learns.moves.iter().any(|learn| learn.poke_move == x.move_name))
+                .map(|x| x.move_name.clone())
+                .collect());
+        } else {
+            result.push_str("\n**(Unable to find learnable game moves. Dev done goofed?!)**\n");
+        }
 
         ctx.say(result).await?;
         return Ok(());

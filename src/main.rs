@@ -508,6 +508,7 @@ async fn main() {
                     status_effects_names: Arc::new(status_names),
                     weather: Arc::new(weather_hash_map),
                     weather_names: Arc::new(weather_names),
+                    all_learnable_moves: Arc::new(all_learnable_moves),
                 })
             })
         });
