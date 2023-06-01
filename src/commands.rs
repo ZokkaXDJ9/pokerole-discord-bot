@@ -313,6 +313,7 @@ pub async fn pokelearns(
     #[rename = "pokemon"]
     #[autocomplete = "autocomplete_pokemon"]
     pokemon_name: String,
+    show_all_moves: Option<bool>,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name.to_lowercase()) {
         let lowercase = pokemon_name.to_lowercase();
@@ -326,39 +327,40 @@ pub async fn pokelearns(
         filter_moves(&mut result, "**Platinum**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Pro);
         filter_moves(&mut result, "**Diamond**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Master || x.rank == PokeRoleRank::Champion);
 
-        if let Some(all_learnable_moves) = ctx.data().all_learnable_moves.get(&pokemon.name) {
-            append_moves(&mut result, "\n**TM Moves**\n", all_learnable_moves.machine.iter().map(|x| x.move_name.clone()).collect());
-            append_moves(&mut result, "\n**Egg Moves**\n", all_learnable_moves.egg.iter().map(|x| x.move_name.clone()).collect());
-            append_moves(&mut result, "\n**Tutor**\n", all_learnable_moves.tutor.iter().map(|x| x.move_name.clone()).collect());
-            append_moves(&mut result, "\n**Learned in Game through level up, but not here**\n", all_learnable_moves.egg.iter()
-                .filter(|x| learns.moves.iter().any(|learn| learn.poke_move == x.move_name))
-                .map(|x| x.move_name.clone())
-                .collect());
-        } else {
-            let mut options: Vec<String> = ctx.data().all_learnable_moves.keys()
-                .filter(|x| x.contains(&pokemon.name))
-                .map(|x| x.clone())
-                .collect();
-
-            if options.is_empty() {
-                result.push_str("\n**(Unable to find learnable game moves. Maybe something's not linked up properly, lemme know if this happens.)**\n");
-            } else {
-                let option = options.pop().unwrap();
-                let all_learnable_moves = ctx.data().all_learnable_moves.get(&option).unwrap();
-                result.push_str(&std::format!("\nStruggling to find TM Moves. Quickfix found the following:\n- {} (used here)\n", all_learnable_moves.pokemon_name));
-                for x in options {
-                    result.push_str(&std::format!("- {}\n", x));
-                }
-
+        if show_all_moves.unwrap_or(false) {
+            if let Some(all_learnable_moves) = ctx.data().all_learnable_moves.get(&pokemon.name) {
                 append_moves(&mut result, "\n**TM Moves**\n", all_learnable_moves.machine.iter().map(|x| x.move_name.clone()).collect());
                 append_moves(&mut result, "\n**Egg Moves**\n", all_learnable_moves.egg.iter().map(|x| x.move_name.clone()).collect());
                 append_moves(&mut result, "\n**Tutor**\n", all_learnable_moves.tutor.iter().map(|x| x.move_name.clone()).collect());
                 append_moves(&mut result, "\n**Learned in Game through level up, but not here**\n", all_learnable_moves.egg.iter()
+                    .filter(|x| learns.moves.iter().any(|learn| learn.poke_move == x.move_name))
+                    .map(|x| x.move_name.clone())
+                    .collect());
+            } else {
+                let mut options: Vec<String> = ctx.data().all_learnable_moves.keys()
+                    .filter(|x| x.contains(&pokemon.name))
+                    .map(|x| x.clone())
+                    .collect();
+
+                if options.is_empty() {
+                    result.push_str("\n**(Unable to find learnable game moves. Maybe something's not linked up properly, lemme know if this happens.)**\n");
+                } else {
+                    let option = options.pop().unwrap();
+                    let all_learnable_moves = ctx.data().all_learnable_moves.get(&option).unwrap();
+                    result.push_str(&std::format!("\nStruggling to find TM Moves. Quickfix found the following:\n- {} (used here)\n", all_learnable_moves.pokemon_name));
+                    for x in options {
+                        result.push_str(&std::format!("- {}\n", x));
+                    }
+
+                    append_moves(&mut result, "\n**TM Moves**\n", all_learnable_moves.machine.iter().map(|x| x.move_name.clone()).collect());
+                    append_moves(&mut result, "\n**Egg Moves**\n", all_learnable_moves.egg.iter().map(|x| x.move_name.clone()).collect());
+                    append_moves(&mut result, "\n**Tutor**\n", all_learnable_moves.tutor.iter().map(|x| x.move_name.clone()).collect());
+                    append_moves(&mut result, "\n**Learned in Game through level up, but not here**\n", all_learnable_moves.egg.iter()
                         .filter(|x| learns.moves.iter().any(|learn| learn.poke_move == x.move_name))
                         .map(|x| x.move_name.clone())
                         .collect());
+                }
             }
-
         }
 
         ctx.say(result).await?;
