@@ -1,5 +1,7 @@
 mod commands;
 mod data;
+mod pokemon_api_parser;
+mod logger;
 
 use std::collections::HashMap;
 use std::sync::{Arc};
@@ -9,6 +11,8 @@ use poise::serenity_prelude as serenity;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use crate::data::Data;
+use crate::logger::init_logging;
+use crate::pokemon_api_parser::parse_pokemon_api;
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
@@ -358,7 +362,7 @@ fn parse_pokerole_learns(raw: Vec<RawPokeLearns>) -> Vec<PokeLearn> {
     result
 }
 
-fn load_pokerule_csv<T: DeserializeOwned>(path: &str) -> Vec<T> {
+fn load_csv<T: DeserializeOwned>(path: &str) -> Vec<T> {
     let mut results = Vec::new();
 
     let reader = csv::ReaderBuilder::new()
@@ -375,7 +379,7 @@ fn load_pokerule_csv<T: DeserializeOwned>(path: &str) -> Vec<T> {
     return results;
 }
 
-fn load_pokerules_csv_with_custom_headers<T: DeserializeOwned>(path: &str, headers: Vec<&str>) -> Vec<T> {
+fn load_csv_with_custom_headers<T: DeserializeOwned>(path: &str, headers: Vec<&str>) -> Vec<T> {
     let mut result = Vec::new();
     let reader = csv::ReaderBuilder::new()
         .has_headers(false)
@@ -394,19 +398,21 @@ fn load_pokerules_csv_with_custom_headers<T: DeserializeOwned>(path: &str, heade
 
 #[tokio::main]
 async fn main() {
-    let raw_weather: Vec<PokeWeather> = load_pokerules_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/weather.csv", vec![
+    init_logging().expect("Logging should be set up successfully!");
+    let all_learnable_moves = parse_pokemon_api();
+    let raw_weather: Vec<PokeWeather> = load_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/weather.csv", vec![
         "name",
         "description",
         "effect"
     ]);
-    let raw_status_effects: Vec<PokeStatus> = load_pokerules_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/status.csv", vec![
+    let raw_status_effects: Vec<PokeStatus> = load_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/status.csv", vec![
         "name",
         "description",
         "resist",
         "effect",
         "duration",
     ]);
-    let moves: Vec<PokeMove> = load_pokerules_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv", vec![
+    let moves: Vec<PokeMove> = load_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv", vec![
         "name",
         "typing",
         "move_type",
@@ -419,9 +425,9 @@ async fn main() {
         "effect",
         "description",
     ]);
-    let raw_items: Vec<PokeItem> = load_pokerule_csv("/home/jacudibu/code/pokerole-csv/PokeRoleItems.csv");
-    let abilities : Vec<PokeAbility> = load_pokerule_csv("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv");
-    let poke : Vec<PokeStats> = load_pokerule_csv("/home/jacudibu/code/pokerole-csv/PokeroleStats.csv");
+    let raw_items: Vec<PokeItem> = load_csv("/home/jacudibu/code/pokerole-csv/PokeRoleItems.csv");
+    let abilities : Vec<PokeAbility> = load_csv("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv");
+    let poke : Vec<PokeStats> = load_csv("/home/jacudibu/code/pokerole-csv/PokeroleStats.csv");
     let raw_learns = load_pokerole_learns("/home/jacudibu/code/pokerole-csv/PokeLearnMovesFull.csv");
     let pokemon_learns = parse_pokerole_learns(raw_learns);
 
