@@ -173,6 +173,13 @@ pub struct PokeAbility {
     pub description: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct Weather {
+    pub name: String,
+    pub description: String,
+    pub effect: String,
+}
+
 #[derive(Debug, Deserialize, PartialEq, Eq)]
 pub enum GenderType {
     M,
@@ -314,7 +321,7 @@ fn parse_pokerole_learns(raw: Vec<RawPokeLearns>) -> Vec<PokeLearn> {
     result
 }
 
-fn load_generic<T: DeserializeOwned>(path: &str) -> Vec<T> {
+fn load_pokerule_csv<T: DeserializeOwned>(path: &str) -> Vec<T> {
     let mut results = Vec::new();
 
     let reader = csv::ReaderBuilder::new()
@@ -331,13 +338,26 @@ fn load_generic<T: DeserializeOwned>(path: &str) -> Vec<T> {
     return results;
 }
 
-fn load_pokerole_moves(path: &str) -> Vec<PokeMove> {
-    let mut moves = Vec::new();
+fn load_pokerules_csv_with_custom_headers<T: DeserializeOwned>(path: &str, headers: Vec<&str>) -> Vec<T> {
+    let mut result = Vec::new();
     let reader = csv::ReaderBuilder::new()
         .has_headers(false)
         .from_path(path);
 
-    let headers = csv::StringRecord::from(vec![
+    let header_records = csv::StringRecord::from(headers);
+    for row in reader.expect(path).records() {
+        if let Ok(record) = row {
+            let item : T = record.deserialize(Some(&header_records)).expect("Csv should be parsable!");
+            result.push(item);
+        };
+    }
+
+    return result;
+}
+
+#[tokio::main]
+async fn main() {
+    let moves: Vec<PokeMove> = load_pokerules_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv", vec![
         "name",
         "typing",
         "move_type",
@@ -350,22 +370,8 @@ fn load_pokerole_moves(path: &str) -> Vec<PokeMove> {
         "effect",
         "description",
     ]);
-
-    for result in reader.expect("Move path should be valid!").records() {
-        if let Ok(record) = result {
-            let poke_move : PokeMove = record.deserialize(Some(&headers)).expect("Csv should be parsable!");
-            moves.push(poke_move);
-        };
-    }
-
-    return moves;
-}
-
-#[tokio::main]
-async fn main() {
-    let moves = load_pokerole_moves("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv");
-    let abilities : Vec<PokeAbility> = load_generic("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv");
-    let poke : Vec<PokeStats> = load_generic("/home/jacudibu/code/pokerole-csv/PokeroleStats.csv");
+    let abilities : Vec<PokeAbility> = load_pokerule_csv("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv");
+    let poke : Vec<PokeStats> = load_pokerule_csv("/home/jacudibu/code/pokerole-csv/PokeroleStats.csv");
     let raw_learns = load_pokerole_learns("/home/jacudibu/code/pokerole-csv/PokeLearnMovesFull.csv");
     let pokemon_learns = parse_pokerole_learns(raw_learns);
 
