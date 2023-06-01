@@ -79,7 +79,7 @@ pub async fn poke_move(
     #[autocomplete = "autocomplete_move"]
     poke_move_name: String,
 ) -> Result<(), Error> {
-    if let Some(poke_move) = ctx.data().moves.get(&poke_move_name) {
+    if let Some(poke_move) = ctx.data().moves.get(&poke_move_name.to_lowercase()) {
         let mut result : String = std::format!("__**{}**__\n", &poke_move.name);
         if let Some(description) = &poke_move.description {
             result.push_str("*");
@@ -139,7 +139,7 @@ pub async fn ability(
     #[autocomplete = "autocomplete_ability"]
     ability_name: String,
 ) -> Result<(), Error> {
-    if let Some(ability) = ctx.data().abilities.get(&ability_name) {
+    if let Some(ability) = ctx.data().abilities.get(&ability_name.to_lowercase()) {
         let mut result : String = std::format!("**{}**: {}\n*{}*", &ability.name, &ability.effect, ability.description);
         ctx.say(result).await?;
         return Ok(());
@@ -158,7 +158,7 @@ pub async fn weather(
     #[autocomplete = "autocomplete_weather"]
     weather_name: String,
 ) -> Result<(), Error> {
-    if let Some(weather) = ctx.data().weather.get(&weather_name) {
+    if let Some(weather) = ctx.data().weather.get(&weather_name.to_lowercase()) {
         let mut result : String = std::format!("**{}**:\n*{}*\n{}", &weather.name, &weather.description, &weather.effect);
         ctx.say(result).await?;
         return Ok(());
@@ -177,7 +177,7 @@ pub async fn status(
     #[autocomplete = "autocomplete_status_effect"]
     status_name: String,
 ) -> Result<(), Error> {
-    if let Some(status_effect) = ctx.data().status_effects.get(&status_name) {
+    if let Some(status_effect) = ctx.data().status_effects.get(&status_name.to_lowercase()) {
         let mut result : String = std::format!("**__{}__**\n*{}*\n- {}\n- {}\n- {}",
                                                &status_effect.name, &status_effect.description, &status_effect.resist, &status_effect.effect, &status_effect.duration);
         ctx.say(result).await?;
@@ -197,7 +197,7 @@ pub async fn item(
     #[autocomplete = "autocomplete_item"]
     name: String,
 ) -> Result<(), Error> {
-    if let Some(item) = ctx.data().items.get(&name) {
+    if let Some(item) = ctx.data().items.get(&name.to_lowercase()) {
         let mut result: String = std::format!("**__{}__**\n", &item.name);
 
         if let Some(price) = &item.suggested_price {
@@ -242,7 +242,7 @@ pub async fn stats(
     #[autocomplete = "autocomplete_pokemon"]
     pokemon_name: String,
 ) -> Result<(), Error> {
-    if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name) {
+    if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name.to_lowercase()) {
         let mut result = std::format!("{} __{}__\n", pokemon.id, pokemon.name);
         if let Some(type1) = pokemon.type1 {
             result.push_str("**Type**: ");
@@ -308,7 +308,7 @@ pub async fn pokelearns(
     #[autocomplete = "autocomplete_pokemon"]
     pokemon_name: String,
 ) -> Result<(), Error> {
-    if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name) {
+    if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name.to_lowercase()) {
         let lowercase = pokemon_name.to_lowercase();
 
         let learns = ctx.data().pokemon_learns.iter().find(|x| x.pokemon_name.to_lowercase().contains(&lowercase)).unwrap();

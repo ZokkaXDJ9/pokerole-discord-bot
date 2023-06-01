@@ -429,35 +429,35 @@ async fn main() {
     let mut move_hash_map = HashMap::default();
     for x in moves {
         move_names.push(x.name.clone());
-        move_hash_map.insert(x.name.clone(), x);
+        move_hash_map.insert(x.name.to_lowercase(), x);
     }
 
     let mut ability_names = Vec::default();
     let mut ability_hash_map = HashMap::default();
     for x in abilities {
         ability_names.push(x.name.clone());
-        ability_hash_map.insert(x.name.clone(), x);
+        ability_hash_map.insert(x.name.to_lowercase(), x);
     }
 
     let mut weather_names = Vec::default();
     let mut weather_hash_map = HashMap::default();
     for x in raw_weather {
         weather_names.push(x.name.clone());
-        weather_hash_map.insert(x.name.clone(), x);
+        weather_hash_map.insert(x.name.to_lowercase(), x);
     }
 
     let mut pokemon_names = Vec::default();
     let mut pokemon = HashMap::default();
     for x in poke {
         pokemon_names.push(x.name.clone());
-        pokemon.insert(x.name.clone(), x);
+        pokemon.insert(x.name.to_lowercase(), x);
     }
 
     let mut status_names = Vec::default();
     let mut status_hash_map = HashMap::default();
     for x in raw_status_effects {
         status_names.push(x.name.clone());
-        status_hash_map.insert(x.name.clone(), x);
+        status_hash_map.insert(x.name.to_lowercase(), x);
     }
 
     let mut item_names = Vec::default();
@@ -468,7 +468,7 @@ async fn main() {
         }
 
         item_names.push(x.name.clone());
-        item_hash_map.insert(x.name.clone(), x);
+        item_hash_map.insert(x.name.to_lowercase(), x);
     }
 
     let framework = poise::Framework::builder()
