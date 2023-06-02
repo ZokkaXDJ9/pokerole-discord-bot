@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use crate::{PokeAbility, PokeItem, PokeLearn, PokeMove, PokeStats, PokeStatus, PokeWeather};
+use crate::{PokeAbility, PokeItem, PokeLearn, PokeMove, PokeStats, PokeStatus, PokeWeather, GameRule};
 use crate::pokemon_api_parser::PokemonLearnableMoves;
 
 pub struct Data {
@@ -18,5 +18,7 @@ pub struct Data {
     pub status_effects_names: Arc<Vec<String>>,
     pub weather: Arc<HashMap<String, PokeWeather>>,
     pub weather_names: Arc<Vec<String>>,
-    pub all_learnable_moves: Arc<HashMap<String, PokemonLearnableMoves>>
+    pub all_learnable_moves: Arc<HashMap<String, PokemonLearnableMoves>>,
+    pub rule_names: Arc<Vec<String>>,
+    pub rules: Arc<HashMap<String, GameRule>>,
 } // User data, which is stored and accessible in all command invocations

@@ -9,8 +9,8 @@ use crate::pokemon_api_parser::PokemonLearnableMoves;
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
-fn autocomplete(partial: &str, commands: &Arc<Vec<String>>) -> Vec<String> {
-    if partial.len() < 2 {
+fn autocomplete(partial: &str, commands: &Arc<Vec<String>>, minimum_query_length : usize) -> Vec<String> {
+    if partial.len() < minimum_query_length {
         return Vec::default();
     }
 
@@ -42,37 +42,42 @@ async fn autocomplete_move<'a>(
     _ctx: Context<'a>,
     partial: &'a str,
 ) -> Vec<String> {
-    autocomplete(partial, &_ctx.data().move_names)
+    autocomplete(partial, &_ctx.data().move_names, 2)
 }
 
 async fn autocomplete_ability<'a>(
     _ctx: Context<'a>,
     partial: &'a str,
 ) -> Vec<String> {
-    autocomplete(partial, &_ctx.data().ability_names)
+    autocomplete(partial, &_ctx.data().ability_names, 2)
 }
 
 async fn autocomplete_pokemon<'a>(
     _ctx: Context<'a>,
     partial: &'a str,
 ) -> Vec<String> {
-    autocomplete(partial, &_ctx.data().pokemon_names)
+    autocomplete(partial, &_ctx.data().pokemon_names, 2)
 }
 
 async fn autocomplete_item<'a>(
     _ctx: Context<'a>,
     partial: &'a str,
-) -> Vec<String> { autocomplete(partial, &_ctx.data().item_names) }
+) -> Vec<String> { autocomplete(partial, &_ctx.data().item_names, 2) }
 
 async fn autocomplete_weather<'a>(
     _ctx: Context<'a>,
     partial: &'a str,
-) -> Vec<String> { autocomplete(partial, &_ctx.data().weather_names) }
+) -> Vec<String> { autocomplete(partial, &_ctx.data().weather_names, 0) }
 
 async fn autocomplete_status_effect<'a>(
     _ctx: Context<'a>,
     partial: &'a str,
-) -> Vec<String> { autocomplete(partial, &_ctx.data().status_effects_names) }
+) -> Vec<String> { autocomplete(partial, &_ctx.data().status_effects_names, 0) }
+
+async fn autocomplete_rule<'a>(
+    _ctx: Context<'a>,
+    partial: &'a str,
+) -> Vec<String> { autocomplete(partial, &_ctx.data().rule_names, 0) }
 
 /// Display a move
 #[poise::command(slash_command, rename = "move")]
@@ -189,6 +194,30 @@ pub async fn status(
     }
 
     ctx.say("Weather not found. Oh no!").await?;
+    Ok(())
+}
+
+/// Display rule
+#[poise::command(slash_command)]
+pub async fn rule(
+    ctx: Context<'_>,
+    #[description = "Which rule?"]
+    #[rename = "name"]
+    #[autocomplete = "autocomplete_rule"]
+    name: String,
+) -> Result<(), Error> {
+    if let Some(rule) = ctx.data().rules.get(&name.to_lowercase()) {
+        let mut result : String = std::format!("**__{}__**\n*{}*\n\n{}\n\n**Example**: {}\n",
+                                               &rule.name,
+                                               &rule.flavor,
+                                               &rule.text,
+                                               &rule.example,
+        );
+        ctx.say(result).await?;
+        return Ok(());
+    }
+
+    ctx.say("Rule not found. Oh no!").await?;
     Ok(())
 }
 

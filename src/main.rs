@@ -337,6 +337,13 @@ pub struct PokeItem {
     pmd_price: Option<String>
 }
 
+pub struct GameRule {
+    name: String,
+    flavor: String,
+    text: String,
+    example: String,
+}
+
 fn parse_pokerole_learns(raw: Vec<RawPokeLearns>) -> Vec<PokeLearn> {
     let mut result = Vec::new();
     for raw_learns in raw {
@@ -430,6 +437,22 @@ async fn main() {
     let poke : Vec<PokeStats> = load_csv("/home/jacudibu/code/pokerole-csv/PokeroleStats.csv");
     let raw_learns = load_pokerole_learns("/home/jacudibu/code/pokerole-csv/PokeLearnMovesFull.csv");
     let pokemon_learns = parse_pokerole_learns(raw_learns);
+    let raw_rules = vec![
+        GameRule {
+            name: String::from("Limit Break"),
+            flavor: String::from("By investing an extraordinary amount of effort, some pokemon can surpass their natural limits!"),
+            text: String::from("You may spend (2 + Amount of previous Limit Breaks) stat points in order to increase your stats past your species' stat cap."),
+            example: String::from("Let's say your max dexterity is 3. If you want to increase it to 4, you'll need to use two stat points.\n\
+                                      Next up, you want to increase your vitality past its limit. Since you've already used one limit break in the past, this would now cost 3 stat points."),
+        }
+    ];
+
+    let mut rule_names = Vec::default();
+    let mut rule_hash_map = HashMap::default();
+    for x in raw_rules {
+        rule_names.push(x.name.clone());
+        rule_hash_map.insert(x.name.to_lowercase(), x);
+    }
 
     let mut move_names = Vec::default();
     let mut move_hash_map = HashMap::default();
@@ -489,6 +512,7 @@ async fn main() {
                            commands::item(),
                            commands::stats(),
                            commands::status(),
+                           commands::rule(),
                            commands::pokelearns(),
                            commands::weather()],
             ..Default::default()
@@ -508,6 +532,8 @@ async fn main() {
                     pokemon: Arc::new(pokemon),
                     pokemon_names: Arc::new(pokemon_names),
                     pokemon_learns: Arc::new(pokemon_learns),
+                    rules: Arc::new(rule_hash_map),
+                    rule_names: Arc::new(rule_names),
                     status_effects: Arc::new(status_hash_map),
                     status_effects_names: Arc::new(status_names),
                     weather: Arc::new(weather_hash_map),
