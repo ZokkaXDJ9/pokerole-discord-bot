@@ -41,6 +41,21 @@ pub struct PokemonSpeciesNames {
     genus: String,
 }
 
+/// pokemon_forms.csv
+/// Contains the names for regional Pokemon and other weird forms
+#[derive(Debug, Deserialize)]
+pub struct PokemonForm {
+    id: u16,
+    identifier: String,
+    form_identifier: Option<String>,
+    pokemon_id: u16,
+    is_default: u8,
+    is_battle_only: u8,
+    is_mega: u8,
+    form_order: u16,
+    order: u16,
+}
+
 /// pokemon_form_names.csv
 /// Contains the names for regional Pokemon and other weird forms
 #[derive(Debug, Deserialize)]
@@ -91,7 +106,13 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonLearnableMoves> {
     let pokemon_move_methods: Vec<PokemonMoveMethods> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_move_methods.csv");
     let pokemon_species_names: Vec<PokemonSpeciesNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_species_names.csv");
     let move_names: Vec<MoveNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/move_names.csv");
+    let pokemon_forms: Vec<PokemonForm> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_forms.csv");
     let pokemon_form_names: Vec<PokemonFormNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_form_names.csv");
+
+    let mut form_id_to_pokemon_id: HashMap<u16, u16> = HashMap::default();
+    for x in pokemon_forms {
+        form_id_to_pokemon_id.insert(x.id, x.pokemon_id);
+    }
 
     let mut pokemon_id_to_name: HashMap<u16, String> = HashMap::default();
     for x in pokemon_species_names {
@@ -107,7 +128,9 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonLearnableMoves> {
         }
 
         if let Some(name) = x.pokemon_name {
-            pokemon_id_to_name.insert(x.pokemon_form_id, name);
+            if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
+                pokemon_id_to_name.insert(pokemon_id.clone(), name);
+            }
         }
     }
 
@@ -130,6 +153,8 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonLearnableMoves> {
         version_group_id_to_generation_id.insert(x.id, x.generation_id);
     }
 
+    let mut missing_pokemon_ids = Vec::new();
+    let mut missing_move_ids = Vec::new();
     let mut result: HashMap<String, PokemonLearnableMoves> = HashMap::default();
     for pokemon_move in pokemon_moves {
         if let Some(pokemon_name) = pokemon_id_to_name.get(&pokemon_move.pokemon_id) {
@@ -145,7 +170,9 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonLearnableMoves> {
 
             let move_name_option = move_id_to_name.get(&pokemon_move.move_id);
             if move_name_option.is_none() {
-                log::warn!("Unable to find a move name for {:?}", pokemon_move);
+                if !missing_move_ids.contains(&pokemon_move.move_id) {
+                    missing_move_ids.push(pokemon_move.move_id);
+                }
                 continue;
             }
             let move_name = move_name_option.unwrap().clone();
@@ -169,9 +196,21 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonLearnableMoves> {
                 _ => {}
             }
         } else {
-            log::warn!("unable to assign a pokemon to {:?}", pokemon_move);
+            if !missing_pokemon_ids.contains(&pokemon_move.pokemon_id) {
+                missing_pokemon_ids.push(pokemon_move.pokemon_id);
+            }
         }
     }
+
+    for x in missing_pokemon_ids {
+        log::warn!("Missing pokemon data for pokemon_id {}", x)
+        // 10232 - 10248 Amigento
+
+    }
+    for x in missing_move_ids {
+        log::warn!("Missing move data for move_id {}", x)
+    }
+
 
     result
 }
