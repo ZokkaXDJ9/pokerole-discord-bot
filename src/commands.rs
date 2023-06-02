@@ -305,6 +305,16 @@ fn append_moves(result: &mut String, title: &str, moves: Vec<String>) {
     result.push('\n');
 }
 
+fn append_all_learnable_moves(learns: &PokeLearn, mut result: &mut String, all_learnable_moves: &PokemonLearnableMoves) {
+    append_moves(&mut result, "\n**TM Moves**\n", all_learnable_moves.machine.iter().map(|x| x.move_name.clone()).collect());
+    append_moves(&mut result, "\n**Egg Moves**\n", all_learnable_moves.egg.iter().map(|x| x.move_name.clone()).collect());
+    append_moves(&mut result, "\n**Tutor**\n", all_learnable_moves.tutor.iter().map(|x| x.move_name.clone()).collect());
+    append_moves(&mut result, "\n**Learned in Game through level up, but not here**\n", all_learnable_moves.egg.iter()
+        .filter(|x| learns.moves.iter().any(|learn| learn.poke_move == x.move_name))
+        .map(|x| x.move_name.clone())
+        .collect());
+}
+
 /// Display Pokemon moves
 #[poise::command(slash_command)]
 pub async fn pokelearns(
@@ -313,6 +323,8 @@ pub async fn pokelearns(
     #[rename = "pokemon"]
     #[autocomplete = "autocomplete_pokemon"]
     pokemon_name: String,
+    //#[description = "Includes TM, Tutor and Egg moves."]
+    //#[rename = "showAll"]
     show_all_moves: Option<bool>,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name.to_lowercase()) {
@@ -329,13 +341,7 @@ pub async fn pokelearns(
 
         if show_all_moves.unwrap_or(false) {
             if let Some(all_learnable_moves) = ctx.data().all_learnable_moves.get(&pokemon.name) {
-                append_moves(&mut result, "\n**TM Moves**\n", all_learnable_moves.machine.iter().map(|x| x.move_name.clone()).collect());
-                append_moves(&mut result, "\n**Egg Moves**\n", all_learnable_moves.egg.iter().map(|x| x.move_name.clone()).collect());
-                append_moves(&mut result, "\n**Tutor**\n", all_learnable_moves.tutor.iter().map(|x| x.move_name.clone()).collect());
-                append_moves(&mut result, "\n**Learned in Game through level up, but not here**\n", all_learnable_moves.egg.iter()
-                    .filter(|x| learns.moves.iter().any(|learn| learn.poke_move == x.move_name))
-                    .map(|x| x.move_name.clone())
-                    .collect());
+                append_all_learnable_moves(learns, &mut result, all_learnable_moves);
             } else {
                 let mut options: Vec<String> = ctx.data().all_learnable_moves.keys()
                     .filter(|x| x.contains(&pokemon.name))
@@ -352,13 +358,7 @@ pub async fn pokelearns(
                         result.push_str(&std::format!("- {}\n", x));
                     }
 
-                    append_moves(&mut result, "\n**TM Moves**\n", all_learnable_moves.machine.iter().map(|x| x.move_name.clone()).collect());
-                    append_moves(&mut result, "\n**Egg Moves**\n", all_learnable_moves.egg.iter().map(|x| x.move_name.clone()).collect());
-                    append_moves(&mut result, "\n**Tutor**\n", all_learnable_moves.tutor.iter().map(|x| x.move_name.clone()).collect());
-                    append_moves(&mut result, "\n**Learned in Game through level up, but not here**\n", all_learnable_moves.egg.iter()
-                        .filter(|x| learns.moves.iter().any(|learn| learn.poke_move == x.move_name))
-                        .map(|x| x.move_name.clone())
-                        .collect());
+                    append_all_learnable_moves(learns, &mut result, all_learnable_moves);
                 }
             }
         }
