@@ -6,7 +6,8 @@ mod logger;
 use std::collections::HashMap;
 use std::sync::{Arc};
 use csv::ByteRecord;
-use log::debug;
+use env_logger::Env;
+use log::{debug, error, info, log, warn};
 use poise::serenity_prelude as serenity;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
@@ -405,7 +406,7 @@ fn load_csv_with_custom_headers<T: DeserializeOwned>(path: &str, headers: Vec<&s
 
 #[tokio::main]
 async fn main() {
-    init_logging().expect("Logging should be set up successfully!");
+    logger::init_logging();
     let all_learnable_moves = parse_pokemon_api();
     let raw_weather: Vec<PokeWeather> = load_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/weather.csv", vec![
         "name",
