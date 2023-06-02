@@ -441,9 +441,10 @@ async fn main() {
         GameRule {
             name: String::from("Limit Break"),
             flavor: String::from("By investing an extraordinary amount of effort, some pokemon can surpass their natural limits!"),
-            text: String::from("You may spend (2 + Amount of previous Limit Breaks) stat points in order to increase your stats past your species' stat cap."),
-            example: String::from("Let's say your max dexterity is 3. If you want to increase it to 4, you'll need to use two stat points.\n\
-                                      Next up, you want to increase your vitality past its limit. Since you've already used one limit break in the past, this would now cost 3 stat points."),
+            text: String::from("You may spend (2 + Amount of previous Limit Breaks) stat points in order to increase your stats past your species' stat cap. For balancing reasons, you can never have more than 10 points in any particular stat, even by using this mechanic."),
+            example: String::from("Let's say your max Dexterity is 3. If you want to increase it to 4, you'll need to use two stat points.\n\
+                                      Next up, you want to increase your Vitality past its limit. Since you've already used one limit break in the past, this would now cost 3 stat points.\n\
+                                      If you stat is already at 10, you cannot limit break it any further.")
         }
     ];
 
