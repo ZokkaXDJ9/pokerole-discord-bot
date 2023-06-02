@@ -460,6 +460,19 @@ async fn main() {
             flavor: String::from("Hit 'em right between the legs!"),
             text: String::from("A critical strike occurs when you roll at least three 6 during an accuracy check (You need only 2 for 'High Critical' moves). After the damage reduction from defense, the damage dealt will be increased by 50%, rounded up. If the move applies stat boosts or reductions, those will be increased by 1."),
             example: String::from("You crit and successfully roll 5 damage dies. Your enemy has 2 defense. The final damage dealt is (5 - 2) * 1.5 = 4.5, so 5 damage.")
+        }, GameRule {
+            name: String::from("Levels and Ranks"),
+            flavor: String::from("Now, would you look at this shiny badge?"),
+            text: String::from("A level up always requires 100 Experience Points. Experience is gained by going on quests and joining in on events, depending on duration and difficulty/danger levels! For each level up, you gain 1 Stat point, which you may freely spend to increase your stats (see Limit Breaking in case you are maxed out.)\n\
+            \n\
+            Furthermore, Levels decide your guild rank and when you can evolve:\n\
+            Level 2 => Silver\n\
+            Level 3 => Evo #1\n\
+            Level 4 => Gold\n\
+            Level 6 => Evo #2\n\
+            Level 8 => Platinum\n\
+            Level 16 => Diamond\n"),
+            example: String::from("")
         }
     ];
 

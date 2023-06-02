@@ -207,12 +207,19 @@ pub async fn rule(
     name: String,
 ) -> Result<(), Error> {
     if let Some(rule) = ctx.data().rules.get(&name.to_lowercase()) {
-        let mut result : String = std::format!("**__{}__**\n*{}*\n\n{}\n\n**Example**: {}\n",
-                                               &rule.name,
-                                               &rule.flavor,
-                                               &rule.text,
-                                               &rule.example,
-        );
+        let mut result: String;
+        if rule.example.is_empty() {
+            result = std::format!("**__{}__**\n*{}*\n\n{}",
+                                  &rule.name,
+                                  &rule.flavor,
+                                  &rule.text);
+        } else {
+            result = std::format!("**__{}__**\n*{}*\n\n{}\n\n**Example**: {}\n",
+                                           &rule.name,
+                                           &rule.flavor,
+                                           &rule.text,
+                                           &rule.example);
+        }
         ctx.say(result).await?;
         return Ok(());
     }
