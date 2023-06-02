@@ -448,8 +448,18 @@ async fn main() {
         }, GameRule {
             name: String::from("Evolution"),
             flavor: String::from("Sometimes they just grow a little too fast!"),
-            text: String::from("You can evolve at any time or even start out as a fully evolved pokemon, but as long as you haven't reached the level required for your evolution yet, you will have to play with the base stats of your unevolved form. Evolution thresholds are Level 3 for second stage, and Level 6 for third stage evolutions."),
-            example: String::from("Let's say you want to play a Beedrill. Kakuna is probably not the most fun to play, so you decide to start out as a Beedrill right from the get go. Until level 3 you will have to play with the base stats of a Weedle. Once you reach level 3, you can upgrade your base stats to that of a Kakuna, and, finally, once you reach level 6, your base stats may reflect those of a full-powered beedrill!")
+            text: String::from("You can evolve at any time or even start out as a fully evolved pokemon, but as long as you haven't reached the level required for your evolution yet, you will have to play with the base stats of your unevolved form. Evolution thresholds are Level 3 for second stage, and Level 6 for third stage evolutions. In severe cases where even the second evo has terrible stats, such as for e.g. the Weedle/Kakuna/Beedrill line, you may apply for an exception to be made."),
+            example: String::from("Let's say you want to play a Tyranitar. Pupitar is probably not the most fun to play, so you decide to start out fully evolved right from the get go. Until level 3 you will have to play with the base stats of a Larvitar. Once you reach level 3, you can upgrade your base stats to that of a Pupitar, and, finally, once you reach level 6, your base stats may reflect those of a full-powered Tyranitar!")
+        }, GameRule {
+            name: String::from("Multi-Target moves"),
+            flavor: String::from("\"Watch out, it's the 'Oops, I Did It Everywhere' attack!\""),
+            text: String::from("When using moves targeting *All Foes*, declare the order in which your characters focuses on them. Only the first target can receive a critical hit, and for every successive target hit, reduce the damage die count by 1."),
+            example: String::from("You are using Earthquake against three foes! First, you declare the order in which they are to be hit: Ursaring, Absol, Sneasler. Then, you roll accuracy. It's a crit, yay! Roll your regular 8 damage dies against the Ursaring. Critical damage will be applied! Then, roll 7 damage dies against the Lucario. Finally, 6 dies against the Sneasler. Both of those take the regular damage without crit modifiers.")
+        }, GameRule {
+            name: String::from("Critical Strike"),
+            flavor: String::from("Hit 'em right between the legs!"),
+            text: String::from("A critical strike occurs when you roll at least three 6 during an accuracy check (You need only 2 for 'High Critical' moves). After the damage reduction from defense, the damage dealt will be increased by 50%, rounded up. If the move applies stat boosts or reductions, those will be increased by 1."),
+            example: String::from("You crit and successfully roll 5 damage dies. Your enemy has 2 defense. The final damage dealt is (5 - 2) * 1.5 = 4.5, so 5 damage.")
         }
     ];
 
