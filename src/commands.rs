@@ -23,6 +23,9 @@ fn autocomplete(partial: &str, commands: &Arc<Vec<String>>) -> Vec<String> {
 
     result.sort_by(|a, b| {
         if a.to_lowercase().starts_with(lower_case) {
+            if b.to_lowercase().starts_with(lower_case) {
+                return a.cmp(b);
+            }
             return Ordering::Less;
         }
         if b.to_lowercase().starts_with(lower_case) {
