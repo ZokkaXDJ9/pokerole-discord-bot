@@ -445,6 +445,11 @@ async fn main() {
             example: String::from("Let's say your max Dexterity is 3. If you want to increase it to 4, you'll need to use two stat points.\n\
                                       Next up, you want to increase your Vitality past its limit. Since you've already used one limit break in the past, this would now cost 3 stat points.\n\
                                       If you stat is already at 10, you cannot limit break it any further.")
+        }, GameRule {
+            name: String::from("Evolution"),
+            flavor: String::from("Sometimes they just grow a little too fast!"),
+            text: String::from("You can evolve at any time or even start out as a fully evolved pokemon, but as long as you haven't reached the level required for your evolution yet, you will have to play with the base stats of your unevolved form. Evolution thresholds are Level 3 for second stage, and Level 6 for third stage evolutions."),
+            example: String::from("Let's say you want to play a Beedrill. Kakuna is probably not the most fun to play, so you decide to start out as a Beedrill right from the get go. Until level 3 you will have to play with the base stats of a Weedle. Once you reach level 3, you can upgrade your base stats to that of a Kakuna, and, finally, once you reach level 6, your base stats may reflect those of a full-powered beedrill!")
         }
     ];
 
