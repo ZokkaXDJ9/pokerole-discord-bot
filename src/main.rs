@@ -474,6 +474,11 @@ async fn main() {
             Level 8 => Platinum\n\
             Level 16 => Diamond\n"),
             example: String::from("")
+        }, GameRule {
+            name: String::from("Wound damage"),
+            flavor: String::from("It's just a flesh wound!"),
+            text: String::from("Wound damage reduces your maximum HP and needs to be healed over time in base and/or by visiting a doctor. If your max HP falls to 0, you lose consciousness and really need some medical assistance!"),
+            example: String::from("")
         }
     ];
 
