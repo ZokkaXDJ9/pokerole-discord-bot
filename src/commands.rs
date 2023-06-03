@@ -129,7 +129,7 @@ pub async fn poke_move(
         result.push_str("\n");
 
         result.push_str("**Effect**: ");
-        result.push_str(&poke_move.effect);
+        result.push_str(&poke_move.effect.replace("Lethal", "Inflicts Wounds"));
 
         ctx.say(result).await?;
         return Ok(());
