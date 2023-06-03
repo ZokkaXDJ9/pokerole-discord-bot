@@ -283,7 +283,13 @@ pub async fn stats(
     pokemon_name: String,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name.to_lowercase()) {
-        let mut result = std::format!("{} __{}__\n", pokemon.id, pokemon.name);
+        let mut result = std::format!("### {} [{}]\n", pokemon.name, pokemon.id);
+        let api_data = ctx.data().pokemon_api_data.get(&pokemon.name).expect("All pokerole mons should have api data!");
+        result.push_str(&std::format!("{}m / {:.1}ft   |   {}kg / {:.1}lbs\n",
+                                      api_data.height_in_meters,
+                                      api_data.height_in_meters * 3.28084,
+                                      api_data.weight_in_kg,
+                                      api_data.weight_in_kg * 2.20462));
         if let Some(type1) = pokemon.type1 {
             result.push_str("**Type**: ");
             result.push_str(std::format!("{:?}", type1).as_str());
@@ -379,10 +385,10 @@ pub async fn pokelearns(
         filter_moves(&mut result, "**Diamond**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Master || x.rank == PokeRoleRank::Champion);
 
         if show_all_moves.unwrap_or(false) {
-            if let Some(all_learnable_moves) = ctx.data().all_learnable_moves.get(&pokemon.name) {
-                append_all_learnable_moves(learns, &mut result, all_learnable_moves);
+            if let Some(api_data) = ctx.data().pokemon_api_data.get(&pokemon.name) {
+                append_all_learnable_moves(learns, &mut result, &api_data.learnable_moves);
             } else {
-                let mut options: Vec<String> = ctx.data().all_learnable_moves.keys()
+                let mut options: Vec<String> = ctx.data().pokemon_api_data.keys()
                     .filter(|x| x.contains(&pokemon.name))
                     .map(|x| x.clone())
                     .collect();
@@ -391,13 +397,13 @@ pub async fn pokelearns(
                     result.push_str("\n**(Unable to find learnable game moves. Maybe something's not linked up properly, lemme know if this happens.)**\n");
                 } else {
                     let option = options.pop().unwrap();
-                    let all_learnable_moves = ctx.data().all_learnable_moves.get(&option).unwrap();
-                    result.push_str(&std::format!("\nStruggling to find TM Moves. Quickfix found the following:\n- {} (used here)\n", all_learnable_moves.pokemon_name));
+                    let api_data = ctx.data().pokemon_api_data.get(&option).unwrap();
+                    result.push_str(&std::format!("\nStruggling to find TM Moves. Quickfix found the following:\n- {} (used here)\n", api_data.pokemon_name));
                     for x in options {
                         result.push_str(&std::format!("- {}\n", x));
                     }
 
-                    append_all_learnable_moves(learns, &mut result, all_learnable_moves);
+                    append_all_learnable_moves(learns, &mut result, &api_data.learnable_moves);
                 }
             }
         }
