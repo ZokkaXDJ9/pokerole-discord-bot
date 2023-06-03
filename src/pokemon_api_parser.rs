@@ -11,6 +11,22 @@ pub struct VersionGroups {
     order: u8
 }
 
+/// pokemon.csv
+/// Contains base data about pokemon, such as height and weight. Pretty much just height and weight.
+#[derive(Debug, Deserialize)]
+pub struct Pokemon {
+    id: u16,
+    identifier: String,
+    species_id: u16,
+    /// in 10cm
+    height: u16,
+    /// in 100g
+    weight: u16,
+    base_experience: Option<u16>,
+    order: Option<u16>,
+    is_default: u8,
+}
+
 /// pokemon_moves.csv
 /// Contains info on what moves a pokemon can learn and how.
 #[derive(Debug, Deserialize)]
@@ -83,11 +99,18 @@ pub struct MoveEntry {
 
 #[derive(Debug)]
 pub struct PokemonLearnableMoves {
-    pub pokemon_name: String,
     pub level_up: Vec<MoveEntry>,
     pub machine: Vec<MoveEntry>,
     pub tutor: Vec<MoveEntry>,
     pub egg: Vec<MoveEntry>,
+}
+
+#[derive(Debug)]
+pub struct PokemonApiData {
+    pub pokemon_name: String,
+    pub height_in_meters: f32,
+    pub weight_in_kg: f32,
+    pub learnable_moves: PokemonLearnableMoves,
 }
 
 impl PokemonLearnableMoves {
@@ -99,15 +122,16 @@ impl PokemonLearnableMoves {
     }
 }
 
-pub fn parse_pokemon_api() -> HashMap<String, PokemonLearnableMoves> {
+pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
     let english_language_id:u8 = 9;
     let version_groups: Vec<VersionGroups> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/version_groups.csv");
+    let pokemon: Vec<Pokemon> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon.csv");
     let pokemon_moves: Vec<PokemonMoves> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_moves.csv");
     let pokemon_move_methods: Vec<PokemonMoveMethods> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_move_methods.csv");
     let pokemon_species_names: Vec<PokemonSpeciesNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_species_names.csv");
-    let move_names: Vec<MoveNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/move_names.csv");
     let pokemon_forms: Vec<PokemonForm> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_forms.csv");
     let pokemon_form_names: Vec<PokemonFormNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_form_names.csv");
+    let move_names: Vec<MoveNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/move_names.csv");
 
     let mut form_id_to_pokemon_id: HashMap<u16, u16> = HashMap::default();
     for x in pokemon_forms {
@@ -153,21 +177,28 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonLearnableMoves> {
         version_group_id_to_generation_id.insert(x.id, x.generation_id);
     }
 
+    let mut result: HashMap<String, PokemonApiData> = HashMap::default();
+    for x in pokemon {
+        let name = pokemon_id_to_name.get(&x.id).unwrap_or(&x.identifier);
+
+        result.insert(name.clone(),  PokemonApiData {
+            pokemon_name: name.clone(),
+            height_in_meters: x.height as f32 / 10.0,
+            weight_in_kg: x.weight as f32 / 10.0,
+            learnable_moves: PokemonLearnableMoves {
+                level_up: Vec::default(),
+                machine: Vec::default(),
+                tutor: Vec::default(),
+                egg: Vec::default(),
+            },
+        });
+    }
+
     let mut missing_pokemon_ids = Vec::new();
     let mut missing_move_ids = Vec::new();
-    let mut result: HashMap<String, PokemonLearnableMoves> = HashMap::default();
+    let mut pokemon_name_to_learnable_moves: HashMap<String, PokemonLearnableMoves> = HashMap::default();
     for pokemon_move in pokemon_moves {
         if let Some(pokemon_name) = pokemon_id_to_name.get(&pokemon_move.pokemon_id) {
-            if !result.contains_key(pokemon_name) {
-                result.insert(pokemon_name.clone(), PokemonLearnableMoves {
-                    pokemon_name: pokemon_name.clone(),
-                    level_up: Vec::default(),
-                    machine: Vec::default(),
-                    tutor: Vec::default(),
-                    egg: Vec::default(),
-                });
-            }
-
             let move_name_option = move_id_to_name.get(&pokemon_move.move_id);
             if move_name_option.is_none() {
                 if !missing_move_ids.contains(&pokemon_move.move_id) {
@@ -177,7 +208,7 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonLearnableMoves> {
             }
             let move_name = move_name_option.unwrap().clone();
 
-            let mut pokemon_entry = result.get_mut(pokemon_name).unwrap();
+            let mut pokemon_entry = &mut result.get_mut(pokemon_name).unwrap().learnable_moves;
             if pokemon_entry.has_move(move_name.clone()) {
                 continue;
             }

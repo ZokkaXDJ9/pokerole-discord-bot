@@ -407,7 +407,7 @@ fn load_csv_with_custom_headers<T: DeserializeOwned>(path: &str, headers: Vec<&s
 #[tokio::main]
 async fn main() {
     logger::init_logging();
-    let all_learnable_moves = parse_pokemon_api();
+    let pokemon_api_data = parse_pokemon_api();
     let raw_weather: Vec<PokeWeather> = load_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/weather.csv", vec![
         "name",
         "description",
@@ -573,7 +573,7 @@ async fn main() {
                     status_effects_names: Arc::new(status_names),
                     weather: Arc::new(weather_hash_map),
                     weather_names: Arc::new(weather_names),
-                    all_learnable_moves: Arc::new(all_learnable_moves),
+                    pokemon_api_data: Arc::new(pokemon_api_data),
                 })
             })
         });
