@@ -46,6 +46,9 @@ impl Pokemon {
         let fixed_name = name
             .replace("'", "’")
             .replace("Flabebe", "Flabébé")
+            .replace("Nidoran M", "Nidoran♂")
+            .replace("Nidoran F", "Nidoran♀")
+            .replace("Mime Jr", "Mime Jr.")
             .replace("Ho-oh", "Ho-Oh");
         if let Some(value) = api.get(&fixed_name) {
             return (None, Some(value))
