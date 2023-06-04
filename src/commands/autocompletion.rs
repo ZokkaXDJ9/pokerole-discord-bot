@@ -71,3 +71,8 @@ pub async fn autocomplete_rule<'a>(
     _ctx: Context<'a>,
     partial: &'a str,
 ) -> Vec<String> { autocomplete(partial, &_ctx.data().rule_names, 0) }
+
+pub async fn autocomplete_nature<'a>(
+    _ctx: Context<'a>,
+    partial: &'a str,
+) -> Vec<String> { autocomplete(partial, &_ctx.data().nature_names, 0) }

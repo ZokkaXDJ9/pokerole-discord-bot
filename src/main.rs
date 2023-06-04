@@ -19,6 +19,7 @@ async fn main() {
                         commands::status::status(),
                         commands::rule::rule(),
                         commands::pokelearns::pokelearns(),
+                        commands::nature::nature(),
                         commands::weather::weather()];
     let data = data::game_data::initialize_data();
 
