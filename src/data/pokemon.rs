@@ -1,7 +1,8 @@
 use std::str::FromStr;
 use serde::Deserialize;
 use crate::enums::{MysteryDungeonRank, PokemonType};
-use crate::pokerole_data::raw_pokemon::RawPokerolePokemon;
+use crate::pokerole_data::raw_pokemon::{RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon};
+use crate::pokerole_discord_py_csv_parser::PokeRoleRank;
 
 #[derive(Debug)]
 pub struct Pokemon {
@@ -23,12 +24,12 @@ pub struct Pokemon {
     pub height: Height,
     pub weight: Weight,
     pub dex_description: String,
-    pub moves: Vec<PokemonMoveLearnedByRank>,
+    pub moves: Moves,
 }
 
 impl Pokemon {
     pub(in crate::data) fn new(raw: RawPokerolePokemon) -> Pokemon {
-        let moves = Vec::new();
+        let moves = Moves {by_pokerole_rank: raw.moves.iter().map(|x| PokemonMoveLearnedByRank::new(x)).collect() };
 
         Pokemon {
             number: raw.number,
@@ -104,4 +105,20 @@ pub struct Moves {
 pub struct PokemonMoveLearnedByRank {
     pub rank: MysteryDungeonRank,
     pub name: String
+}
+
+impl PokemonMoveLearnedByRank {
+    pub(in crate::data) fn new(raw: &RawPokemonMoveLearnedByLevelUp) -> PokemonMoveLearnedByRank {
+        let rank = match raw.learned {
+            PokeRoleRank::Starter => MysteryDungeonRank::Bronze,
+            PokeRoleRank::Beginner => MysteryDungeonRank::Bronze,
+            PokeRoleRank::Amateur => MysteryDungeonRank::Silver,
+            PokeRoleRank::Ace => MysteryDungeonRank::Gold,
+            PokeRoleRank::Pro => MysteryDungeonRank::Platinum,
+            PokeRoleRank::Master => MysteryDungeonRank::Diamond,
+            PokeRoleRank::Champion => MysteryDungeonRank::Diamond,
+        };
+
+        PokemonMoveLearnedByRank {rank, name: raw.name.clone()}
+    }
 }

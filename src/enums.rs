@@ -56,7 +56,7 @@ pub enum MoveCategory {
     Support,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize)]
 pub enum MysteryDungeonRank {
     Bronze,
     Silver,

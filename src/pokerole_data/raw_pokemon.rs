@@ -42,13 +42,13 @@ pub struct RawPokerolePokemon {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Evolution {
-    from: Option<String>,
-    to: Option<String>,
+    pub from: Option<String>,
+    pub to: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct RawPokemonMoveLearnedByLevelUp {
-    learned: PokeRoleRank,
-    name: String,
+    pub learned: PokeRoleRank,
+    pub name: String,
 }

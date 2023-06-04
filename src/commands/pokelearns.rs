@@ -2,12 +2,14 @@ use crate::commands::{Context, Error};
 use crate::pokerole_discord_py_csv_parser::{PokeLearn, PokeLearnEntry, PokeRoleRank};
 use crate::pokemon_api_parser::ApiPokemonLearnableMoves;
 use crate::commands::autocompletion::autocomplete_pokemon;
+use crate::data::pokemon::PokemonMoveLearnedByRank;
+use crate::enums::MysteryDungeonRank;
 
-fn filter_moves<F>(result: &mut String, title: &str, learns: &PokeLearn, filter: F)
-    where F: Fn(&PokeLearnEntry) -> bool {
-    let moves = learns.moves.iter()
+fn filter_moves<F>(result: &mut String, title: &str, learns: &Vec<PokemonMoveLearnedByRank>, filter: F)
+    where F: Fn(&PokemonMoveLearnedByRank) -> bool {
+    let moves = learns.iter()
         .filter(|x| filter(x))
-        .map(|x| x.poke_move.clone())
+        .map(|x| x.name.clone())
         .collect::<Vec<String>>();
 
     append_moves(result, title, moves);
@@ -50,38 +52,38 @@ pub async fn pokelearns(
     if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name.to_lowercase()) {
         let lowercase = pokemon_name.to_lowercase();
 
-        let learns = ctx.data().pokemon_learns.iter().find(|x| x.pokemon_name.to_lowercase().contains(&lowercase)).unwrap();
-        let mut result = std::format!("### {} [{}]\n", pokemon.name, pokemon.number);
+        let learns = &pokemon.moves.by_pokerole_rank;
+        let mut result = std::format!("### {} [#{}]\n", pokemon.name, pokemon.number);
 
-        filter_moves(&mut result, "**Bronze**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Starter || x.rank == PokeRoleRank::Beginner);
-        filter_moves(&mut result, "**Silver**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Amateur);
-        filter_moves(&mut result, "**Gold**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Ace);
-        filter_moves(&mut result, "**Platinum**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Pro);
-        filter_moves(&mut result, "**Diamond**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Master || x.rank == PokeRoleRank::Champion);
+        filter_moves(&mut result, "**Bronze**\n", &learns, |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Bronze);
+        filter_moves(&mut result, "**Silver**\n", &learns, |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Silver);
+        filter_moves(&mut result, "**Gold**\n", &learns, |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Gold);
+        filter_moves(&mut result, "**Platinum**\n", &learns, |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Platinum);
+        filter_moves(&mut result, "**Diamond**\n", &learns, |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Diamond);
 
-        if show_all_moves.unwrap_or(false) {
-            if let Some(api_data) = ctx.data().pokemon_api_data.get(&pokemon.name) {
-                append_all_learnable_moves(learns, &mut result, &api_data.learnable_moves);
-            } else {
-                let mut options: Vec<String> = ctx.data().pokemon_api_data.keys()
-                    .filter(|x| x.contains(&pokemon.name))
-                    .map(|x| x.clone())
-                    .collect();
-
-                if options.is_empty() {
-                    result.push_str("\n**(Unable to find learnable game moves. Maybe something's not linked up properly, lemme know if this happens.)**\n");
-                } else {
-                    let option = options.pop().unwrap();
-                    let api_data = ctx.data().pokemon_api_data.get(&option).unwrap();
-                    result.push_str(&std::format!("\nStruggling to find TM Moves. Quickfix found the following:\n- {} (used here)\n", api_data.pokemon_name));
-                    for x in options {
-                        result.push_str(&std::format!("- {}\n", x));
-                    }
-
-                    append_all_learnable_moves(learns, &mut result, &api_data.learnable_moves);
-                }
-            }
-        }
+        // if show_all_moves.unwrap_or(false) {
+        //     if let Some(api_data) = ctx.data().pokemon_api_data.get(&pokemon.name) {
+        //         append_all_learnable_moves(learns, &mut result, &api_data.learnable_moves);
+        //     } else {
+        //         let mut options: Vec<String> = ctx.data().pokemon_api_data.keys()
+        //             .filter(|x| x.contains(&pokemon.name))
+        //             .map(|x| x.clone())
+        //             .collect();
+        //
+        //         if options.is_empty() {
+        //             result.push_str("\n**(Unable to find learnable game moves. Maybe something's not linked up properly, lemme know if this happens.)**\n");
+        //         } else {
+        //             let option = options.pop().unwrap();
+        //             let api_data = ctx.data().pokemon_api_data.get(&option).unwrap();
+        //             result.push_str(&std::format!("\nStruggling to find TM Moves. Quickfix found the following:\n- {} (used here)\n", api_data.pokemon_name));
+        //             for x in options {
+        //                 result.push_str(&std::format!("- {}\n", x));
+        //             }
+        //
+        //             append_all_learnable_moves(learns, &mut result, &api_data.learnable_moves);
+        //         }
+        //     }
+        // }
 
         ctx.say(result).await?;
         return Ok(());
