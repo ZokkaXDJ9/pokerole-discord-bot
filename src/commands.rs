@@ -89,7 +89,7 @@ pub async fn poke_move(
     poke_move_name: String,
 ) -> Result<(), Error> {
     if let Some(poke_move) = ctx.data().moves.get(&poke_move_name.to_lowercase()) {
-        let mut result : String = std::format!("__**{}**__\n", &poke_move.name);
+        let mut result : String = std::format!("### {}\n", &poke_move.name);
         if let Some(description) = &poke_move.description {
             result.push_str("*");
             result.push_str(description);
@@ -149,7 +149,7 @@ pub async fn ability(
     ability_name: String,
 ) -> Result<(), Error> {
     if let Some(ability) = ctx.data().abilities.get(&ability_name.to_lowercase()) {
-        let mut result : String = std::format!("**{}**: {}\n*{}*", &ability.name, &ability.effect, ability.description);
+        let mut result : String = std::format!("### {}\n{}\n*{}*", &ability.name, &ability.effect, ability.description);
         ctx.say(result).await?;
         return Ok(());
     }
@@ -168,7 +168,7 @@ pub async fn weather(
     weather_name: String,
 ) -> Result<(), Error> {
     if let Some(weather) = ctx.data().weather.get(&weather_name.to_lowercase()) {
-        let mut result : String = std::format!("**{}**:\n*{}*\n{}", &weather.name, &weather.description, &weather.effect);
+        let mut result : String = std::format!("### {}\n*{}*\n{}", &weather.name, &weather.description, &weather.effect);
         ctx.say(result).await?;
         return Ok(());
     }
@@ -187,7 +187,7 @@ pub async fn status(
     status_name: String,
 ) -> Result<(), Error> {
     if let Some(status_effect) = ctx.data().status_effects.get(&status_name.to_lowercase()) {
-        let mut result : String = std::format!("**__{}__**\n*{}*\n- {}\n- {}\n- {}",
+        let mut result : String = std::format!("### {}\n*{}*\n- {}\n- {}\n- {}",
                                                &status_effect.name, &status_effect.description, &status_effect.resist, &status_effect.effect, &status_effect.duration);
         ctx.say(result).await?;
         return Ok(());
@@ -238,7 +238,7 @@ pub async fn item(
     name: String,
 ) -> Result<(), Error> {
     if let Some(item) = ctx.data().items.get(&name.to_lowercase()) {
-        let mut result: String = std::format!("**__{}__**\n", &item.name);
+        let mut result: String = std::format!("### {}\n", &item.name);
 
         if let Some(price) = &item.suggested_price {
             if (price != "Not for Sale") {
@@ -376,7 +376,7 @@ pub async fn pokelearns(
         let lowercase = pokemon_name.to_lowercase();
 
         let learns = ctx.data().pokemon_learns.iter().find(|x| x.pokemon_name.to_lowercase().contains(&lowercase)).unwrap();
-        let mut result = std::format!("{} __{}__\n", pokemon.id, pokemon.name);
+        let mut result = std::format!("### {} [{}]\n", pokemon.name, pokemon.id);
 
         filter_moves(&mut result, "**Bronze**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Starter || x.rank == PokeRoleRank::Beginner);
         filter_moves(&mut result, "**Silver**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Amateur);
