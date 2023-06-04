@@ -1,6 +1,6 @@
-pub mod pokemon;
-pub mod nature;
-pub mod moves;
-pub mod item;
-pub mod ability;
+pub mod raw_pokemon;
+pub mod raw_nature;
+pub mod raw_move;
+pub mod raw_item;
+pub mod raw_ability;
 pub mod parser;

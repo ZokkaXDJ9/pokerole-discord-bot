@@ -3,11 +3,11 @@ use std::io::Read;
 use std::path::Path;
 use serde::de::DeserializeOwned;
 
-use crate::pokerole_data::pokemon::RawPokerolePokemon;
-use crate::pokerole_data::ability::RawPokeroleAbility;
-use crate::pokerole_data::item::RawPokeroleItem;
-use crate::pokerole_data::moves::RawPokeroleMove;
-use crate::pokerole_data::nature::RawPokeroleNature;
+use crate::pokerole_data::raw_pokemon::RawPokerolePokemon;
+use crate::pokerole_data::raw_ability::RawPokeroleAbility;
+use crate::pokerole_data::raw_item::RawPokeroleItem;
+use crate::pokerole_data::raw_move::RawPokeroleMove;
+use crate::pokerole_data::raw_nature::RawPokeroleNature;
 
 pub struct PokeroleParseResult {
     pub abilities: Vec<RawPokeroleAbility>,
