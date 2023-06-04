@@ -1,0 +1,128 @@
+{
+  "Number": 922,
+  "DexID": "0922",
+  "Name": "Pawmo",
+  "Type1": "Electric",
+  "Type2": "Fighting",
+  "BaseHP": 4,
+  "Strength": 3,
+  "MaxStrength": 6,
+  "Dexterity": 2,
+  "MaxDexterity": 5,
+  "Vitality": 1,
+  "MaxVitality": 3,
+  "Special": 2,
+  "MaxSpecial": 4,
+  "Insight": 2,
+  "MaxInsight": 4,
+  "Ability1": "Volt Absorb",
+  "Ability2": "Natural Cure",
+  "HiddenAbility": "Iron Fist",
+  "EventAbilities": "",
+  "RecommendedRank": "Amateur",
+  "GenderType": "",
+  "Image": "",
+  "Legendary": false,
+  "GoodStarter": false,
+  "_id": "pawmi",
+  "DexCategory": "Mouse Pokemon",
+  "Height": {
+    "Meters": 0.4,
+    "Feet": 1.04
+  },
+  "Weight": {
+    "Kilograms": 6.5,
+    "Pounds": 14.3
+  },
+  "DexDescription": "Pawmo uses a unique fighting technique in which it uses its forepaws to strike foes and zap them with electricity from its paw pads simultaneously.",
+  "Evolutions": [
+    {
+      "From": "Pawmo",
+      "Kind": "Level",
+      "Speed": "Medium"
+    },
+    {
+      "To": "Pawmot",
+      "Kind": "Level",
+      "Speed": "Medium"
+    }
+  ],
+  "Moves": [
+    {
+      "Learned": "Starter",
+      "Name": "Scratch"
+    },
+    {
+      "Learned": "Starter",
+      "Name": "Growl"
+    },
+    {
+      "Learned": "Starter",
+      "Name": "Thundershock"
+    },
+    {
+      "Learned": "Starter",
+      "Name": "Arm Thrust"
+    },
+    {
+      "Learned": "Beginner",
+      "Name": "Quick Attack"
+    },
+    {
+      "Learned": "Beginner",
+      "Name": "Charge"
+    },
+    {
+      "Learned": "Amateur",
+      "Name": "Nuzzle"
+    },
+    {
+      "Learned": "Amateur",
+      "Name": "Dig"
+    },
+    {
+      "Learned": "Amateur",
+      "Name": "Bite"
+    },
+    {
+      "Learned": "Amateur",
+      "Name": "Spark"
+    },
+    {
+      "Learned": "Amateur",
+      "Name": "Thunder Wave"
+    },
+    {
+      "Learned": "Amateur",
+      "Name": "Entrainment"
+    },
+    {
+      "Learned": "Amateur",
+      "Name": "Slam"
+    },
+    {
+      "Learned": "Ace",
+      "Name": "Discharge"
+    },
+    {
+      "Learned": "Ace",
+      "Name": "Agility"
+    },
+    {
+      "Learned": "Ace",
+      "Name": "Wild Charge"
+    },
+    {
+      "Learned": "Pro",
+      "Name": "Mach Punch"
+    },
+    {
+      "Learned": "Pro",
+      "Name": "Sweet Kiss"
+    },
+    {
+      "Learned": "Pro",
+      "Name": "Wish"
+    }
+  ]
+}
