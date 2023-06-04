@@ -67,7 +67,10 @@ impl Pokemon {
             return (None, api.get(options.first().unwrap()));
         }
 
-        warn!("Found multiple matches for {}", name);
+        if !name.contains("(Mega ") && !name.contains("(Primal Form)") && !name.contains("%") {
+            warn!("Found multiple matches for {}", name);
+        }
+
         (Some(ApiIssueType::Form), api.get(options.first().unwrap()))
     }
 
