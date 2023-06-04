@@ -1,3 +1,4 @@
+use std::path::Path;
 use csv::ByteRecord;
 use serde::Deserialize;
 use crate::csv_utils;
@@ -266,18 +267,18 @@ pub struct PokeStats {
 
 #[derive(Debug, Deserialize)]
 struct RawPokeLearns {
-    pub  number_and_name: String,
+    pub number_and_name: String,
     pub moves: Vec<String>,
 }
 
-fn load_pokerole_learns(path: &str) -> Vec<RawPokeLearns> {
+fn load_pokerole_learns<P: AsRef<Path>>(path: P) -> Vec<RawPokeLearns> {
     let reader = csv::ReaderBuilder::new()
         .has_headers(false)
         .from_path(path);
 
 
     let mut collection = Vec::new();
-    for result in reader.expect(path).byte_records() {
+    for result in reader.expect("").byte_records() {
         let record: ByteRecord = result.expect("");
         let learns: RawPokeLearns = record.deserialize(None).expect("");
         collection.push(learns);
@@ -361,22 +362,22 @@ fn parse_pokerole_learns(raw: Vec<RawPokeLearns>) -> Vec<PokeLearn> {
 }
 
 pub fn parse(path_to_repo: &str) -> RawPokeroleDiscordPyCsvData {
-    let raw_learns = load_pokerole_learns("/home/jacudibu/code/pokerole-csv/PokeLearnMovesFull.csv");
+    let raw_learns = load_pokerole_learns(path_to_repo.to_owned() + "PokeLearnMovesFull.csv");
 
     RawPokeroleDiscordPyCsvData {
-        weather: csv_utils::load_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/weather.csv", vec![
+        weather: csv_utils::load_csv_with_custom_headers(path_to_repo.to_owned() + "weather.csv", vec![
             "name",
             "description",
             "effect"
         ]),
-        status_effects: csv_utils::load_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/status.csv", vec![
+        status_effects: csv_utils::load_csv_with_custom_headers(path_to_repo.to_owned() + "status.csv", vec![
             "name",
             "description",
             "resist",
             "effect",
             "duration",
         ]),
-        moves: csv_utils::load_csv_with_custom_headers("/home/jacudibu/code/pokerole-csv/pokeMoveSorted.csv", vec![
+        moves: csv_utils::load_csv_with_custom_headers(path_to_repo.to_owned() + "pokeMoveSorted.csv", vec![
             "name",
             "typing",
             "move_type",
@@ -389,9 +390,9 @@ pub fn parse(path_to_repo: &str) -> RawPokeroleDiscordPyCsvData {
             "effect",
             "description",
         ]),
-        items: csv_utils::load_csv("/home/jacudibu/code/pokerole-csv/PokeRoleItems.csv"),
-        abilities: csv_utils::load_csv("/home/jacudibu/code/pokerole-csv/PokeRoleAbilities.csv"),
-        stats: csv_utils::load_csv("/home/jacudibu/code/pokerole-csv/PokeroleStats.csv"),
+        items: csv_utils::load_csv(path_to_repo.to_owned() + "PokeRoleItems.csv"),
+        abilities: csv_utils::load_csv(path_to_repo.to_owned() + "PokeRoleAbilities.csv"),
+        stats: csv_utils::load_csv(path_to_repo.to_owned() + "PokeroleStats.csv"),
         learns: parse_pokerole_learns(raw_learns),
     }
 }

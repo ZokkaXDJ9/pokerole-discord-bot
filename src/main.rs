@@ -7,9 +7,6 @@ mod csv_utils;
 
 use std::collections::HashMap;
 use std::sync::{Arc};
-use csv::ByteRecord;
-use env_logger::Env;
-use log::{debug, error, info, log, warn};
 use poise::serenity_prelude as serenity;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
