@@ -587,7 +587,7 @@ async fn main() {
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: vec![commands::roll::roll(),
-                           commands::commands::poke_move(),
+                           commands::r#move::poke_move(),
                            commands::ability::ability(),
                            commands::item::item(),
                            commands::stats::stats(),

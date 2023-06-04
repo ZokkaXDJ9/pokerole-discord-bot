@@ -62,20 +62,3 @@ pub async fn poke_move(
     ctx.say("Move not found. Oh no!").await?;
     Ok(())
 }
-
-
-
-
-
-
-
-
-
-
-/// Blah blah blah
-pub async fn about(
-    ctx: Context<'_>,
-) -> Result<(), Error> {
-    ctx.say("Movepools courtesy by pokeapi (https://github.com/PokeAPI/pokeapi).").await?;
-    Ok(())
-}
