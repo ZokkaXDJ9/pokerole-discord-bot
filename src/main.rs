@@ -484,14 +484,14 @@ async fn main() {
             example: None
         }, GameRule {
             name: String::from("Stat Changes"),
-            flavor: None,
+            flavor: Some(String::from("Feeling weak... or... strong? I don't know how to feel.")),
             text: String::from("Stat changes done by different moves stack up to a maximum of +/- 3.\n\
             Critical stat changes apply/reduce one additional stat point, but not past the limit! If it would boost multiple stats, you got to choose one which will receive the crit bonus.\n\
-            Stats cannot go below 0."),
+            Defense cannot go below 0, combat stats can't go below 1."),
             example: None
         }, GameRule {
             name: String::from("Alternative Moves (Dodge, Struggle, Help Another)"),
-            flavor: None,
+            flavor: Some(String::from("Gotta know the basics if you wanna be an adventurer!")),
             text: String::from("Every Character has access to the following moves at any time:\n\
             - Struggle\n\
             - Help Another\n\
@@ -504,7 +504,7 @@ async fn main() {
             example: Some(String::from("Let's say you want to use Rock Slide. The move has a -1 Accuracy effect. You roll your regular Dex+Rank amount of dies for your accuracy and land two successes. Now we reduce those successes by -1... which leaves us with one success, so the attack still hits, yay!"))
         }, GameRule {
             name: String::from("Defense"),
-            flavor: None,
+            flavor: Some(String::from("How much of a beating can you really take?")),
             text: String::from("You Physical Defense is `Vitality / 2`.\nYour Special Defense is `Insight / 2`.\n\nMinimum damage is always 1, unless you resist the attack's type - this is the only case where it gets reduced to 0."),
             example: Some(String::from("With 4 points in Vitality and 5 points in Insight, you'd get 2 physical and 3 special defense!"))
         }, GameRule {
