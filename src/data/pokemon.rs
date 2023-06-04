@@ -43,13 +43,20 @@ impl Pokemon {
         if let Some(value) = api.get(name) {
             return (None, Some(value))
         }
+        let fixed_name = name
+            .replace("'", "’")
+            .replace("Flabebe", "Flabébé")
+            .replace("Ho-oh", "Ho-Oh");
+        if let Some(value) = api.get(&fixed_name) {
+            return (None, Some(value))
+        }
         let options: Vec<String> = api.keys()
-            .filter(|x| x.contains(&name.split(' '.to_owned()).collect::<Vec<&str>>()[0]))
+            .filter(|x| x.contains(&fixed_name.split(' '.to_owned()).collect::<Vec<&str>>()[0]))
             .map(|x| x.clone())
             .collect();
 
         if options.len() == 0 {
-            error!("Found no matches for {}", name);
+            error!("Found no matches for {}", fixed_name);
             return (Some(ApiIssueType::FoundNothing), None);
         }
 
@@ -57,7 +64,7 @@ impl Pokemon {
             return (None, api.get(options.first().unwrap()));
         }
 
-        // warn!("Found multiple matches for {}", name);
+        warn!("Found multiple matches for {}", name);
         (Some(ApiIssueType::Form), api.get(options.first().unwrap()))
     }
 
@@ -71,10 +78,10 @@ impl Pokemon {
                 // Or search for the respective form by using the <pokemon name> and form_id.
                 // pokemon.csv maps pokemon-id to pokedex #, that way we could figure out how many forms a specific mon has and what they are called
                 match variant {
-                    RegionalVariant::Alola => Pokemon::try_find(&raw.name.split("(Alolan Form)").collect::<Vec<&str>>()[0], api),
-                    RegionalVariant::Galar => Pokemon::try_find(&raw.name.split("(Galarian Form)").collect::<Vec<&str>>()[0], api),
-                    RegionalVariant::Hisui => Pokemon::try_find(&raw.name.split("(Hisuian Form)").collect::<Vec<&str>>()[0], api),
-                    RegionalVariant::Paldea => Pokemon::try_find(&raw.name.split("(Paldean Form)").collect::<Vec<&str>>()[0], api)
+                    RegionalVariant::Alola => Pokemon::try_find(&(String::from("Alolan ") + raw.name.split(" (Alolan Form)").collect::<Vec<&str>>()[0]), api),
+                    RegionalVariant::Galar => Pokemon::try_find(&(String::from("Galarian ") + raw.name.split(" (Galarian Form)").collect::<Vec<&str>>()[0]), api),
+                    RegionalVariant::Hisui => Pokemon::try_find(&(String::from("Hisuian ") + raw.name.split(" (Hisuian Form)").collect::<Vec<&str>>()[0]), api),
+                    RegionalVariant::Paldea => Pokemon::try_find(&(String::from("Paldean ") + raw.name.split(" (Paldean Form)").collect::<Vec<&str>>()[0]), api)
                 }
             }
         }

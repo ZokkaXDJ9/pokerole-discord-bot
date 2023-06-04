@@ -62,7 +62,7 @@ pub async fn pokelearns(
         if show_all_moves.unwrap_or(false) {
             if let Some(issue) = pokemon.api_issue {
                 if issue == ApiIssueType::FoundNothing {
-                    result.push_str(&std::format!("\nUnable to match any species to this particular pokemon when searching for TM Moves. Will be fixed soon."));
+                    result.push_str(&std::format!("\nUnable to match any species to this particular pokemon when searching for TM Moves."));
                 } else {
                     result.push_str(&std::format!("\n**Struggling to match an exact species to this particular pokemon when searching for TM Moves. Take the values here with a grain of salt!**\n"));
                     append_all_learnable_moves(&pokemon.moves, &mut result);
