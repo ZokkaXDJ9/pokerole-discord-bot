@@ -1,8 +1,6 @@
 use crate::commands::{Context, Error};
-use crate::pokerole_discord_py_csv_parser::{PokeLearn, PokeLearnEntry, PokeRoleRank};
-use crate::pokemon_api_parser::ApiPokemonLearnableMoves;
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::data::pokemon::PokemonMoveLearnedByRank;
+use crate::data::pokemon::{ApiIssueType, LearnablePokemonMoves, PokemonMoveLearnedByRank};
 use crate::enums::MysteryDungeonRank;
 
 fn filter_moves<F>(result: &mut String, title: &str, learns: &Vec<PokemonMoveLearnedByRank>, filter: F)
@@ -27,13 +25,13 @@ fn append_moves(result: &mut String, title: &str, moves: Vec<String>) {
     result.push('\n');
 }
 
-fn append_all_learnable_moves(learns: &PokeLearn, mut result: &mut String, all_learnable_moves: &ApiPokemonLearnableMoves) {
-    append_moves(&mut result, "\n**TM Moves**\n", all_learnable_moves.machine.iter().map(|x| x.move_name.clone()).collect());
-    append_moves(&mut result, "\n**Egg Moves**\n", all_learnable_moves.egg.iter().map(|x| x.move_name.clone()).collect());
-    append_moves(&mut result, "\n**Tutor**\n", all_learnable_moves.tutor.iter().map(|x| x.move_name.clone()).collect());
-    append_moves(&mut result, "\n**Learned in Game through level up, but not here**\n", all_learnable_moves.egg.iter()
-        .filter(|x| learns.moves.iter().any(|learn| learn.poke_move == x.move_name))
-        .map(|x| x.move_name.clone())
+fn append_all_learnable_moves(learns: &LearnablePokemonMoves, mut result: &mut String) {
+    append_moves(&mut result, "\n**TM Moves**\n", learns.by_machine.iter().map(|x| x.clone()).collect());
+    append_moves(&mut result, "\n**Egg Moves**\n", learns.by_egg.iter().map(|x| x.clone()).collect());
+    append_moves(&mut result, "\n**Tutor**\n", learns.by_tutor.iter().map(|x| x.clone()).collect());
+    append_moves(&mut result, "\n**Learned in Game through level up, but not here**\n", learns.by_level_up.iter()
+        .filter(|x| learns.by_pokerole_rank.iter().any(|learn| &learn.name == x.clone()))
+        .map(|x| x.clone())
         .collect());
 }
 
@@ -61,29 +59,18 @@ pub async fn pokelearns(
         filter_moves(&mut result, "**Platinum**\n", &learns, |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Platinum);
         filter_moves(&mut result, "**Diamond**\n", &learns, |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Diamond);
 
-        // if show_all_moves.unwrap_or(false) {
-        //     if let Some(api_data) = ctx.data().pokemon_api_data.get(&pokemon.name) {
-        //         append_all_learnable_moves(learns, &mut result, &api_data.learnable_moves);
-        //     } else {
-        //         let mut options: Vec<String> = ctx.data().pokemon_api_data.keys()
-        //             .filter(|x| x.contains(&pokemon.name))
-        //             .map(|x| x.clone())
-        //             .collect();
-        //
-        //         if options.is_empty() {
-        //             result.push_str("\n**(Unable to find learnable game moves. Maybe something's not linked up properly, lemme know if this happens.)**\n");
-        //         } else {
-        //             let option = options.pop().unwrap();
-        //             let api_data = ctx.data().pokemon_api_data.get(&option).unwrap();
-        //             result.push_str(&std::format!("\nStruggling to find TM Moves. Quickfix found the following:\n- {} (used here)\n", api_data.pokemon_name));
-        //             for x in options {
-        //                 result.push_str(&std::format!("- {}\n", x));
-        //             }
-        //
-        //             append_all_learnable_moves(learns, &mut result, &api_data.learnable_moves);
-        //         }
-        //     }
-        // }
+        if show_all_moves.unwrap_or(false) {
+            if let Some(issue) = pokemon.api_issue {
+                if issue == ApiIssueType::FoundNothing {
+                    result.push_str(&std::format!("\nUnable to match any species to this particular pokemon when searching for TM Moves. Will be fixed soon."));
+                } else {
+                    result.push_str(&std::format!("\n**Struggling to match an exact species to this particular pokemon when searching for TM Moves. Take the values here with a grain of salt!**\n"));
+                    append_all_learnable_moves(&pokemon.moves, &mut result);
+                }
+            } else {
+                append_all_learnable_moves(&pokemon.moves, &mut result);
+            }
+        }
 
         ctx.say(result).await?;
         return Ok(());

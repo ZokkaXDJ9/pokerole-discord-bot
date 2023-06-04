@@ -28,10 +28,10 @@ pub struct Pokemon {
     pub height: Height,
     pub weight: Weight,
     pub dex_description: String,
-    pub moves: Moves,
+    pub moves: LearnablePokemonMoves,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize)]
 pub enum ApiIssueType {
     FoundNothing,
     Form,
@@ -87,7 +87,7 @@ impl Pokemon {
 
         let moves;
         if let Some(api_data) = api_option {
-            moves = Moves {
+            moves = LearnablePokemonMoves {
                 by_pokerole_rank: raw.moves.iter().map(|x| PokemonMoveLearnedByRank::new(x)).collect(),
                 by_level_up: api_data.learnable_moves.level_up.iter().map(|x| x.move_name.to_owned()).collect(),
                 by_machine: api_data.learnable_moves.machine.iter().map(|x| x.move_name.to_owned()).collect(),
@@ -95,7 +95,7 @@ impl Pokemon {
                 by_egg: api_data.learnable_moves.egg.iter().map(|x| x.move_name.to_owned()).collect()
             };
         } else {
-            moves = Moves {
+            moves = LearnablePokemonMoves {
                 by_pokerole_rank: raw.moves.iter().map(|x| PokemonMoveLearnedByRank::new(x)).collect(),
                 by_level_up: vec![],
                 by_machine: vec![],
@@ -189,7 +189,7 @@ pub struct Weight {
 }
 
 #[derive(Debug)]
-pub struct Moves {
+pub struct LearnablePokemonMoves {
     pub by_pokerole_rank: Vec<PokemonMoveLearnedByRank>,
     pub by_level_up: Vec<String>,
     pub by_machine: Vec<String>,
