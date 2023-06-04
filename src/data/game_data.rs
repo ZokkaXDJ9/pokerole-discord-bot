@@ -65,6 +65,10 @@ pub fn initialize_data() -> GameData {
     let mut pokemon_names = Vec::default();
     let mut pokemon = HashMap::default();
     for x in pokerole_data.pokemon {
+        if x.number == 0 {
+            // Skip the egg!
+            continue;
+        }
         pokemon_names.push(x.name.clone());
         pokemon.insert(x.name.to_lowercase(), Pokemon::new(x, &pokemon_api_data));
     }
