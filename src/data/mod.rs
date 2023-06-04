@@ -5,3 +5,4 @@ pub mod ability;
 pub mod item;
 
 mod pokerole_data;
+mod r#move;

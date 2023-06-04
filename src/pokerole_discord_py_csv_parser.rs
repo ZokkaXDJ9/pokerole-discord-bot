@@ -2,7 +2,7 @@ use std::path::Path;
 use csv::ByteRecord;
 use serde::Deserialize;
 use crate::csv_utils;
-use crate::enums::PokemonType;
+use crate::enums::{CombatOrSocialStat, HappinessDamageModifier, PokemonType};
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -55,53 +55,6 @@ pub enum Stat {
 }
 
 #[derive(Debug, Clone, Copy, Deserialize)]
-#[serde(rename_all = "UPPERCASE")]
-pub enum SecondaryStat {
-    Strength,
-    Dexterity,
-    Vitality,
-    Special,
-    Insight,
-    Tough,
-    Cool,
-    Beauty,
-    Clever,
-    Cute,
-    Brawl,
-    Channel,
-    Clash,
-    Evasion,
-    Alert,
-    Athletic,
-    Nature,
-    Stealth,
-    Allure,
-    Etiquette,
-    Intimidate,
-    Perform,
-    Will,
-    #[serde(rename = "Same as the copied move")]
-    Copied,
-    #[serde(rename = "TOUGH/CUTE")]
-    ToughOrCute,
-    #[serde(rename = "MISSING BEAUTY")]
-    MissingBeauty,
-    #[serde(rename = "BRAWL/CHANNEL")]
-    BrawlOrChannel,
-    Varies,
-    Empathy,
-    Medicine,
-}
-
-#[derive(Debug, Clone, Copy, Deserialize)]
-pub enum HappinessDamageModifier {
-    #[serde(rename = "HAPPINESS")]
-    Happiness,
-    #[serde(rename = "MISSING HAPPINESS")]
-    MissingHappiness
-}
-
-#[derive(Debug, Clone, Copy, Deserialize)]
 pub enum Target {
     User,
     #[serde(rename = "One Ally")]
@@ -119,22 +72,6 @@ pub enum Target {
     #[serde(rename = "Battlefield and Area")]
     BattlefieldAndArea,
     Any,
-}
-
-// currently ordered the same way as in the .csv file
-#[derive(Debug, Deserialize)]
-pub struct PokeMove {
-    pub name: String,
-    pub typing: MovePokemonType,
-    pub move_type: MoveType,
-    pub base_power: u8,
-    pub base_stat: Option<Stat>,
-    pub happiness: Option<HappinessDamageModifier>,
-    pub accuracy_stat: Option<SecondaryStat>,
-    pub secondary_stat: Option<SecondaryStat>,
-    pub target: Target,
-    pub effect: String,
-    pub description: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -308,11 +245,11 @@ pub struct PokeItem {
 pub struct RawPokeroleDiscordPyCsvData {
     pub weather: Vec<PokeWeather>,
     pub status_effects: Vec<PokeStatus>,
-    pub moves: Vec<PokeMove>,
+//    pub moves: Vec<PokeMove>,
 //    pub items: Vec<PokeItem>,
 //    pub abilities: Vec<PokeAbility>,
 //    pub stats: Vec<PokeStats>,
-    pub learns: Vec<PokeLearn>,
+//    pub learns: Vec<PokeLearn>,
 }
 
 fn parse_pokerole_learns(raw: Vec<RawPokeLearns>) -> Vec<PokeLearn> {
@@ -356,22 +293,22 @@ pub fn parse(path_to_repo: &str) -> RawPokeroleDiscordPyCsvData {
             "effect",
             "duration",
         ]),
-        moves: csv_utils::load_csv_with_custom_headers(path_to_repo.to_owned() + "pokeMoveSorted.csv", vec![
-            "name",
-            "typing",
-            "move_type",
-            "base_power",
-            "base_stat",
-            "happiness",
-            "accuracy_stat",
-            "secondary_stat",
-            "target",
-            "effect",
-            "description",
-        ]),
+//        moves: csv_utils::load_csv_with_custom_headers(path_to_repo.to_owned() + "pokeMoveSorted.csv", vec![
+//            "name",
+//            "typing",
+//            "move_type",
+//            "base_power",
+//            "base_stat",
+//            "happiness",
+//            "accuracy_stat",
+//            "secondary_stat",
+//            "target",
+//            "effect",
+//            "description",
+//        ]),
 //        items: csv_utils::load_csv(path_to_repo.to_owned() + "PokeRoleItems.csv"),
 //        abilities: csv_utils::load_csv(path_to_repo.to_owned() + "PokeRoleAbilities.csv"),
 //        stats: csv_utils::load_csv(path_to_repo.to_owned() + "PokeroleStats.csv"),
-        learns: parse_pokerole_learns(raw_learns),
+//        learns: parse_pokerole_learns(raw_learns),
     }
 }

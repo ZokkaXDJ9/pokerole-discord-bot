@@ -71,3 +71,57 @@ pub enum RegionalVariant {
     Hisui,
     Paldea,
 }
+
+
+#[derive(Debug, Clone, Copy, Deserialize, EnumString)]
+pub enum Stat {
+    Strength,
+    Dexterity,
+    Vitality,
+    Special,
+    Insight,
+    /// Struggle
+    StrengthOrSpecial,
+    /// Copycat
+    Copy
+}
+
+#[derive(Debug, Clone, Copy, EnumString)]
+pub enum CombatOrSocialStat {
+    Strength,
+    Dexterity,
+    Vitality,
+    Special,
+    Insight,
+    Tough,
+    Cool,
+    Beauty,
+    Clever,
+    Cute,
+    Brawl,
+    Channel,
+    Clash,
+    Evasion,
+    Alert,
+    Athletic,
+    Nature,
+    Stealth,
+    Allure,
+    Etiquette,
+    Intimidate,
+    Perform,
+    Will,
+    Copied,
+    ToughOrCute,
+    MissingBeauty,
+    BrawlOrChannel,
+    Varies,
+    Medicine,
+    Empathy,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum HappinessDamageModifier {
+    Happiness,
+    MissingHappiness
+}

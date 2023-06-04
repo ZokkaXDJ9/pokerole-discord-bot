@@ -6,8 +6,9 @@ use crate::data::game_rule::GameRule;
 use crate::data::item::Item;
 use crate::data::pokemon::Pokemon;
 use crate::data::pokerole_data;
+use crate::data::r#move::Move;
 
-use crate::pokerole_discord_py_csv_parser::{PokeMove, PokeStatus, PokeWeather};
+use crate::pokerole_discord_py_csv_parser::{PokeStatus, PokeWeather};
 use crate::pokemon_api_parser::{PokemonApiData};
 
 /// Data which is stored and accessible in all command invocations
@@ -16,7 +17,7 @@ pub struct GameData {
     pub ability_names: Arc<Vec<String>>,
     pub items: Arc<HashMap<String, Item>>,
     pub item_names: Arc<Vec<String>>,
-    pub moves: Arc<HashMap<String, PokeMove>>,
+    pub moves: Arc<HashMap<String, Move>>,
     pub move_names: Arc<Vec<String>>,
     pub pokemon: Arc<HashMap<String, Pokemon>>,
     pub pokemon_names: Arc<Vec<String>>,
@@ -43,9 +44,9 @@ pub fn initialize_data() -> GameData {
 
     let mut move_names = Vec::default();
     let mut move_hash_map = HashMap::default();
-    for x in pokerole_csv_data.moves {
+    for x in pokerole_data.moves {
         move_names.push(x.name.clone());
-        move_hash_map.insert(x.name.to_lowercase(), x);
+        move_hash_map.insert(x.name.to_lowercase(), Move::new(x));
     }
 
     let mut ability_names = Vec::default();
