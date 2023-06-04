@@ -34,8 +34,12 @@ pub struct GameData {
 }
 
 pub fn initialize_data() -> GameData {
+    // TODO: Move these in to .env
+    let pokerole_data_path = "/home/jacudibu/code/Pokerole-Data/";
+    let custom_data_path = "/home/jacudibu/code/pokerole-discord-bot/custom_data/";
+
     let pokemon_api_data = pokemon_api_parser::parse_pokemon_api();
-    let pokerole_data = pokerole_data::parser::parse("/home/jacudibu/code/Pokerole-Data/");
+    let pokerole_data = pokerole_data::parser::parse(pokerole_data_path, custom_data_path);
     let pokerole_csv_data = pokerole_discord_py_csv_parser::parse("/home/jacudibu/code/pokerole-csv/");
 
     let mut rule_names = Vec::default();

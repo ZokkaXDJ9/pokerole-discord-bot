@@ -47,15 +47,18 @@ fn parse_directory<P: AsRef<Path>, T: DeserializeOwned>(path: P) -> Vec<T> {
     result
 }
 
-pub fn parse(repo_path: &str) -> PokeroleParseResult {
+pub fn parse(repo_path: &str, custom_data_path: &str) -> PokeroleParseResult {
     let mut items: Vec<RawPokeroleItem> = parse_directory(repo_path.to_owned() + "Version20/Items");
     items.extend(parse_directory(repo_path.to_owned() + "Homebrew/Items"));
+
+    let mut pokemon: Vec<RawPokerolePokemon> = parse_directory(repo_path.to_owned() + "Version20/Pokedex");
+    pokemon.extend(parse_directory(custom_data_path.to_owned() + "Pokedex"));
 
     PokeroleParseResult {
         abilities: parse_directory(repo_path.to_owned() + "Version20/Abilities"),
         items,
         moves: parse_directory(repo_path.to_owned() + "Version20/Moves"),
         natures: parse_directory(repo_path.to_owned() + "Version20/Natures"),
-        pokemon: parse_directory(repo_path.to_owned() + "Version20/Pokedex"),
+        pokemon,
     }
 }
