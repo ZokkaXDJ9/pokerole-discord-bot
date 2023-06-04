@@ -3,6 +3,7 @@ use serde::Deserialize;
 use crate::enums::{MysteryDungeonRank, PokemonType};
 use crate::pokerole_data::raw_pokemon::RawPokerolePokemon;
 
+#[derive(Debug)]
 pub struct Pokemon {
     pub number: u16,
     // pub dex_id: String, // TODO: Do we need this? Might be better to parse it into a variant enum
@@ -94,10 +95,12 @@ pub struct Weight {
     pub pounds: f32,
 }
 
+#[derive(Debug)]
 pub struct Moves {
     pub by_pokerole_rank: Vec<PokemonMoveLearnedByRank>
 }
 
+#[derive(Debug)]
 pub struct PokemonMoveLearnedByRank {
     pub rank: MysteryDungeonRank,
     pub name: String

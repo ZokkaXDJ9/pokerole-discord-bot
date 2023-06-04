@@ -309,9 +309,9 @@ pub struct RawPokeroleDiscordPyCsvData {
     pub weather: Vec<PokeWeather>,
     pub status_effects: Vec<PokeStatus>,
     pub moves: Vec<PokeMove>,
-    pub items: Vec<PokeItem>,
-    pub abilities: Vec<PokeAbility>,
-    pub stats: Vec<PokeStats>,
+//    pub items: Vec<PokeItem>,
+//    pub abilities: Vec<PokeAbility>,
+//    pub stats: Vec<PokeStats>,
     pub learns: Vec<PokeLearn>,
 }
 
@@ -369,9 +369,9 @@ pub fn parse(path_to_repo: &str) -> RawPokeroleDiscordPyCsvData {
             "effect",
             "description",
         ]),
-        items: csv_utils::load_csv(path_to_repo.to_owned() + "PokeRoleItems.csv"),
-        abilities: csv_utils::load_csv(path_to_repo.to_owned() + "PokeRoleAbilities.csv"),
-        stats: csv_utils::load_csv(path_to_repo.to_owned() + "PokeroleStats.csv"),
+//        items: csv_utils::load_csv(path_to_repo.to_owned() + "PokeRoleItems.csv"),
+//        abilities: csv_utils::load_csv(path_to_repo.to_owned() + "PokeRoleAbilities.csv"),
+//        stats: csv_utils::load_csv(path_to_repo.to_owned() + "PokeroleStats.csv"),
         learns: parse_pokerole_learns(raw_learns),
     }
 }

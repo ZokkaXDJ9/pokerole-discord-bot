@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+use log::error;
 use serde::de::DeserializeOwned;
 
 use crate::pokerole_data::raw_pokemon::RawPokerolePokemon;
@@ -37,7 +38,7 @@ fn parse_directory<P: AsRef<Path>, T: DeserializeOwned>(path: P) -> Vec<T> {
             if file_path.is_file() && file_path.extension().map_or(false, |ext| ext == "json") {
                 match parse_file::<T>(file_path.to_str().expect("")) {
                     Ok(parsed) => result.push(parsed),
-                    Err(err) => eprintln!("Failed to parse file {:?}: {}", file_path, err)
+                    Err(err) => error!("Failed to parse file {:?}: {}", file_path, err)
                 }
             }
         }

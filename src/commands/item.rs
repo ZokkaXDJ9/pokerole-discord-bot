@@ -13,10 +13,8 @@ pub async fn item(
     if let Some(item) = ctx.data().items.get(&name.to_lowercase()) {
         let mut result: String = std::format!("### {}\n", &item.name);
 
-        if let Some(price) = &item.suggested_price {
-            if (price != "Not for Sale") {
-                result.push_str(&format!("**Price**: {}\n", price));
-            }
+        if let Some(price) = &item.trainer_price {
+            result.push_str(&format!("**Price**: {}\n", price));
         }
 
         if let Some(price) = &item.pmd_price {

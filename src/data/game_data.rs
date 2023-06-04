@@ -4,16 +4,17 @@ use log::info;
 use crate::{pokemon_api_parser, pokerole_data, pokerole_discord_py_csv_parser};
 use crate::data::ability::Ability;
 use crate::data::game_rule::GameRule;
+use crate::data::item::Item;
 use crate::data::pokemon::Pokemon;
 
-use crate::pokerole_discord_py_csv_parser::{PokeItem, PokeLearn, PokeMove, PokeStatus, PokeWeather};
+use crate::pokerole_discord_py_csv_parser::{PokeLearn, PokeMove, PokeStatus, PokeWeather};
 use crate::pokemon_api_parser::{PokemonApiData};
 
 /// Data which is stored and accessible in all command invocations
 pub struct GameData {
     pub abilities: Arc<HashMap<String, Ability>>,
     pub ability_names: Arc<Vec<String>>,
-    pub items: Arc<HashMap<String, PokeItem>>,
+    pub items: Arc<HashMap<String, Item>>,
     pub item_names: Arc<Vec<String>>,
     pub moves: Arc<HashMap<String, PokeMove>>,
     pub move_names: Arc<Vec<String>>,
@@ -78,13 +79,9 @@ pub fn initialize_data() -> GameData {
 
     let mut item_names = Vec::default();
     let mut item_hash_map = HashMap::default();
-    for x in pokerole_csv_data.items {
-        if x.description.is_empty() {
-            continue;
-        }
-
+    for x in pokerole_data.items {
         item_names.push(x.name.clone());
-        item_hash_map.insert(x.name.to_lowercase(), x);
+        item_hash_map.insert(x.name.to_lowercase(), Item::new(x));
     }
 
     GameData {
