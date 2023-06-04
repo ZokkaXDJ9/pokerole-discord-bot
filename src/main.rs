@@ -4,7 +4,6 @@ mod pokemon_api_parser;
 mod logger;
 mod pokerole_discord_py_csv_parser;
 mod csv_utils;
-mod pokerole_data;
 mod enums;
 
 use poise::serenity_prelude as serenity;

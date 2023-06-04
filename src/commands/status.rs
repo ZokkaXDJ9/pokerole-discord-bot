@@ -11,7 +11,7 @@ pub async fn status(
     status_name: String,
 ) -> Result<(), Error> {
     if let Some(status_effect) = ctx.data().status_effects.get(&status_name.to_lowercase()) {
-        let mut result : String = std::format!("### {}\n*{}*\n- {}\n- {}\n- {}",
+        let result : String = std::format!("### {}\n*{}*\n- {}\n- {}\n- {}",
                                                &status_effect.name, &status_effect.description, &status_effect.resist, &status_effect.effect, &status_effect.duration);
         ctx.say(result).await?;
         return Ok(());

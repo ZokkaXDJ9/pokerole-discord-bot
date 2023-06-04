@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use crate::pokerole_data::raw_ability::RawPokeroleAbility;
+use crate::data::pokerole_data::raw_ability::RawPokeroleAbility;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]

@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use log::{error, warn};
 use serde::Deserialize;
+use crate::data::pokerole_data::raw_pokemon::{RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon};
 use crate::enums::{MysteryDungeonRank, PokemonType, RegionalVariant};
 use crate::pokemon_api_parser::PokemonApiData;
-use crate::pokerole_data::raw_pokemon::{RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon};
 use crate::pokerole_discord_py_csv_parser::PokeRoleRank;
 
 #[derive(Debug)]

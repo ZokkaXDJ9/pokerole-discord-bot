@@ -1,6 +1,5 @@
 use serde::Deserialize;
 use strum_macros::EnumString;
-use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq, EnumString)]
 pub enum PokemonType {
@@ -71,15 +70,4 @@ pub enum RegionalVariant {
     Galar,
     Hisui,
     Paldea,
-}
-
-impl RegionalVariant {
-    pub fn to_regional_prefix_with_space(&self) -> &str {
-        match self {
-            RegionalVariant::Alola => "Alolan ",
-            RegionalVariant::Galar => "Galarian ",
-            RegionalVariant::Hisui => "Hisuian ",
-            RegionalVariant::Paldea => "Paldean "
-        }
-    }
 }

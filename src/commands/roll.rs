@@ -27,9 +27,9 @@ pub async fn roll(
         for _ in 0..dice_amount {
             let value = rng.gen_range(1..sides_amount + 1);
             total += value as u32;
-            if (value > 3) {
+            if value > 3 {
                 successes += 1;
-                if (value == 6) {
+                if value == 6 {
                     six_count += 1;
                 }
             }
@@ -42,9 +42,9 @@ pub async fn roll(
     let result_list = results.iter()
         .map(|x| {
             if sides_amount == six {
-                if (x == &six) {
+                if x == &six {
                     return format!("**__{}__**", x);
-                } else if (x > &three) {
+                } else if x > &three {
                     return format!("**{}**", x);
                 }
             }
@@ -56,18 +56,18 @@ pub async fn roll(
 
     let mut text = format!("{}d{}", dice_amount, sides_amount);
 
-    if (flat_addition_amount > 0) {
+    if flat_addition_amount > 0 {
         text.push_str(&format!("+{} — {}+{} = {}", flat_addition_amount, result_list, flat_addition_amount, total));
     } else {
         text.push_str(&format!(" — {}", result_list));
         let success_string:&str;
-        if (successes == 0) {
+        if successes == 0 {
             success_string = "Successes...";
-        } else if (successes >= 6) {
+        } else if successes >= 6 {
             success_string = "Successes!!";
-        } else if (successes >= 3) {
+        } else if successes >= 3 {
             success_string = "Successes!";
-        } else if (successes == 1) {
+        } else if successes == 1 {
             success_string = "Success.";
         } else {
             success_string = "Successes.";

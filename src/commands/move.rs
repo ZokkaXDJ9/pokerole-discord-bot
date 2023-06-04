@@ -1,5 +1,4 @@
 use crate::commands::{Context, Error};
-use futures::StreamExt;
 use crate::pokerole_discord_py_csv_parser::{MovePokemonType};
 use crate::commands::autocompletion::autocomplete_move;
 
@@ -45,9 +44,8 @@ pub async fn poke_move(
         if let Some(stat) = poke_move.accuracy_stat {
             result.push_str(std::format!("{:?}", stat).as_str());
 
-            if let Some(secondary) = poke_move.secondary_stat {
+            if let Some(_) = poke_move.secondary_stat {
                 result.push_str(" + Rank");
-//                result.push_str(std::format!("{:?}", secondary).as_str());
             }
         }
         result.push_str("\n");

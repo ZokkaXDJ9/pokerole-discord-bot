@@ -196,7 +196,7 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
 
     let mut missing_pokemon_ids = Vec::new();
     let mut missing_move_ids = Vec::new();
-    let mut pokemon_name_to_learnable_moves: HashMap<String, ApiPokemonLearnableMoves> = HashMap::default();
+    let pokemon_name_to_learnable_moves: HashMap<String, ApiPokemonLearnableMoves> = HashMap::default();
     for pokemon_move in pokemon_moves {
         if let Some(pokemon_name) = pokemon_id_to_name.get(&pokemon_move.pokemon_id) {
             let move_name_option = move_id_to_name.get(&pokemon_move.move_id);
@@ -208,7 +208,7 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
             }
             let move_name = move_name_option.unwrap().clone();
 
-            let mut pokemon_entry = &mut result.get_mut(pokemon_name).unwrap().learnable_moves;
+            let pokemon_entry = &mut result.get_mut(pokemon_name).unwrap().learnable_moves;
             if pokemon_entry.has_move(move_name.clone()) {
                 continue;
             }

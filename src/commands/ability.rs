@@ -1,6 +1,5 @@
 use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_ability;
-use crate::data::ability::Ability;
 
 /// Display an Ability
 #[poise::command(slash_command)]
@@ -12,7 +11,7 @@ pub async fn ability(
     ability_name: String,
 ) -> Result<(), Error> {
     if let Some(ability) = ctx.data().abilities.get(&ability_name.to_lowercase()) {
-        let mut result : String = std::format!("### {}\n{}\n*{}*", &ability.name, &ability.effect, ability.description);
+        let result : String = std::format!("### {}\n{}\n*{}*", &ability.name, &ability.effect, ability.description);
         ctx.say(result).await?;
         return Ok(());
     }

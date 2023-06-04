@@ -48,8 +48,6 @@ pub async fn pokelearns(
     show_all_moves: Option<bool>,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&pokemon_name.to_lowercase()) {
-        let lowercase = pokemon_name.to_lowercase();
-
         let learns = &pokemon.moves.by_pokerole_rank;
         let mut result = std::format!("### {} [#{}]\n", pokemon.name, pokemon.number);
 

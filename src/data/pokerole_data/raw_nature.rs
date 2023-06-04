@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct RawPokeroleNature {
     pub name: String,
