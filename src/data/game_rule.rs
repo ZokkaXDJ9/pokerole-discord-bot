@@ -51,7 +51,7 @@ Besides the extra die for all the *+ Rank* accuracy rolls, you'll gain 2 social 
             }, GameRule {
                 name: String::from("Wound damage"),
                 flavor: Some(String::from("It's just a flesh wound!")),
-                text: String::from("Wound damage reduces your maximum HP and needs to be healed over time in base and/or by visiting a doctor. If your max HP falls to 0, you lose consciousness and really need some medical assistance!"),
+                text: String::from("Wound damage reduces your maximum HP and needs to be healed over time in base and/or by visiting a doctor. Your only way to heal wounds during a quest is by using Potion Items! If your max HP falls to 0, you lose consciousness and really need some medical assistance!"),
                 example: None
             }, GameRule {
                 name: String::from("Stat Changes"),
