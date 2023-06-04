@@ -26,7 +26,7 @@ pub struct Pokemon {
 }
 
 impl Pokemon {
-    pub fn new(raw: RawPokerolePokemon) -> Pokemon {
+    pub(in crate::data) fn new(raw: RawPokerolePokemon) -> Pokemon {
         let moves = Vec::new();
 
         Pokemon {

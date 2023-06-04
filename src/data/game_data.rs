@@ -2,15 +2,16 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use log::info;
 use crate::{pokemon_api_parser, pokerole_data, pokerole_discord_py_csv_parser};
+use crate::data::ability::Ability;
 use crate::data::game_rule::GameRule;
 use crate::data::pokemon::Pokemon;
 
-use crate::pokerole_discord_py_csv_parser::{PokeAbility, PokeItem, PokeLearn, PokeMove, PokeStatus, PokeWeather};
+use crate::pokerole_discord_py_csv_parser::{PokeItem, PokeLearn, PokeMove, PokeStatus, PokeWeather};
 use crate::pokemon_api_parser::{PokemonApiData};
 
 /// Data which is stored and accessible in all command invocations
 pub struct GameData {
-    pub abilities: Arc<HashMap<String, PokeAbility>>,
+    pub abilities: Arc<HashMap<String, Ability>>,
     pub ability_names: Arc<Vec<String>>,
     pub items: Arc<HashMap<String, PokeItem>>,
     pub item_names: Arc<Vec<String>>,
@@ -49,9 +50,9 @@ pub fn initialize_data() -> GameData {
 
     let mut ability_names = Vec::default();
     let mut ability_hash_map = HashMap::default();
-    for x in pokerole_csv_data.abilities {
+    for x in pokerole_data.abilities {
         ability_names.push(x.name.clone());
-        ability_hash_map.insert(x.name.to_lowercase(), x);
+        ability_hash_map.insert(x.name.to_lowercase(), Ability::new(x));
     }
 
     let mut weather_names = Vec::default();
