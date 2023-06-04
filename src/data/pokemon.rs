@@ -4,7 +4,7 @@ use crate::enums::{MysteryDungeonRank, PokemonType};
 use crate::pokerole_data::raw_pokemon::RawPokerolePokemon;
 
 pub struct Pokemon {
-    pub number: u32,
+    pub number: u16,
     // pub dex_id: String, // TODO: Do we need this? Might be better to parse it into a variant enum
     pub name: String,
     pub type1: PokemonType,
@@ -70,8 +70,8 @@ impl Pokemon {
 
 #[derive(Debug)]
 pub struct Stat {
-    min: u8,
-    max: u8,
+    pub min: u8,
+    pub max: u8,
 }
 
 impl Stat {
@@ -83,22 +83,22 @@ impl Stat {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Height {
-    meters: f32,
-    feet: f32,
+    pub meters: f32,
+    pub feet: f32,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Weight {
-    kilograms: f32,
-    pounds: f32,
+    pub kilograms: f32,
+    pub pounds: f32,
 }
 
 pub struct Moves {
-    by_pokerole_rank: Vec<PokemonMoveLearnedByRank>
+    pub by_pokerole_rank: Vec<PokemonMoveLearnedByRank>
 }
 
 pub struct PokemonMoveLearnedByRank {
-    rank: MysteryDungeonRank,
-    name: String
+    pub rank: MysteryDungeonRank,
+    pub name: String
 }

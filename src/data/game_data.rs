@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 use std::sync::Arc;
-use crate::{pokemon_api_parser, pokerole_discord_py_csv_parser};
+use log::info;
+use crate::{pokemon_api_parser, pokerole_data, pokerole_discord_py_csv_parser};
 use crate::data::game_rule::GameRule;
+use crate::data::pokemon::Pokemon;
 
-use crate::pokerole_discord_py_csv_parser::{PokeAbility, PokeItem, PokeLearn, PokeMove, PokeStats, PokeStatus, PokeWeather};
+use crate::pokerole_discord_py_csv_parser::{PokeAbility, PokeItem, PokeLearn, PokeMove, PokeStatus, PokeWeather};
 use crate::pokemon_api_parser::{PokemonApiData};
 
 /// Data which is stored and accessible in all command invocations
@@ -14,7 +16,7 @@ pub struct GameData {
     pub item_names: Arc<Vec<String>>,
     pub moves: Arc<HashMap<String, PokeMove>>,
     pub move_names: Arc<Vec<String>>,
-    pub pokemon: Arc<HashMap<String, PokeStats>>,
+    pub pokemon: Arc<HashMap<String, Pokemon>>,
     pub pokemon_names: Arc<Vec<String>>,
     pub pokemon_learns: Arc<Vec<PokeLearn>>,
     pub status_effects: Arc<HashMap<String, PokeStatus>>,
@@ -28,6 +30,7 @@ pub struct GameData {
 
 pub fn initialize_data() -> GameData {
     let pokemon_api_data = pokemon_api_parser::parse_pokemon_api();
+    let pokerole_data = pokerole_data::parser::parse("/home/jacudibu/code/Pokerole-Data/");
     let pokerole_csv_data = pokerole_discord_py_csv_parser::parse("/home/jacudibu/code/pokerole-csv/");
 
     let mut rule_names = Vec::default();
@@ -60,13 +63,9 @@ pub fn initialize_data() -> GameData {
 
     let mut pokemon_names = Vec::default();
     let mut pokemon = HashMap::default();
-    for x in pokerole_csv_data.stats {
-        if x.name.starts_with("Delta ") {
-            continue;
-        }
-
+    for x in pokerole_data.pokemon {
         pokemon_names.push(x.name.clone());
-        pokemon.insert(x.name.to_lowercase(), x);
+        pokemon.insert(x.name.to_lowercase(), Pokemon::new(x));
     }
 
     let mut status_names = Vec::default();

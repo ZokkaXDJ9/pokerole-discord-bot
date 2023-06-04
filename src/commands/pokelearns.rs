@@ -1,6 +1,6 @@
 use crate::commands::{Context, Error};
 use crate::pokerole_discord_py_csv_parser::{PokeLearn, PokeLearnEntry, PokeRoleRank};
-use crate::pokemon_api_parser::PokemonLearnableMoves;
+use crate::pokemon_api_parser::ApiPokemonLearnableMoves;
 use crate::commands::autocompletion::autocomplete_pokemon;
 
 fn filter_moves<F>(result: &mut String, title: &str, learns: &PokeLearn, filter: F)
@@ -25,7 +25,7 @@ fn append_moves(result: &mut String, title: &str, moves: Vec<String>) {
     result.push('\n');
 }
 
-fn append_all_learnable_moves(learns: &PokeLearn, mut result: &mut String, all_learnable_moves: &PokemonLearnableMoves) {
+fn append_all_learnable_moves(learns: &PokeLearn, mut result: &mut String, all_learnable_moves: &ApiPokemonLearnableMoves) {
     append_moves(&mut result, "\n**TM Moves**\n", all_learnable_moves.machine.iter().map(|x| x.move_name.clone()).collect());
     append_moves(&mut result, "\n**Egg Moves**\n", all_learnable_moves.egg.iter().map(|x| x.move_name.clone()).collect());
     append_moves(&mut result, "\n**Tutor**\n", all_learnable_moves.tutor.iter().map(|x| x.move_name.clone()).collect());
@@ -51,7 +51,7 @@ pub async fn pokelearns(
         let lowercase = pokemon_name.to_lowercase();
 
         let learns = ctx.data().pokemon_learns.iter().find(|x| x.pokemon_name.to_lowercase().contains(&lowercase)).unwrap();
-        let mut result = std::format!("### {} [{}]\n", pokemon.name, pokemon.id);
+        let mut result = std::format!("### {} [{}]\n", pokemon.name, pokemon.number);
 
         filter_moves(&mut result, "**Bronze**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Starter || x.rank == PokeRoleRank::Beginner);
         filter_moves(&mut result, "**Silver**\n", &learns, |x:&PokeLearnEntry| x.rank == PokeRoleRank::Amateur);

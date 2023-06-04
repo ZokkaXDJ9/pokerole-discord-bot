@@ -5,7 +5,7 @@ use crate::pokerole_discord_py_csv_parser::PokeRoleRank;
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct RawPokerolePokemon {
-    pub number: u32,
+    pub number: u16,
     #[serde(rename = "DexID")]
     pub dex_id: String,
     pub name: String,
