@@ -1,13 +1,13 @@
 {
   "Number": 923,
   "DexID": "0923",
-  "Name": "Pawmo",
+  "Name": "Pawmot",
   "Type1": "Electric",
   "Type2": "Fighting",
   "BaseHP": 5,
   "Strength": 4,
   "MaxStrength": 8,
-  "Dexterity": 4,
+  "Dexterity": 3,
   "MaxDexterity": 6,
   "Vitality": 2,
   "MaxVitality": 4,
@@ -53,7 +53,7 @@
     },
     {
       "Learned": "Starter",
-      "Name": "Thundershock"
+      "Name": "Thunder Shock"
     },
     {
       "Learned": "Starter",
@@ -105,11 +105,19 @@
     },
     {
       "Learned": "Ace",
+      "Name": "Close Combat"
+    },
+    {
+      "Learned": "Ace",
       "Name": "Agility"
     },
     {
       "Learned": "Ace",
       "Name": "Wild Charge"
+    },
+    {
+      "Learned": "Ace",
+      "Name": "Double Shock"
     },
     {
       "Learned": "Pro",
