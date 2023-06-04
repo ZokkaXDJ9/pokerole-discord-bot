@@ -9,13 +9,6 @@ mod enums;
 
 use poise::serenity_prelude as serenity;
 
-pub struct GameRule {
-    name: String,
-    flavor: Option<String>,
-    text: String,
-    example: Option<String>,
-}
-
 #[tokio::main]
 async fn main() {
     logger::init_logging();
@@ -30,7 +23,7 @@ async fn main() {
                         commands::rule::rule(),
                         commands::pokelearns::pokelearns(),
                         commands::weather::weather()];
-    let data = data::initialize_data();
+    let data = data::game_data::initialize_data();
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
