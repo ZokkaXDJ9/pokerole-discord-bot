@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
+use crate::GameRule;
 
-use crate::{PokeAbility, PokeItem, PokeLearn, PokeMove, PokeStats, PokeStatus, PokeWeather, GameRule};
+use crate::pokerole_discord_py_csv_parser::{PokeAbility, PokeItem, PokeLearn, PokeMove, PokeStats, PokeStatus, PokeWeather};
 use crate::pokemon_api_parser::{PokemonApiData};
 
 pub struct Data {

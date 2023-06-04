@@ -1,6 +1,6 @@
 use crate::commands::{Context, Error};
 use futures::StreamExt;
-use crate::{MovePokemonType};
+use crate::pokerole_discord_py_csv_parser::{MovePokemonType};
 use crate::commands::autocompletion::autocomplete_move;
 
 /// Display a move

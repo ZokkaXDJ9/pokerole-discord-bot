@@ -1,6 +1,6 @@
 use std::collections::{HashMap};
 use serde::Deserialize;
-use crate::load_csv;
+use crate::csv_utils::load_csv;
 
 /// version_groups.csv
 #[derive(Debug, Deserialize)]

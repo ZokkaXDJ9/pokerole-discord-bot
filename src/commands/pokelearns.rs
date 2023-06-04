@@ -1,5 +1,5 @@
 use crate::commands::{Context, Error};
-use crate::{PokeLearn, PokeLearnEntry, PokeRoleRank};
+use crate::pokerole_discord_py_csv_parser::{PokeLearn, PokeLearnEntry, PokeRoleRank};
 use crate::pokemon_api_parser::PokemonLearnableMoves;
 use crate::commands::autocompletion::autocomplete_pokemon;
 
