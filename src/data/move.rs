@@ -20,7 +20,7 @@ pub struct Move {
 }
 
 impl Move {
-    pub(in crate::data) fn new(raw: RawPokeroleMove) -> Move {
+    pub(in crate::data) fn new(raw: RawPokeroleMove) -> Self {
         Move {
             name: raw.name,
             typing: raw.r#type,

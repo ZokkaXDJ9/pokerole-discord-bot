@@ -90,7 +90,7 @@ impl Pokemon {
         }
     }
 
-    pub(in crate::data) fn new(raw: RawPokerolePokemon, api: &HashMap<String, PokemonApiData>) -> Pokemon {
+    pub(in crate::data) fn new(raw: RawPokerolePokemon, api: &HashMap<String, PokemonApiData>) -> Self {
         let regional_variant= Pokemon::parse_variant(&raw.dex_id);
 
         let (api_issue, api_option) = Pokemon::get_api_entry(&raw, api, &regional_variant);
@@ -214,7 +214,7 @@ pub struct PokemonMoveLearnedByRank {
 }
 
 impl PokemonMoveLearnedByRank {
-    pub(in crate::data) fn new(raw: &RawPokemonMoveLearnedByLevelUp) -> PokemonMoveLearnedByRank {
+    pub(in crate::data) fn new(raw: &RawPokemonMoveLearnedByLevelUp) -> Self {
         let rank = match raw.learned {
             PokeRoleRank::Starter => MysteryDungeonRank::Bronze,
             PokeRoleRank::Beginner => MysteryDungeonRank::Bronze,

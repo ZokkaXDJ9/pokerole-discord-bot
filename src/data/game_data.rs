@@ -4,6 +4,7 @@ use crate::{pokemon_api_parser, pokerole_discord_py_csv_parser};
 use crate::data::ability::Ability;
 use crate::data::game_rule::GameRule;
 use crate::data::item::Item;
+use crate::data::nature::Nature;
 use crate::data::pokemon::Pokemon;
 use crate::data::pokerole_data;
 use crate::data::r#move::Move;
@@ -19,6 +20,8 @@ pub struct GameData {
     pub item_names: Arc<Vec<String>>,
     pub moves: Arc<HashMap<String, Move>>,
     pub move_names: Arc<Vec<String>>,
+    pub natures: Arc<HashMap<String, Nature>>,
+    pub nature_names: Arc<Vec<String>>,
     pub pokemon: Arc<HashMap<String, Pokemon>>,
     pub pokemon_names: Arc<Vec<String>>,
     pub status_effects: Arc<HashMap<String, PokeStatus>>,
@@ -47,6 +50,13 @@ pub fn initialize_data() -> GameData {
     for x in pokerole_data.moves {
         move_names.push(x.name.clone());
         move_hash_map.insert(x.name.to_lowercase(), Move::new(x));
+    }
+
+    let mut nature_names = Vec::default();
+    let mut nature_hash_map = HashMap::default();
+    for x in pokerole_data.natures {
+        nature_names.push(x.name.clone());
+        nature_hash_map.insert(x.name.to_lowercase(), Nature::new(x));
     }
 
     let mut ability_names = Vec::default();
@@ -95,6 +105,8 @@ pub fn initialize_data() -> GameData {
         item_names: Arc::new(item_names),
         moves: Arc::new(move_hash_map),
         move_names: Arc::new(move_names),
+        natures: Arc::new(nature_hash_map),
+        nature_names: Arc::new(nature_names),
         pokemon: Arc::new(pokemon),
         pokemon_names: Arc::new(pokemon_names),
         rules: Arc::new(rule_hash_map),

@@ -12,7 +12,7 @@ pub struct Item {
 }
 
 impl Item {
-    pub(in crate::data) fn new(raw: RawPokeroleItem) -> Item {
+    pub(in crate::data) fn new(raw: RawPokeroleItem) -> Self {
         Item {
             name: raw.name,
             pmd_price: raw.pmd_price,
