@@ -64,3 +64,22 @@ pub enum MysteryDungeonRank {
     Platinum,
     Diamond
 }
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize)]
+pub enum RegionalVariant {
+    Alola,
+    Galar,
+    Hisui,
+    Paldea,
+}
+
+impl RegionalVariant {
+    pub fn to_regional_prefix_with_space(&self) -> &str {
+        match self {
+            RegionalVariant::Alola => "Alolan ",
+            RegionalVariant::Galar => "Galarian ",
+            RegionalVariant::Hisui => "Hisuian ",
+            RegionalVariant::Paldea => "Paldean "
+        }
+    }
+}

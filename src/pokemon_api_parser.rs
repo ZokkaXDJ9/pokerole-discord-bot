@@ -234,8 +234,10 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
     }
 
     for x in missing_pokemon_ids {
-        log::warn!("Missing pokemon data for pokemon_id {}", x)
-        // 10232 - 10248 Amigento
+        // 10250 - 10271 is Amigento, skip that one for now
+        if x < 10250 || x > 10271 {
+            log::warn!("Missing pokemon data for pokemon_id {}", x)
+        }
 
     }
     for x in missing_move_ids {

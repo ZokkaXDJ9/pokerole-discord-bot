@@ -66,7 +66,7 @@ pub fn initialize_data() -> GameData {
     let mut pokemon = HashMap::default();
     for x in pokerole_data.pokemon {
         pokemon_names.push(x.name.clone());
-        pokemon.insert(x.name.to_lowercase(), Pokemon::new(x));
+        pokemon.insert(x.name.to_lowercase(), Pokemon::new(x, &pokemon_api_data));
     }
 
     let mut status_names = Vec::default();
