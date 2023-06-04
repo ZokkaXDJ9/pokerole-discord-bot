@@ -1,6 +1,8 @@
 use serde::Deserialize;
+use strum_macros::EnumString;
+use std::str::FromStr;
 
-#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq, EnumString)]
 pub enum PokemonType {
     Normal,
     Fighting,
@@ -52,4 +54,13 @@ pub enum MoveCategory {
     #[serde(rename = "Physical/special")] /// Only used for struggle
     PhysicalOrSpecial,
     Support,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize)]
+pub enum MysteryDungeonRank {
+    Bronze,
+    Silver,
+    Gold,
+    Platinum,
+    Diamond
 }

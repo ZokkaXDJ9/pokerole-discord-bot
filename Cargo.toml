@@ -16,3 +16,5 @@ futures = { version = "0.3.28", default-features = false }
 log = "0.4.18"
 env_logger = "0.10.0"
 rand = "0.8.5"
+strum = "0.24.1"
+strum_macros = "0.24.3"
