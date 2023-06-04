@@ -1,18 +1,18 @@
 {
-  "Number": 922,
-  "DexID": "0922",
+  "Number": 923,
+  "DexID": "0923",
   "Name": "Pawmo",
   "Type1": "Electric",
   "Type2": "Fighting",
-  "BaseHP": 4,
-  "Strength": 3,
-  "MaxStrength": 6,
-  "Dexterity": 2,
-  "MaxDexterity": 5,
-  "Vitality": 1,
-  "MaxVitality": 3,
+  "BaseHP": 5,
+  "Strength": 4,
+  "MaxStrength": 8,
+  "Dexterity": 4,
+  "MaxDexterity": 6,
+  "Vitality": 2,
+  "MaxVitality": 4,
   "Special": 2,
-  "MaxSpecial": 4,
+  "MaxSpecial": 5,
   "Insight": 2,
   "MaxInsight": 4,
   "Ability1": "Volt Absorb",
@@ -24,25 +24,20 @@
   "Image": "",
   "Legendary": false,
   "GoodStarter": false,
-  "_id": "pawmo",
-  "DexCategory": "Mouse Pokemon",
+  "_id": "pawmot",
+  "DexCategory": "Hands-On Pokemon",
   "Height": {
-    "Meters": 0.4,
-    "Feet": 1.04
+    "Meters": 0.9,
+    "Feet": 2.11
   },
   "Weight": {
-    "Kilograms": 6.5,
-    "Pounds": 14.3
+    "Kilograms": 41.0,
+    "Pounds": 90.4
   },
-  "DexDescription": "Pawmo uses a unique fighting technique in which it uses its forepaws to strike foes and zap them with electricity from its paw pads simultaneously.",
+  "DexDescription": "This Pokémon normally is slow to react, but once it enters battle, it will strike down its enemies with lightning-fast movements.",
   "Evolutions": [
     {
-      "From": "Pawmi",
-      "Kind": "Level",
-      "Speed": "Medium"
-    },
-    {
-      "To": "Pawmot",
+      "From": "Pawmo",
       "Kind": "Level",
       "Speed": "Medium"
     }
@@ -63,6 +58,10 @@
     {
       "Learned": "Starter",
       "Name": "Arm Thrust"
+    },
+    {
+      "Learned": "Starter",
+      "Name": "Revival Blessing"
     },
     {
       "Learned": "Beginner",
