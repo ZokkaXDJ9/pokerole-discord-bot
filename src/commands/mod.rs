@@ -13,6 +13,7 @@ pub(crate) mod pokelearns;
 pub(crate) mod roll;
 pub(crate) mod ability;
 pub(crate) mod nature;
+pub(crate) mod timestamp;
 
 mod autocompletion;
 mod about;
