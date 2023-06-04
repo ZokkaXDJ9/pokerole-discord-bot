@@ -5,6 +5,7 @@ mod logger;
 mod pokerole_discord_py_csv_parser;
 mod csv_utils;
 mod pokerole_data;
+mod enums;
 
 use poise::serenity_prelude as serenity;
 
@@ -18,6 +19,8 @@ pub struct GameRule {
 #[tokio::main]
 async fn main() {
     logger::init_logging();
+    pokerole_data::parser::parse("/home/jacudibu/code/Pokerole-Data/");
+    return;
     let commands = vec![commands::roll::roll(),
                         commands::r#move::poke_move(),
                         commands::ability::ability(),

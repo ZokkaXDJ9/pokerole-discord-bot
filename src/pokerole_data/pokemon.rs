@@ -1,8 +1,9 @@
 use serde::Deserialize;
+use crate::pokerole_discord_py_csv_parser::PokeRoleRank;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct PokerolePokemon {
+pub struct RawPokerolePokemon {
     pub number: u32,
     #[serde(rename = "DexID")]
     pub dex_id: String,
@@ -61,6 +62,6 @@ pub struct Evolution {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct PokemonMove {
-    learned: String,
+    learned: PokeRoleRank,
     name: String,
 }

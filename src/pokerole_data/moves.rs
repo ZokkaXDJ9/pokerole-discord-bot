@@ -1,11 +1,12 @@
 use serde::Deserialize;
+use crate::enums::{MoveCategory, MoveType};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct PokeroleMove {
+pub struct RawPokeroleMove {
     pub name: String,
-    pub r#type: String,
-    pub power: u32,
+    pub r#type: MoveType,
+    pub power: u8,
     pub damage1: String,
     pub damage2: String,
     pub accuracy1: String,
@@ -15,5 +16,5 @@ pub struct PokeroleMove {
     pub description: String,
     //pub attributes - includes stuff like never_fail: bool. But that's already written in effect.
     //pub added_effects - includes stuff like stat changes. PARSEABLE stat changes! But they are already written in effect.
-    pub category: String,
+    pub category: MoveCategory,
 }

@@ -1,24 +1,21 @@
 use std::collections::HashMap;
 use std::sync::Arc;
-use crate::{GameRule, pokemon_api_parser, pokerole_data, pokerole_discord_py_csv_parser};
+use crate::{GameRule, pokemon_api_parser, pokerole_discord_py_csv_parser};
 
-use crate::pokerole_discord_py_csv_parser::{PokeStatus, PokeWeather};
+use crate::pokerole_discord_py_csv_parser::{PokeAbility, PokeItem, PokeLearn, PokeMove, PokeStats, PokeStatus, PokeWeather};
 use crate::pokemon_api_parser::{PokemonApiData};
-use crate::pokerole_data::ability::PokeroleAbility;
-use crate::pokerole_data::item::PokeroleItem;
-use crate::pokerole_data::moves::PokeroleMove;
-use crate::pokerole_data::pokemon::PokerolePokemon;
 
 /// Data which is stored and accessible in all command invocations
 pub struct Data {
-    pub abilities: Arc<HashMap<String, PokeroleAbility>>,
+    pub abilities: Arc<HashMap<String, PokeAbility>>,
     pub ability_names: Arc<Vec<String>>,
-    pub items: Arc<HashMap<String, PokeroleItem>>,
+    pub items: Arc<HashMap<String, PokeItem>>,
     pub item_names: Arc<Vec<String>>,
-    pub moves: Arc<HashMap<String, PokeroleMove>>,
+    pub moves: Arc<HashMap<String, PokeMove>>,
     pub move_names: Arc<Vec<String>>,
-    pub pokemon: Arc<HashMap<String, PokerolePokemon>>,
+    pub pokemon: Arc<HashMap<String, PokeStats>>,
     pub pokemon_names: Arc<Vec<String>>,
+    pub pokemon_learns: Arc<Vec<PokeLearn>>,
     pub status_effects: Arc<HashMap<String, PokeStatus>>,
     pub status_effects_names: Arc<Vec<String>>,
     pub weather: Arc<HashMap<String, PokeWeather>>,
@@ -30,7 +27,6 @@ pub struct Data {
 
 pub fn initialize_data() -> Data {
     let pokemon_api_data = pokemon_api_parser::parse_pokemon_api();
-    let pokerole_data = pokerole_data::parser::parse("/home/jacudibu/code/Pokerole-Data/");
     let pokerole_csv_data = pokerole_discord_py_csv_parser::parse("/home/jacudibu/code/pokerole-csv/");
 
     let raw_rules = vec![
@@ -131,38 +127,16 @@ pub fn initialize_data() -> Data {
 
     let mut move_names = Vec::default();
     let mut move_hash_map = HashMap::default();
-    for x in pokerole_data.moves {
+    for x in pokerole_csv_data.moves {
         move_names.push(x.name.clone());
         move_hash_map.insert(x.name.to_lowercase(), x);
     }
 
     let mut ability_names = Vec::default();
     let mut ability_hash_map = HashMap::default();
-    for x in pokerole_data.abilities {
+    for x in pokerole_csv_data.abilities {
         ability_names.push(x.name.clone());
         ability_hash_map.insert(x.name.to_lowercase(), x);
-    }
-
-    let mut pokemon_names = Vec::default();
-    let mut pokemon = HashMap::default();
-    for x in pokerole_data.pokemon {
-        if x.name.starts_with("Delta ") {
-            continue;
-        }
-
-        pokemon_names.push(x.name.clone());
-        pokemon.insert(x.name.to_lowercase(), x);
-    }
-
-    let mut item_names = Vec::default();
-    let mut item_hash_map = HashMap::default();
-    for x in pokerole_data.items {
-        if x.description.is_empty() {
-            continue;
-        }
-
-        item_names.push(x.name.clone());
-        item_hash_map.insert(x.name.to_lowercase(), x);
     }
 
     let mut weather_names = Vec::default();
@@ -172,11 +146,33 @@ pub fn initialize_data() -> Data {
         weather_hash_map.insert(x.name.to_lowercase(), x);
     }
 
+    let mut pokemon_names = Vec::default();
+    let mut pokemon = HashMap::default();
+    for x in pokerole_csv_data.stats {
+        if x.name.starts_with("Delta ") {
+            continue;
+        }
+
+        pokemon_names.push(x.name.clone());
+        pokemon.insert(x.name.to_lowercase(), x);
+    }
+
     let mut status_names = Vec::default();
     let mut status_hash_map = HashMap::default();
     for x in pokerole_csv_data.status_effects {
         status_names.push(x.name.clone());
         status_hash_map.insert(x.name.to_lowercase(), x);
+    }
+
+    let mut item_names = Vec::default();
+    let mut item_hash_map = HashMap::default();
+    for x in pokerole_csv_data.items {
+        if x.description.is_empty() {
+            continue;
+        }
+
+        item_names.push(x.name.clone());
+        item_hash_map.insert(x.name.to_lowercase(), x);
     }
 
     Data {
@@ -188,6 +184,7 @@ pub fn initialize_data() -> Data {
         move_names: Arc::new(move_names),
         pokemon: Arc::new(pokemon),
         pokemon_names: Arc::new(pokemon_names),
+        pokemon_learns: Arc::new(pokerole_csv_data.learns),
         rules: Arc::new(rule_hash_map),
         rule_names: Arc::new(rule_names),
         status_effects: Arc::new(status_hash_map),

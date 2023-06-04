@@ -2,28 +2,7 @@ use std::path::Path;
 use csv::ByteRecord;
 use serde::Deserialize;
 use crate::csv_utils;
-
-#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "PascalCase")]
-pub enum PokemonType {
-    Normal,
-    Fighting,
-    Flying, Poison,
-    Ground,
-    Rock,
-    Bug,
-    Ghost,
-    Steel,
-    Fire,
-    Water,
-    Grass,
-    Electric,
-    Psychic,
-    Ice,
-    Dragon,
-    Dark,
-    Fairy,
-}
+use crate::enums::PokemonType;
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]

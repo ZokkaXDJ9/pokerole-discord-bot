@@ -3,18 +3,18 @@ use std::io::Read;
 use std::path::Path;
 use serde::de::DeserializeOwned;
 
-use crate::pokerole_data::pokemon::PokerolePokemon;
-use crate::pokerole_data::ability::PokeroleAbility;
-use crate::pokerole_data::item::PokeroleItem;
-use crate::pokerole_data::moves::PokeroleMove;
-use crate::pokerole_data::nature::PokeroleNature;
+use crate::pokerole_data::pokemon::RawPokerolePokemon;
+use crate::pokerole_data::ability::RawPokeroleAbility;
+use crate::pokerole_data::item::RawPokeroleItem;
+use crate::pokerole_data::moves::RawPokeroleMove;
+use crate::pokerole_data::nature::RawPokeroleNature;
 
 pub struct PokeroleParseResult {
-    pub abilities: Vec<PokeroleAbility>,
-    pub items: Vec<PokeroleItem>,
-    pub moves: Vec<PokeroleMove>,
-    pub natures: Vec<PokeroleNature>,
-    pub pokemon: Vec<PokerolePokemon>,
+    pub abilities: Vec<RawPokeroleAbility>,
+    pub items: Vec<RawPokeroleItem>,
+    pub moves: Vec<RawPokeroleMove>,
+    pub natures: Vec<RawPokeroleNature>,
+    pub pokemon: Vec<RawPokerolePokemon>,
 }
 
 fn parse_file<T: DeserializeOwned>(file_path: &str) -> Result<T, Box<dyn std::error::Error>> {
@@ -47,7 +47,7 @@ fn parse_directory<P: AsRef<Path>, T: DeserializeOwned>(path: P) -> Vec<T> {
 }
 
 pub fn parse(repo_path: &str) -> PokeroleParseResult {
-    let mut items: Vec<PokeroleItem> = parse_directory(repo_path.to_owned() + "Version20/Items");
+    let mut items: Vec<RawPokeroleItem> = parse_directory(repo_path.to_owned() + "Version20/Items");
     items.extend(parse_directory(repo_path.to_owned() + "Homebrew/Items"));
 
     PokeroleParseResult {
