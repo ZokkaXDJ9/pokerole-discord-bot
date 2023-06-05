@@ -11,3 +11,4 @@ mod pokerole_discord_py_data;
 
 pub(in crate::data) mod enums;
 mod weather;
+mod status_effect;

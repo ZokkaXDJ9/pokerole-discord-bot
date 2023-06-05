@@ -8,8 +8,8 @@ use crate::data::nature::Nature;
 use crate::data::pokemon::Pokemon;
 use crate::data::pokerole_data;
 use crate::data::pokerole_discord_py_data::pokerole_discord_py_csv_parser;
-use crate::data::pokerole_discord_py_data::pokerole_discord_py_csv_parser::{RawPokeStatus, RawPokeWeather};
 use crate::data::r#move::Move;
+use crate::data::status_effect::StatusEffect;
 use crate::data::weather::Weather;
 
 use crate::pokemon_api_parser::{PokemonApiData};
@@ -26,7 +26,7 @@ pub struct GameData {
     pub nature_names: Arc<Vec<String>>,
     pub pokemon: Arc<HashMap<String, Pokemon>>,
     pub pokemon_names: Arc<Vec<String>>,
-    pub status_effects: Arc<HashMap<String, RawPokeStatus>>,
+    pub status_effects: Arc<HashMap<String, StatusEffect>>,
     pub status_effects_names: Arc<Vec<String>>,
     pub weather: Arc<HashMap<String, Weather>>,
     pub weather_names: Arc<Vec<String>>,
@@ -94,7 +94,7 @@ pub fn initialize_data() -> GameData {
     let mut status_hash_map = HashMap::default();
     for x in pokerole_csv_data.status_effects {
         status_names.push(x.name.clone());
-        status_hash_map.insert(x.name.to_lowercase(), x);
+        status_hash_map.insert(x.name.to_lowercase(), StatusEffect::new(x));
     }
 
     let mut item_names = Vec::default();
