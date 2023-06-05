@@ -9,23 +9,11 @@ use poise::serenity_prelude as serenity;
 #[tokio::main]
 async fn main() {
     logger::init_logging();
-    let commands = vec![commands::roll::roll(),
-                        commands::r#move::poke_move(),
-                        commands::ability::ability(),
-                        commands::item::item(),
-                        commands::stats::stats(),
-                        commands::status::status(),
-                        commands::rule::rule(),
-                        commands::pokelearns::pokelearns(),
-                        commands::nature::nature(),
-                        commands::timestamp::timestamp(),
-                        commands::weather::weather(),
-                        commands::about::about()];
     let data = data::game_data::initialize_data();
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands,
+            commands: commands::get_all_commands(),
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
