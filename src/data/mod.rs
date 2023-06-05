@@ -7,3 +7,6 @@ pub mod nature;
 pub mod r#move;
 
 mod pokerole_data;
+mod pokerole_discord_py_data;
+
+pub(in crate::data) mod enums;

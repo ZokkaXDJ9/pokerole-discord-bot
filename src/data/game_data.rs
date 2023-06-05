@@ -1,15 +1,16 @@
 use std::collections::HashMap;
 use std::sync::Arc;
-use crate::{pokemon_api_parser, pokerole_discord_py_csv_parser};
+use crate::{pokemon_api_parser};
 use crate::data::ability::Ability;
 use crate::data::game_rule::GameRule;
 use crate::data::item::Item;
 use crate::data::nature::Nature;
 use crate::data::pokemon::Pokemon;
 use crate::data::pokerole_data;
+use crate::data::pokerole_discord_py_data::pokerole_discord_py_csv_parser;
+use crate::data::pokerole_discord_py_data::pokerole_discord_py_csv_parser::{PokeStatus, PokeWeather};
 use crate::data::r#move::Move;
 
-use crate::pokerole_discord_py_csv_parser::{PokeStatus, PokeWeather};
 use crate::pokemon_api_parser::{PokemonApiData};
 
 /// Data which is stored and accessible in all command invocations

@@ -2,6 +2,7 @@ use std::path::Path;
 use csv::ByteRecord;
 use serde::Deserialize;
 use crate::csv_utils;
+use crate::data::enums::poke_role_rank::PokeRoleRank;
 use crate::enums::{CombatOrSocialStat, HappinessDamageModifier, PokemonType};
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
@@ -103,17 +104,6 @@ pub enum GenderType {
     M,
     F,
     N
-}
-
-#[derive(Debug, Deserialize, PartialEq, Eq)]
-pub enum PokeRoleRank {
-    Starter,
-    Beginner,
-    Amateur,
-    Ace,
-    Pro,
-    Master,
-    Champion
 }
 
 impl PokeRoleRank {
@@ -278,7 +268,7 @@ fn parse_pokerole_learns(raw: Vec<RawPokeLearns>) -> Vec<PokeLearn> {
 }
 
 pub fn parse(path_to_repo: &str) -> RawPokeroleDiscordPyCsvData {
-    let raw_learns = load_pokerole_learns(path_to_repo.to_owned() + "PokeLearnMovesFull.csv");
+//    let raw_learns = load_pokerole_learns(path_to_repo.to_owned() + "PokeLearnMovesFull.csv");
 
     RawPokeroleDiscordPyCsvData {
         weather: csv_utils::load_csv_with_custom_headers(path_to_repo.to_owned() + "weather.csv", vec![

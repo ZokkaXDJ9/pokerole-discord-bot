@@ -2,7 +2,6 @@ mod commands;
 mod data;
 mod pokemon_api_parser;
 mod logger;
-mod pokerole_discord_py_csv_parser;
 mod csv_utils;
 mod enums;
 
