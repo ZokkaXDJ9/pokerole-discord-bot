@@ -3,9 +3,9 @@ use std::str::FromStr;
 use log::{error, warn};
 use serde::Deserialize;
 use crate::data::enums::poke_role_rank::PokeRoleRank;
+use crate::data::pokemon_api::pokemon_api_parser::PokemonApiData;
 use crate::data::pokerole_data::raw_pokemon::{RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon};
 use crate::enums::{MysteryDungeonRank, PokemonType, RegionalVariant};
-use crate::pokemon_api_parser::PokemonApiData;
 
 #[derive(Debug)]
 pub struct Pokemon {

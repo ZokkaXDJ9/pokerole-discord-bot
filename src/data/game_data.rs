@@ -1,18 +1,16 @@
 use std::collections::HashMap;
 use std::sync::Arc;
-use crate::{pokemon_api_parser};
 use crate::data::ability::Ability;
 use crate::data::game_rule::GameRule;
 use crate::data::item::Item;
 use crate::data::nature::Nature;
 use crate::data::pokemon::Pokemon;
+use crate::data::pokemon_api::pokemon_api_parser;
 use crate::data::pokerole_data;
 use crate::data::pokerole_discord_py_data::pokerole_discord_py_csv_parser;
 use crate::data::r#move::Move;
 use crate::data::status_effect::StatusEffect;
 use crate::data::weather::Weather;
-
-use crate::pokemon_api_parser::{PokemonApiData};
 
 /// Data which is stored and accessible in all command invocations
 pub struct GameData {
@@ -30,7 +28,6 @@ pub struct GameData {
     pub status_effects_names: Arc<Vec<String>>,
     pub weather: Arc<HashMap<String, Weather>>,
     pub weather_names: Arc<Vec<String>>,
-    pub pokemon_api_data: Arc<HashMap<String, PokemonApiData>>,
     pub rule_names: Arc<Vec<String>>,
     pub rules: Arc<HashMap<String, GameRule>>,
 }
@@ -121,6 +118,5 @@ pub fn initialize_data() -> GameData {
         status_effects_names: Arc::new(status_names),
         weather: Arc::new(weather_hash_map),
         weather_names: Arc::new(weather_names),
-        pokemon_api_data: Arc::new(pokemon_api_data),
     }
 }

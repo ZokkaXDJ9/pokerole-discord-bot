@@ -1,5 +1,5 @@
 use crate::commands::{Context, Error};
-use chrono::{Datelike, NaiveDate, NaiveDateTime, Timelike, TimeZone, Utc};
+use chrono::{Datelike, NaiveDate, Timelike, TimeZone, Utc};
 
 /// Create a timestamp based of a UTC date.
 #[poise::command(slash_command)]

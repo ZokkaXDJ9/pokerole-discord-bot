@@ -3,7 +3,7 @@ use csv::ByteRecord;
 use serde::Deserialize;
 use crate::csv_utils;
 use crate::data::enums::poke_role_rank::PokeRoleRank;
-use crate::enums::{CombatOrSocialStat, HappinessDamageModifier, PokemonType};
+use crate::enums::{PokemonType};
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]

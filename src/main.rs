@@ -1,6 +1,5 @@
 mod commands;
 mod data;
-mod pokemon_api_parser;
 mod logger;
 mod csv_utils;
 mod enums;
