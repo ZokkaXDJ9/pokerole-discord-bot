@@ -35,6 +35,7 @@ pub struct Pokemon {
 pub enum ApiIssueType {
     FoundNothing,
     Form,
+    IsLegendary,
 }
 
 impl Pokemon {
@@ -96,7 +97,10 @@ impl Pokemon {
     pub(in crate::data) fn new(raw: RawPokerolePokemon, api: &HashMap<String, PokemonApiData>) -> Self {
         let regional_variant= Pokemon::parse_variant(&raw.dex_id);
 
-        let (api_issue, api_option) = Pokemon::get_api_entry(&raw, api, &regional_variant);
+        let (api_issue, api_option) = match raw.legendary {
+            false => Pokemon::get_api_entry(&raw, api, &regional_variant),
+            true => (Some(ApiIssueType::IsLegendary), None)
+        };
 
         let moves;
         if let Some(api_data) = api_option {

@@ -61,6 +61,8 @@ pub async fn pokelearns(
             if let Some(issue) = pokemon.api_issue {
                 if issue == ApiIssueType::FoundNothing {
                     result.push_str(&std::format!("\nUnable to match any species to this particular pokemon when searching for TM Moves."));
+                } else if issue == ApiIssueType::IsLegendary {
+                    result.push_str(&std::format!("\nToo lazy to be bothered to get this to work for legendary pokemon, sorry!"));
                 } else {
                     result.push_str(&std::format!("\n**Struggling to match an exact species to this particular pokemon when searching for TM Moves. Take the values here with a grain of salt!**\n"));
                     append_all_learnable_moves(&pokemon.moves, &mut result);
