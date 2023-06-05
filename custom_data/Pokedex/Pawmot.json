@@ -1,135 +1,17 @@
 {
-  "Number": 923,
-  "DexID": "0923",
-  "Name": "Pawmot",
-  "Type1": "Electric",
-  "Type2": "Fighting",
-  "BaseHP": 5,
-  "Strength": 4,
-  "MaxStrength": 8,
-  "Dexterity": 3,
-  "MaxDexterity": 6,
-  "Vitality": 2,
-  "MaxVitality": 4,
-  "Special": 2,
-  "MaxSpecial": 5,
-  "Insight": 2,
-  "MaxInsight": 4,
-  "Ability1": "Volt Absorb",
-  "Ability2": "Natural Cure",
-  "HiddenAbility": "Iron Fist",
-  "EventAbilities": "",
-  "RecommendedRank": "Amateur",
-  "GenderType": "",
-  "Image": "",
-  "Legendary": false,
-  "GoodStarter": false,
-  "_id": "pawmot",
-  "DexCategory": "Hands-On Pokemon",
-  "Height": {
-    "Meters": 0.9,
-    "Feet": 2.11
-  },
-  "Weight": {
-    "Kilograms": 41.0,
-    "Pounds": 90.4
-  },
-  "DexDescription": "This Pokémon normally is slow to react, but once it enters battle, it will strike down its enemies with lightning-fast movements.",
-  "Evolutions": [
-    {
-      "From": "Pawmo",
-      "Kind": "Level",
-      "Speed": "Medium"
-    }
-  ],
-  "Moves": [
-    {
-      "Learned": "Starter",
-      "Name": "Scratch"
-    },
-    {
-      "Learned": "Starter",
-      "Name": "Growl"
-    },
-    {
-      "Learned": "Starter",
-      "Name": "Thunder Shock"
-    },
-    {
-      "Learned": "Starter",
-      "Name": "Arm Thrust"
-    },
-    {
-      "Learned": "Starter",
-      "Name": "Revival Blessing"
-    },
-    {
-      "Learned": "Beginner",
-      "Name": "Quick Attack"
-    },
-    {
-      "Learned": "Beginner",
-      "Name": "Charge"
-    },
-    {
-      "Learned": "Amateur",
-      "Name": "Nuzzle"
-    },
-    {
-      "Learned": "Amateur",
-      "Name": "Dig"
-    },
-    {
-      "Learned": "Amateur",
-      "Name": "Bite"
-    },
-    {
-      "Learned": "Amateur",
-      "Name": "Spark"
-    },
-    {
-      "Learned": "Amateur",
-      "Name": "Thunder Wave"
-    },
-    {
-      "Learned": "Amateur",
-      "Name": "Entrainment"
-    },
-    {
-      "Learned": "Amateur",
-      "Name": "Slam"
-    },
-    {
-      "Learned": "Ace",
-      "Name": "Discharge"
-    },
-    {
-      "Learned": "Ace",
-      "Name": "Close Combat"
-    },
-    {
-      "Learned": "Ace",
-      "Name": "Agility"
-    },
-    {
-      "Learned": "Ace",
-      "Name": "Wild Charge"
-    },
-    {
-      "Learned": "Ace",
-      "Name": "Double Shock"
-    },
-    {
-      "Learned": "Pro",
-      "Name": "Mach Punch"
-    },
-    {
-      "Learned": "Pro",
-      "Name": "Sweet Kiss"
-    },
-    {
-      "Learned": "Pro",
-      "Name": "Wish"
-    }
-  ]
+  "number": 923,
+  "name": "Pawmot",
+  "base_hp": 5,
+  "strength": "4/8",
+  "dexterity": "3/6",
+  "vitality": "2/4",
+  "special": "2/5",
+  "insight": "2/4",
+  "moves": {
+    "bronze": ["Scratch", "Growl", "Arm Thrust", "Revival Blessing", "Thunder Shock", "Quick Attack", "Charge"],
+    "silver": ["Nuzzle", "Dig", "Bite", "Spark", "Thunder Wave", "Entrainment", "Slam"],
+    "gold": ["Close Combat", "Discharge", "Agility", "Wild Charge", "Double Shock"],
+    "platinum": ["Mach Punch", "Sweet Kiss", "Wish"],
+    "diamond": []
+  }
 }
