@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::str::FromStr;
-use log::{error, warn};
+use log::{error, info, warn};
 use serde::Deserialize;
 use crate::data::enums::poke_role_rank::PokeRoleRank;
 use crate::data::pokemon_api::pokemon_api_parser::PokemonApiData;
@@ -45,7 +45,7 @@ impl Pokemon {
             return (None, Some(value))
         }
         let fixed_name = name
-            .replace("'", "’")
+            .replace("'", "’") // Fixes Farfetch'd and Sirfetch'd
             .replace("Flabebe", "Flabébé")
             .replace("Nidoran M", "Nidoran♂")
             .replace("Nidoran F", "Nidoran♀")
@@ -68,9 +68,17 @@ impl Pokemon {
             return (None, api.get(options.first().unwrap()));
         }
 
-        if !name.contains("(Mega ") && !name.contains("(Primal Form)") && !name.contains("%") {
-            warn!("Found multiple matches for {}", name);
+        if fixed_name.contains("Form)") {
+            // What we want is between "<name> (" and " Form)". Bet we can search the keys for that and find a unique match.
+            let form = fixed_name.split("(").collect::<Vec<&str>>()[1].replace(" Form)", "");
+            let form_options: Vec<String> = options.iter().filter(|x| x.contains(&form) && !x.contains("Gigantamax")).map(|x| x.to_owned()).collect();
+
+            if form_options.len() == 1 {
+                return (None, api.get(form_options.first().unwrap()));
+            }
         }
+
+        warn!("Found multiple matches for {}", name);
 
         (Some(ApiIssueType::Form), api.get(options.first().unwrap()))
     }
