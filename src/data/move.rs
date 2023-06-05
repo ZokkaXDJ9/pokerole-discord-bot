@@ -30,7 +30,13 @@ impl Move {
             accuracy1: Move::parse_accuracy(raw.accuracy1.clone()),
             accuracy2: Move::parse_accuracy(raw.accuracy2.clone()),
             target: raw.target.clone(),
-            effect: raw.effect.clone(),
+            effect: raw.effect
+                .replace("1 lethal", "1 Wound")
+                .replace("1 Lethal", "1 Wound")
+                .replace("Lethal", "Inflicts Wounds")
+                .replace("Basic Heal", "Heal 3 HP")
+                .replace("Complete Heal", "Heal 6 HP")
+                .replace("Full Heal", "Heal 6 HP"),
             description: raw.description.clone(),
             category: raw.category
         }
