@@ -14,6 +14,6 @@ pub(crate) mod roll;
 pub(crate) mod ability;
 pub(crate) mod nature;
 pub(crate) mod timestamp;
+pub(crate) mod about;
 
 mod autocompletion;
-mod about;

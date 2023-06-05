@@ -19,7 +19,8 @@ async fn main() {
                         commands::pokelearns::pokelearns(),
                         commands::nature::nature(),
                         commands::timestamp::timestamp(),
-                        commands::weather::weather()];
+                        commands::weather::weather(),
+                        commands::about::about()];
     let data = data::game_data::initialize_data();
 
     let framework = poise::Framework::builder()
