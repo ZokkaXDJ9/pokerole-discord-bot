@@ -30,7 +30,7 @@ pub async fn timestamp(
 
     let unix_timestamp = timestamp_utc.timestamp();
 
-    ctx.say(std::format!("<t:{0}:f> | <t:{0}:R>", unix_timestamp.to_string())).await?;
+    ctx.say(std::format!("<t:{0}:f> (<t:{0}:R>)", unix_timestamp.to_string())).await?;
 
     Ok(())
 }
