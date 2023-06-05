@@ -1,15 +1,16 @@
-pub mod game_rule;
-pub mod game_data;
-pub mod pokemon;
-pub mod ability;
-pub mod item;
-pub mod nature;
-pub mod r#move;
+pub(crate) mod rule;
+pub(crate) mod pokemon;
+pub(crate) mod ability;
+pub(crate) mod item;
+pub(crate) mod nature;
+pub(crate) mod r#move;
+pub(crate) mod weather;
+pub(crate) mod status_effect;
 
 mod pokerole_data;
 mod pokerole_discord_py_data;
 mod pokemon_api;
 
 pub(in crate::data) mod enums;
-mod weather;
-mod status_effect;
+
+pub mod parser;

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::str::FromStr;
-use log::{error, info, warn};
+use log::{error, warn};
 use serde::Deserialize;
 use crate::data::enums::poke_role_rank::PokeRoleRank;
 use crate::data::pokemon_api::pokemon_api_parser::PokemonApiData;
@@ -102,7 +102,7 @@ impl Pokemon {
         }
     }
 
-    pub(in crate::data) fn new(raw: RawPokerolePokemon, api: &HashMap<String, PokemonApiData>) -> Self {
+    pub(in crate::data) fn new(raw: &RawPokerolePokemon, api: &HashMap<String, PokemonApiData>) -> Self {
         let regional_variant= Pokemon::parse_variant(&raw.dex_id);
 
         let (api_issue, api_option) = match raw.legendary {
@@ -131,24 +131,24 @@ impl Pokemon {
 
         Pokemon {
             number: raw.number,
-            name: raw.name,
+            name: raw.name.clone(),
             regional_variant,
             api_issue,
-            type1: Pokemon::parse_type(raw.type1).unwrap(),
-            type2: Pokemon::parse_type(raw.type2),
+            type1: Pokemon::parse_type(raw.type1.clone()).unwrap(),
+            type2: Pokemon::parse_type(raw.type2.clone()),
             base_hp: raw.base_hp,
             strength: Stat::new(raw.strength, raw.max_strength),
             dexterity: Stat::new(raw.dexterity, raw.max_dexterity),
             vitality: Stat::new(raw.vitality, raw.max_vitality),
             special: Stat::new(raw.special, raw.max_special),
             insight: Stat::new(raw.insight, raw.max_insight),
-            ability1: raw.ability1,
-            ability2: Pokemon::parse_ability(raw.ability2),
-            hidden_ability: Pokemon::parse_ability(raw.hidden_ability),
-            event_abilities: Pokemon::parse_ability(raw.event_abilities),
-            height: raw.height,
-            weight: raw.weight,
-            dex_description: raw.dex_description,
+            ability1: raw.ability1.clone(),
+            ability2: Pokemon::parse_ability(raw.ability2.clone()),
+            hidden_ability: Pokemon::parse_ability(raw.hidden_ability.clone()),
+            event_abilities: Pokemon::parse_ability(raw.event_abilities.clone()),
+            height: raw.height.clone(),
+            weight: raw.weight.clone(),
+            dex_description: raw.dex_description.clone(),
             moves
         }
     }
@@ -199,14 +199,14 @@ impl Stat {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct Height {
     pub meters: f32,
     pub feet: f32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct Weight {
     pub kilograms: f32,

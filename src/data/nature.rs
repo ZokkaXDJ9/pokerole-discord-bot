@@ -8,11 +8,11 @@ pub struct Nature {
 }
 
 impl Nature {
-    pub(in crate::data) fn new(raw: RawPokeroleNature) -> Self {
+    pub(in crate::data) fn new(raw: &RawPokeroleNature) -> Self {
         Nature {
-            name: raw.name,
-            keywords: raw.keywords,
-            description: raw.description,
+            name: raw.name.clone(),
+            keywords: raw.keywords.clone(),
+            description: raw.description.clone(),
         }
     }
 }

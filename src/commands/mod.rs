@@ -1,5 +1,5 @@
 use poise::Command;
-use crate::data::game_data::GameData;
+use crate::game_data::GameData;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, GameData, Error>;

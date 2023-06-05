@@ -8,11 +8,11 @@ pub struct Weather {
 }
 
 impl Weather {
-    pub(in crate::data) fn new(raw: RawPokeWeather) -> Self {
+    pub(in crate::data) fn new(raw: &RawPokeWeather) -> Self {
         Weather {
-            name: raw.name,
-            description: raw.description,
-            effect: raw.effect
+            name: raw.name.clone(),
+            description: raw.description.clone(),
+            effect: raw.effect.clone()
         }
     }
 }

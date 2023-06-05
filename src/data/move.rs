@@ -20,18 +20,18 @@ pub struct Move {
 }
 
 impl Move {
-    pub(in crate::data) fn new(raw: RawPokeroleMove) -> Self {
+    pub(in crate::data) fn new(raw: &RawPokeroleMove) -> Self {
         Move {
-            name: raw.name,
+            name: raw.name.clone(),
             typing: raw.r#type,
             power: raw.power,
-            damage1: Move::parse_damage1(raw.damage1),
-            happiness_damage: Move::parse_happiness_damage(raw.damage2),
-            accuracy1: Move::parse_accuracy(raw.accuracy1),
-            accuracy2: Move::parse_accuracy(raw.accuracy2),
-            target: raw.target,
-            effect: raw.effect,
-            description: raw.description,
+            damage1: Move::parse_damage1(raw.damage1.clone()),
+            happiness_damage: Move::parse_happiness_damage(raw.damage2.clone()),
+            accuracy1: Move::parse_accuracy(raw.accuracy1.clone()),
+            accuracy2: Move::parse_accuracy(raw.accuracy2.clone()),
+            target: raw.target.clone(),
+            effect: raw.effect.clone(),
+            description: raw.description.clone(),
             category: raw.category
         }
     }

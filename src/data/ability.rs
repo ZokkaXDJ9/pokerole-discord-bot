@@ -10,11 +10,11 @@ pub struct Ability {
 }
 
 impl Ability {
-    pub(in crate::data) fn new(raw: RawPokeroleAbility) -> Self {
+    pub(in crate::data) fn new(raw: &RawPokeroleAbility) -> Self {
         Ability {
-            name: raw.name,
-            description: raw.description,
-            effect: raw.effect,
+            name: raw.name.clone(),
+            description: raw.description.clone(),
+            effect: raw.effect.clone(),
         }
     }
 }

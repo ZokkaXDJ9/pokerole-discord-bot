@@ -1,5 +1,5 @@
 use std::collections::{HashMap};
-use log::{error, warn};
+use log::error;
 use serde::Deserialize;
 use crate::csv_utils::load_csv;
 use crate::data::pokemon::{Height, Weight};
@@ -7,6 +7,7 @@ use crate::enums::PokemonType;
 
 /// version_groups.csv
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ApiVersionGroups {
     id: u8,
     identifier: String,
@@ -17,6 +18,7 @@ pub struct ApiVersionGroups {
 /// pokemon.csv
 /// Contains base data about pokemon, such as height and weight. Pretty much just height and weight.
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ApiPokemon {
     id: u16,
     identifier: String,
@@ -33,6 +35,7 @@ pub struct ApiPokemon {
 /// pokemon_moves.csv
 /// Contains info on what moves a pokemon can learn and how.
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ApiPokemonMoves {
     pokemon_id: u16,
     version_group_id: u8,
@@ -45,6 +48,7 @@ pub struct ApiPokemonMoves {
 /// pokemon_move_methods.csv
 /// Maps a move is acquired
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ApiPokemonMoveMethods {
     id: u8,
     identifier: String,
@@ -53,6 +57,7 @@ pub struct ApiPokemonMoveMethods {
 /// pokemon_species_names.csv
 /// Contains the name for regular Pokemon
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ApiPokemonSpeciesNames {
     pokemon_species_id: u16,
     local_language_id: u8,
@@ -63,6 +68,7 @@ pub struct ApiPokemonSpeciesNames {
 /// pokemon_forms.csv
 /// Contains the names for regional Pokemon and other weird forms
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ApiPokemonForm {
     id: u16,
     identifier: String,
@@ -78,6 +84,7 @@ pub struct ApiPokemonForm {
 /// pokemon_form_names.csv
 /// Contains the names for regional Pokemon and other weird forms
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ApiPokemonFormNames {
     pokemon_form_id: u16,
     local_language_id: u8,
@@ -88,6 +95,7 @@ pub struct ApiPokemonFormNames {
 /// pokemon_types.csv
 /// Contains type identifiers for pokemon
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ApiPokemonTypes {
     pokemon_id: u16,
     type_id: u16,
@@ -97,6 +105,7 @@ pub struct ApiPokemonTypes {
 /// pokemon_form_types.csv
 /// Contains type identifiers for pokemon
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ApiPokemonFormTypes {
     pokemon_form_id: u16,
     type_id: u16,
@@ -106,6 +115,7 @@ pub struct ApiPokemonFormTypes {
 /// move_names.csv
 /// Contains the names for moves
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ApiMoveNames {
     move_id: u16,
     local_language_id: u8,
@@ -272,7 +282,6 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
 
     let mut missing_pokemon_ids = Vec::new();
     let mut missing_move_ids = Vec::new();
-    let pokemon_name_to_learnable_moves: HashMap<String, ApiPokemonLearnableMoves> = HashMap::default();
     for pokemon_move in pokemon_moves {
         if let Some(pokemon_name) = pokemon_id_to_name.get(&pokemon_move.pokemon_id) {
             let move_name_option = move_id_to_name.get(&pokemon_move.move_id);
