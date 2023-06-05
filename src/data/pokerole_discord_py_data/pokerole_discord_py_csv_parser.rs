@@ -84,14 +84,14 @@ pub struct PokeAbility {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct PokeWeather {
+pub struct RawPokeWeather {
     pub name: String,
     pub description: String,
     pub effect: String,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct PokeStatus {
+pub struct RawPokeStatus {
     pub name: String,
     pub description: String,
     pub resist: String,
@@ -233,8 +233,8 @@ pub struct PokeItem {
 }
 
 pub struct RawPokeroleDiscordPyCsvData {
-    pub weather: Vec<PokeWeather>,
-    pub status_effects: Vec<PokeStatus>,
+    pub weather: Vec<RawPokeWeather>,
+    pub status_effects: Vec<RawPokeStatus>,
 //    pub moves: Vec<PokeMove>,
 //    pub items: Vec<PokeItem>,
 //    pub abilities: Vec<PokeAbility>,
