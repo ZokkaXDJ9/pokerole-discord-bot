@@ -3,6 +3,7 @@ use std::str::FromStr;
 use log::{error, warn};
 use serde::Deserialize;
 use crate::data::enums::poke_role_rank::PokeRoleRank;
+use crate::data::parser::custom_data::custom_pokemon::{CustomPokemon, CustomPokemonMoves};
 use crate::data::pokemon_api::pokemon_api_parser::PokemonApiData;
 use crate::data::pokerole_data::raw_pokemon::{RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon};
 use crate::enums::{MysteryDungeonRank, PokemonType, RegionalVariant};
@@ -84,19 +85,19 @@ impl Pokemon {
     }
 
 
-    fn get_api_entry<'a>(raw: &RawPokerolePokemon, api: &'a HashMap<String, PokemonApiData>, regional_variant: &Option<RegionalVariant>)
+    fn get_api_entry<'a>(name: &String, api: &'a HashMap<String, PokemonApiData>, regional_variant: &Option<RegionalVariant>)
         -> (Option<ApiIssueType>, Option<&'a PokemonApiData>) {
         match regional_variant {
-            None => Pokemon::try_find(&raw.name, api),
+            None => Pokemon::try_find(name, api),
             Some(variant) => {
                 // We can either replace <pokemon name>(Galarian Form) with Galarian <Pokemon name>
                 // Or search for the respective form by using the <pokemon name> and form_id.
                 // pokemon.csv maps pokemon-id to pokedex #, that way we could figure out how many forms a specific mon has and what they are called
                 match variant {
-                    RegionalVariant::Alola => Pokemon::try_find(&(String::from("Alolan ") + raw.name.split(" (Alolan Form)").collect::<Vec<&str>>()[0]), api),
-                    RegionalVariant::Galar => Pokemon::try_find(&(String::from("Galarian ") + raw.name.split(" (Galarian Form)").collect::<Vec<&str>>()[0]), api),
-                    RegionalVariant::Hisui => Pokemon::try_find(&(String::from("Hisuian ") + raw.name.split(" (Hisuian Form)").collect::<Vec<&str>>()[0]), api),
-                    RegionalVariant::Paldea => Pokemon::try_find(&(String::from("Paldean ") + raw.name.split(" (Paldean Form)").collect::<Vec<&str>>()[0]), api)
+                    RegionalVariant::Alola => Pokemon::try_find(&(String::from("Alolan ") + name.split(" (Alolan Form)").collect::<Vec<&str>>()[0]), api),
+                    RegionalVariant::Galar => Pokemon::try_find(&(String::from("Galarian ") + name.split(" (Galarian Form)").collect::<Vec<&str>>()[0]), api),
+                    RegionalVariant::Hisui => Pokemon::try_find(&(String::from("Hisuian ") + name.split(" (Hisuian Form)").collect::<Vec<&str>>()[0]), api),
+                    RegionalVariant::Paldea => Pokemon::try_find(&(String::from("Paldean ") + name.split(" (Paldean Form)").collect::<Vec<&str>>()[0]), api)
                 }
             }
         }
@@ -106,7 +107,7 @@ impl Pokemon {
         let regional_variant= Pokemon::parse_variant(&raw.dex_id);
 
         let (api_issue, api_option) = match raw.legendary {
-            false => Pokemon::get_api_entry(&raw, api, &regional_variant),
+            false => Pokemon::get_api_entry(&raw.name, api, &regional_variant),
             true => (Some(ApiIssueType::IsLegendary), None)
         };
 
@@ -153,6 +154,66 @@ impl Pokemon {
         }
     }
 
+    fn moves_from_custom(moves: &CustomPokemonMoves) -> Vec<PokemonMoveLearnedByRank> {
+        let mut result = Vec::new();
+
+        for x in &moves.bronze {
+            result.push(PokemonMoveLearnedByRank {rank: MysteryDungeonRank::Bronze, name: x.clone()})
+        }
+        for x in &moves.silver {
+            result.push(PokemonMoveLearnedByRank {rank: MysteryDungeonRank::Silver, name: x.clone()})
+        }
+        for x in &moves.gold {
+            result.push(PokemonMoveLearnedByRank {rank: MysteryDungeonRank::Gold, name: x.clone()})
+        }
+        for x in &moves.platinum {
+            result.push(PokemonMoveLearnedByRank {rank: MysteryDungeonRank::Platinum, name: x.clone()})
+        }
+        for x in &moves.diamond {
+            result.push(PokemonMoveLearnedByRank {rank: MysteryDungeonRank::Diamond, name: x.clone()})
+        }
+
+        result
+    }
+
+    pub(in crate::data) fn from_custom_data(raw: &CustomPokemon, api: &HashMap<String, PokemonApiData>) -> Self {
+        let regional_variant= None;
+
+        let (api_issue, api_option) = Pokemon::get_api_entry(&raw.name, api, &regional_variant);
+        let api_data = api_option.expect(&std::format!("API Data should ALWAYS be found for custom mons. {}", raw.name));
+
+        let moves = LearnablePokemonMoves {
+            by_pokerole_rank: Pokemon::moves_from_custom(&raw.moves),
+            by_level_up: api_data.learnable_moves.level_up.iter().map(|x| x.move_name.to_owned()).collect(),
+            by_machine: api_data.learnable_moves.machine.iter().map(|x| x.move_name.to_owned()).collect(),
+            by_tutor: api_data.learnable_moves.tutor.iter().map(|x| x.move_name.to_owned()).collect(),
+            by_egg: api_data.learnable_moves.egg.iter().map(|x| x.move_name.to_owned()).collect()
+        };
+
+        Pokemon {
+            number: raw.number,
+            name: raw.name.clone(),
+            regional_variant,
+            api_issue,
+            type1: api_data.type1,
+            type2: api_data.type2,
+            base_hp: raw.base_hp,
+            strength: Stat::from_str(&raw.strength),
+            dexterity: Stat::from_str(&raw.dexterity),
+            vitality: Stat::from_str(&raw.vitality),
+            special: Stat::from_str(&raw.special),
+            insight: Stat::from_str(&raw.insight),
+            ability1: api_data.ability1.clone(),
+            ability2: api_data.ability2.clone(),
+            hidden_ability: api_data.ability_hidden.clone(),
+            event_abilities: api_data.ability_event.clone(),
+            height: api_data.height.clone(),
+            weight: api_data.weight.clone(),
+            dex_description: String::from("Dex coming soon"),// raw.dex_description.clone(),
+            moves
+        }
+    }
+
     fn parse_variant(dex_id: &str) -> Option<RegionalVariant> {
         if dex_id.contains('A') {
             return Some(RegionalVariant::Alola);
@@ -194,8 +255,16 @@ pub struct Stat {
 }
 
 impl Stat {
-    fn new(min: u8, max: u8) -> Stat {
+    fn new(min: u8, max: u8) -> Self {
         Stat {min, max}
+    }
+
+    fn from_str(raw: &str) -> Self {
+        let splits: Vec<&str> = raw.split("/").collect();
+        let min = u8::from_str(splits[0]).expect("Data is always right, riight?");
+        let max = u8::from_str(splits[1]).expect("Data is always right, riiiight?");
+
+        Stat::new(min, max)
     }
 }
 

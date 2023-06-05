@@ -1,9 +1,14 @@
+pub(in crate::data) mod custom_data;
+pub(in crate::data) mod helpers;
+
 use std::collections::HashMap;
 use std::sync::Arc;
+use log::{info};
 use crate::data::ability::Ability;
 use crate::data::rule::Rule;
 use crate::data::item::Item;
 use crate::data::nature::Nature;
+use crate::data::parser::custom_data::parser::CustomDataParseResult;
 use crate::data::pokemon::Pokemon;
 use crate::data::pokemon_api::pokemon_api_parser;
 use crate::data::pokemon_api::pokemon_api_parser::PokemonApiData;
@@ -19,18 +24,20 @@ use crate::game_data::GameData;
 pub fn initialize_data() -> GameData {
     // TODO: Move these in to .env
     let pokerole_data_path = "/home/jacudibu/code/Pokerole-Data/";
+    let csv_data_path = "/home/jacudibu/code/pokerole-csv/";
     let custom_data_path = "/home/jacudibu/code/pokerole-discord-bot/custom_data/";
 
     let pokemon_api_data = pokemon_api_parser::parse_pokemon_api();
-    let pokerole_data = pokerole_data::parser::parse(pokerole_data_path, custom_data_path);
-    let pokerole_csv_data = pokerole_discord_py_csv_parser::parse("/home/jacudibu/code/pokerole-csv/");
+    let pokerole_data = pokerole_data::parser::parse(pokerole_data_path);
+    let pokerole_csv_data = pokerole_discord_py_csv_parser::parse(csv_data_path);
+    let custom_data = custom_data::parser::parse(custom_data_path);
 
     let (rule_names, rule_hash_map) = parse_rules();
     let (move_names, move_hash_map) = parse_moves(&pokerole_data);
     let (nature_names, nature_hash_map) = parse_natures(&pokerole_data);
     let (ability_names, ability_hash_map) = parse_abilities(&pokerole_data);
     let (weather_names, weather_hash_map) = parse_weather(&pokerole_csv_data);
-    let (pokemon_names, pokemon_hash_map) = parse_pokemon(&pokemon_api_data, &pokerole_data);
+    let (pokemon_names, pokemon_hash_map) = parse_pokemon(&pokemon_api_data, &pokerole_data, &custom_data);
     let (status_names, status_hash_map) = parse_status_effects(pokerole_csv_data);
     let (item_names, item_hash_map) = parse_items(pokerole_data);
 
@@ -74,7 +81,7 @@ fn parse_status_effects(pokerole_csv_data: RawPokeroleDiscordPyCsvData) -> (Vec<
     (status_names, status_hash_map)
 }
 
-fn parse_pokemon(pokemon_api_data: &HashMap<String, PokemonApiData>, pokerole_data: &PokeroleParseResult) -> (Vec<String>, HashMap<String, Pokemon>) {
+fn parse_pokemon(pokemon_api_data: &HashMap<String, PokemonApiData>, pokerole_data: &PokeroleParseResult, custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, Pokemon>) {
     let mut pokemon_names = Vec::default();
     let mut pokemon = HashMap::default();
     for x in &pokerole_data.pokemon {
@@ -85,6 +92,17 @@ fn parse_pokemon(pokemon_api_data: &HashMap<String, PokemonApiData>, pokerole_da
         pokemon_names.push(x.name.clone());
         pokemon.insert(x.name.to_lowercase(), Pokemon::new(x, &pokemon_api_data));
     }
+
+    for x in &custom_data.pokemon {
+        if pokemon.contains_key(&x.name) {
+            info!("Overriding {}", x.name)
+        } else {
+            pokemon_names.push(x.name.clone());
+        }
+
+        pokemon.insert(x.name.to_lowercase(), Pokemon::from_custom_data(x, &pokemon_api_data));
+    }
+
     (pokemon_names, pokemon)
 }
 

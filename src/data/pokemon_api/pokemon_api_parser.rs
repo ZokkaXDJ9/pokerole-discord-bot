@@ -32,6 +32,27 @@ pub struct ApiPokemon {
     is_default: u8,
 }
 
+/// ability_names.csv
+/// Contains names for all abilities.
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+pub struct ApiAbilityName {
+    ability_id: u16,
+    local_language_id: u8,
+    name: String,
+}
+
+/// pokemon_abilities.csv
+/// Contains data about each pokemon's abilities.
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+pub struct ApiPokemonAbility {
+    pokemon_id: u16,
+    ability_id: u16,
+    is_hidden: u8,
+    slot: u8,
+}
+
 /// pokemon_moves.csv
 /// Contains info on what moves a pokemon can learn and how.
 #[derive(Debug, Deserialize)]
@@ -143,6 +164,10 @@ pub struct PokemonApiData {
     pub weight: Weight,
     pub type1: PokemonType,
     pub type2: Option<PokemonType>,
+    pub ability1: String,
+    pub ability2: Option<String>,
+    pub ability_hidden: Option<String>,
+    pub ability_event: Option<String>,
     pub learnable_moves: ApiPokemonLearnableMoves,
 }
 
@@ -184,7 +209,9 @@ fn type_id_to_pokemon_type(id: u16) -> PokemonType {
 pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
     let english_language_id:u8 = 9;
     let version_groups: Vec<ApiVersionGroups> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/version_groups.csv");
+    let ability_names: Vec<ApiAbilityName> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/ability_names.csv");
     let pokemon: Vec<ApiPokemon> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon.csv");
+    let pokemon_abilities: Vec<ApiPokemonAbility> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_abilities.csv");
     let pokemon_types: Vec<ApiPokemonTypes> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_types.csv");
     let pokemon_moves: Vec<ApiPokemonMoves> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_moves.csv");
     let pokemon_move_methods: Vec<ApiPokemonMoveMethods> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_move_methods.csv");
@@ -194,9 +221,30 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
     let pokemon_form_names: Vec<ApiPokemonFormNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_form_names.csv");
     let move_names: Vec<ApiMoveNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/move_names.csv");
 
+    let mut ability_id_to_name: HashMap<u16, String> = HashMap::default();
+    for x in ability_names {
+        if x.local_language_id != english_language_id {
+            continue;
+        }
+
+        ability_id_to_name.insert(x.ability_id, x.name);
+    }
+
     let mut form_id_to_pokemon_id: HashMap<u16, u16> = HashMap::default();
     for x in pokemon_forms {
         form_id_to_pokemon_id.insert(x.id, x.pokemon_id);
+    }
+
+    let mut pokemon_id_to_pokemon_ability1: HashMap<u16, String> = HashMap::default();
+    let mut pokemon_id_to_pokemon_ability2: HashMap<u16, String> = HashMap::default();
+    let mut pokemon_id_to_pokemon_ability_hidden: HashMap<u16, String> = HashMap::default();
+    for x in pokemon_abilities {
+        match x.slot {
+            1 => pokemon_id_to_pokemon_ability1.insert(x.pokemon_id, ability_id_to_name.get(&x.ability_id).expect("Ability should be set!").clone()),
+            2 => pokemon_id_to_pokemon_ability2.insert(x.pokemon_id, ability_id_to_name.get(&x.ability_id).expect("Ability should be set!").clone()),
+            3 => pokemon_id_to_pokemon_ability_hidden.insert(x.pokemon_id, ability_id_to_name.get(&x.ability_id).expect("Ability should be set!").clone()),
+            _ => None,
+        };
     }
 
     let mut pokemon_id_to_pokemon_type1: HashMap<u16, PokemonType> = HashMap::default();
@@ -271,6 +319,10 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
             weight: Weight {kilograms: x.weight as f32 / 10.0, pounds: x.weight as f32 / 10.0 * 2.20462 },
             type1: pokemon_id_to_pokemon_type1.get(&x.species_id).expect("").to_owned(),
             type2: pokemon_id_to_pokemon_type2.get(&x.species_id).copied(),
+            ability1: pokemon_id_to_pokemon_ability1.get(&x.species_id).expect("").clone(),
+            ability2: pokemon_id_to_pokemon_ability2.get(&x.species_id).cloned(),
+            ability_hidden: pokemon_id_to_pokemon_ability_hidden.get(&x.species_id).cloned(),
+            ability_event: None,
             learnable_moves: ApiPokemonLearnableMoves {
                 level_up: Vec::default(),
                 machine: Vec::default(),
