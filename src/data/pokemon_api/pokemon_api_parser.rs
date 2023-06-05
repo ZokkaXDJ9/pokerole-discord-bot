@@ -1,6 +1,9 @@
 use std::collections::{HashMap};
+use log::{error, warn};
 use serde::Deserialize;
 use crate::csv_utils::load_csv;
+use crate::data::pokemon::{Height, Weight};
+use crate::enums::PokemonType;
 
 /// version_groups.csv
 #[derive(Debug, Deserialize)]
@@ -82,6 +85,24 @@ pub struct ApiPokemonFormNames {
     pokemon_name: Option<String>
 }
 
+/// pokemon_types.csv
+/// Contains type identifiers for pokemon
+#[derive(Debug, Deserialize)]
+pub struct ApiPokemonTypes {
+    pokemon_id: u16,
+    type_id: u16,
+    slot: u8,
+}
+
+/// pokemon_form_types.csv
+/// Contains type identifiers for pokemon
+#[derive(Debug, Deserialize)]
+pub struct ApiPokemonFormTypes {
+    pokemon_form_id: u16,
+    type_id: u16,
+    slot: u8,
+}
+
 /// move_names.csv
 /// Contains the names for moves
 #[derive(Debug, Deserialize)]
@@ -108,8 +129,10 @@ pub struct ApiPokemonLearnableMoves {
 #[derive(Debug)]
 pub struct PokemonApiData {
     pub pokemon_name: String,
-    pub height_in_meters: f32,
-    pub weight_in_kg: f32,
+    pub height: Height,
+    pub weight: Weight,
+    pub type1: PokemonType,
+    pub type2: Option<PokemonType>,
     pub learnable_moves: ApiPokemonLearnableMoves,
 }
 
@@ -122,20 +145,69 @@ impl ApiPokemonLearnableMoves {
     }
 }
 
+fn type_id_to_pokemon_type(id: u16) -> PokemonType {
+    match id {
+        1 => PokemonType::Normal,
+        2 => PokemonType::Fighting,
+        3 => PokemonType::Flying,
+        4 => PokemonType::Poison,
+        5 => PokemonType::Ground,
+        6 => PokemonType::Rock,
+        7 => PokemonType::Bug,
+        8 => PokemonType::Ghost,
+        9 => PokemonType::Steel,
+        10 => PokemonType::Fire,
+        11 => PokemonType::Water,
+        12 => PokemonType::Grass,
+        13 => PokemonType::Electric,
+        14 => PokemonType::Psychic,
+        15 => PokemonType::Ice,
+        16 => PokemonType::Dragon,
+        17 => PokemonType::Dark,
+        18 => PokemonType::Fairy,
+        10001 => PokemonType::Normal, // Unknown but ... what pokemon has unknown type?! D:
+        10002 => PokemonType::Shadow,
+        _ => panic!("Weird type id: {}", id)
+    }
+}
+
 pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
     let english_language_id:u8 = 9;
     let version_groups: Vec<ApiVersionGroups> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/version_groups.csv");
     let pokemon: Vec<ApiPokemon> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon.csv");
+    let pokemon_types: Vec<ApiPokemonTypes> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_types.csv");
     let pokemon_moves: Vec<ApiPokemonMoves> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_moves.csv");
     let pokemon_move_methods: Vec<ApiPokemonMoveMethods> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_move_methods.csv");
     let pokemon_species_names: Vec<ApiPokemonSpeciesNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_species_names.csv");
     let pokemon_forms: Vec<ApiPokemonForm> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_forms.csv");
+    let pokemon_form_types: Vec<ApiPokemonFormTypes> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_form_types.csv");
     let pokemon_form_names: Vec<ApiPokemonFormNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_form_names.csv");
     let move_names: Vec<ApiMoveNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/move_names.csv");
 
     let mut form_id_to_pokemon_id: HashMap<u16, u16> = HashMap::default();
     for x in pokemon_forms {
         form_id_to_pokemon_id.insert(x.id, x.pokemon_id);
+    }
+
+    let mut pokemon_id_to_pokemon_type1: HashMap<u16, PokemonType> = HashMap::default();
+    let mut pokemon_id_to_pokemon_type2: HashMap<u16, PokemonType> = HashMap::default();
+    for x in pokemon_types {
+        if x.slot == 1 {
+            pokemon_id_to_pokemon_type1.insert(x.pokemon_id, type_id_to_pokemon_type(x.type_id));
+        } else {
+            pokemon_id_to_pokemon_type2.insert(x.pokemon_id, type_id_to_pokemon_type(x.type_id));
+        }
+    }
+    for x in pokemon_form_types {
+        if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
+            if x.slot == 1 {
+                pokemon_id_to_pokemon_type1.insert(pokemon_id.to_owned(), type_id_to_pokemon_type(x.type_id));
+            } else {
+                pokemon_id_to_pokemon_type2.insert(pokemon_id.to_owned(), type_id_to_pokemon_type(x.type_id));
+            }
+        } else {
+            error!("Unable to map pokemon form id {} to a pokemon id!", x.pokemon_form_id);
+        }
     }
 
     let mut pokemon_id_to_name: HashMap<u16, String> = HashMap::default();
@@ -154,6 +226,8 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
         if let Some(name) = x.pokemon_name {
             if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
                 pokemon_id_to_name.insert(pokemon_id.clone(), name);
+            } else {
+                error!("Unable to map pokemon form id {} to a pokemon id!", x.pokemon_form_id);
             }
         }
     }
@@ -183,8 +257,10 @@ pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
 
         result.insert(name.clone(),  PokemonApiData {
             pokemon_name: name.clone(),
-            height_in_meters: x.height as f32 / 10.0,
-            weight_in_kg: x.weight as f32 / 10.0,
+            height: Height {meters: x.height as f32 / 10.0, feet: x.height as f32 / 10.0 * 3.28084 },
+            weight: Weight {kilograms: x.weight as f32 / 10.0, pounds: x.weight as f32 / 10.0 * 2.20462 },
+            type1: pokemon_id_to_pokemon_type1.get(&x.species_id).expect("").to_owned(),
+            type2: pokemon_id_to_pokemon_type2.get(&x.species_id).copied(),
             learnable_moves: ApiPokemonLearnableMoves {
                 level_up: Vec::default(),
                 machine: Vec::default(),

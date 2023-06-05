@@ -21,6 +21,7 @@ pub enum PokemonType {
     Dragon,
     Dark,
     Fairy,
+    Shadow,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
