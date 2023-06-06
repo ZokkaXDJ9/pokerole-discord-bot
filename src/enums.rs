@@ -119,6 +119,7 @@ pub enum CombatOrSocialStat {
     Varies,
     Medicine,
     Empathy,
+    Rank,
 }
 
 #[derive(Debug, Clone, Copy)]

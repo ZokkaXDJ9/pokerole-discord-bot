@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use log::error;
+use crate::data::parser::custom_data::custom_move::CustomMove;
 use crate::data::pokerole_data::raw_move::RawPokeroleMove;
 use crate::enums::{CombatOrSocialStat, HappinessDamageModifier, MoveCategory, MoveType, Stat};
 
@@ -37,6 +38,22 @@ impl Move {
                 .replace("Basic Heal", "Heal 3 HP")
                 .replace("Complete Heal", "Heal 6 HP")
                 .replace("Full Heal", "Heal 6 HP"),
+            description: raw.description.clone(),
+            category: raw.category
+        }
+    }
+
+    pub(in crate::data) fn from_custom(raw: &CustomMove) -> Self {
+        Move {
+            name: raw.name.clone(),
+            typing: raw.r#type,
+            power: raw.power,
+            damage1: Move::parse_damage1(raw.damage.clone()),
+            happiness_damage: None,
+            accuracy1: Move::parse_accuracy(raw.accuracy1.clone()),
+            accuracy2: Move::parse_accuracy(raw.accuracy2.clone()),
+            target: raw.target.clone(),
+            effect: raw.effect.clone(),
             description: raw.description.clone(),
             category: raw.category
         }
