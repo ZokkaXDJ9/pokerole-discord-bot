@@ -79,7 +79,7 @@ fn roll_the_dice(amount: Option<u8>, sides: Option<u8>, flat_addition: Option<u8
     text
 }
 
-/// Roll them dice!
+/// Roll dice using a "1d6+4" style text query.
 #[poise::command(slash_command)]
 pub async fn r(
     ctx: Context<'_>,
@@ -136,7 +136,7 @@ pub async fn r(
     Ok(())
 }
 
-/// Roll them dice!
+/// Roll dice by entering die amount, sides and flat addition manually.
 #[poise::command(slash_command)]
 pub async fn roll(
     ctx: Context<'_>,
