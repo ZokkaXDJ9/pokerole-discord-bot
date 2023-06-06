@@ -104,6 +104,36 @@ You get one new character slot ever 5 levels (cumulative across all your charact
 Using those or creating multiple characters is completely optional, of course.
 Also, if you want more or need one earlier, you may request that from our admin team! We'll vote internally on a case-by-case basis to determine if it would work out."),
                 example: None
+            }, Rule {
+                name: String::from("Combat"),
+                flavor: None,
+                text: String::from("Each Combat round is divided into two phases: Initiative and the actual fighting.
+### Initiative
+The round starts when the GM asks you to roll initiative! You do that by rolling one d6 and adding your Dexterity as flat amount on top.
+> **Example**: if your Dexterity is 3, `/roll flat_addition: 3` will do the trick, as will `/r 1d6+3`
+
+**If you have a move with `Priority` and want to use that, it's best to also mention this here. The highest priority move moves first!**
+
+Also, if a player takes too long, they may be moved to the end of the turn order at the GMs discretion.
+### Combat
+After everyone rolled initiative, the turn order will be posted.
+
+Once it's your turn, you can *optionally* interact with **one** item inside your backpack: this is the time to use a berry or switch your held item! Describe what your character will do and then use `/move` in order to post your action.
+
+Next, roll the move's accuracy.
+> **Example**: You are Bronze rank and have a dex of 3. `/move` says the move uses `Dexterity + Rank`, so you may roll 4 dice!
+
+4-6 counts as success here. You need at least one success for the attack to hit. If you roll three 6's, you'll deal critical damage!
+
+If the attack hits, do the same for damage.
+> **Example**: You have a strength of 3. Your move damage calls for `Strength + 2`, so you may `/roll` 5 damage dies!
+
+Every success will inflict one damage. STAB and super effectiveness both increase that damage by 1.
+
+If the effects call for additional Chance Dice to cause status effects, roll those now in the order they are mentioned.
+**Status effects only trigger when you roll a 6.**
+"),
+                example: None
             }
         ]
     }
