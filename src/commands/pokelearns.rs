@@ -30,7 +30,7 @@ fn append_all_learnable_moves(learns: &LearnablePokemonMoves, mut result: &mut S
     append_moves(&mut result, "\n**Egg Moves**\n", learns.by_egg.iter().map(|x| x.clone()).collect());
     append_moves(&mut result, "\n**Tutor**\n", learns.by_tutor.iter().map(|x| x.clone()).collect());
     append_moves(&mut result, "\n**Learned in Game through level up, but not here**\n", learns.by_level_up.iter()
-        .filter(|x| learns.by_pokerole_rank.iter().all(|learn| !(&learn.name == x.clone())))
+        .filter(|x| learns.by_pokerole_rank.iter().all(|learn| !(learn.name.to_lowercase() == x.to_lowercase())))
         .map(|x| x.clone())
         .collect());
 }
