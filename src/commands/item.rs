@@ -13,12 +13,8 @@ pub async fn item(
     if let Some(item) = ctx.data().items.get(&name.to_lowercase()) {
         let mut result: String = std::format!("### {}\n", &item.name);
 
-        if let Some(price) = &item.trainer_price {
+        if let Some(price) = &item.price {
             result.push_str(&format!("**Price**: {}\n", price));
-        }
-
-        if let Some(price) = &item.pmd_price {
-            result.push_str(&format!("**Price in PMD**: {}\n", price));
         }
 
         result.push_str(&item.description);

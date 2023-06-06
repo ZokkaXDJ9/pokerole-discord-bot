@@ -39,7 +39,7 @@ pub fn initialize_data() -> GameData {
     let (weather_names, weather_hash_map) = parse_weather(&pokerole_csv_data);
     let (pokemon_names, pokemon_hash_map) = parse_pokemon(&pokemon_api_data, &pokerole_data, &custom_data);
     let (status_names, status_hash_map) = parse_status_effects(pokerole_csv_data);
-    let (item_names, item_hash_map) = parse_items(pokerole_data);
+    let (item_names, item_hash_map) = parse_items(pokerole_data, &custom_data);
 
     GameData {
         abilities: Arc::new(ability_hash_map),
@@ -61,13 +61,24 @@ pub fn initialize_data() -> GameData {
     }
 }
 
-fn parse_items(pokerole_data: PokeroleParseResult) -> (Vec<String>, HashMap<String, Item>) {
+fn parse_items(pokerole_data: PokeroleParseResult, custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, Item>) {
     let mut item_names = Vec::default();
     let mut item_hash_map = HashMap::default();
     for x in pokerole_data.items {
         item_names.push(x.name.clone());
         item_hash_map.insert(x.name.to_lowercase(), Item::new(x));
     }
+
+    for x in &custom_data.items {
+        if item_names.contains(&x.name) {
+            info!("Overriding {}", x.name);
+        } else {
+            item_names.push(x.name.clone());
+        }
+
+        item_hash_map.insert(x.name.to_lowercase(), Item::from_custom_data(x));
+    }
+
     (item_names, item_hash_map)
 }
 

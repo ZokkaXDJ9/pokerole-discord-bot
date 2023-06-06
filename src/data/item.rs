@@ -1,26 +1,47 @@
 use std::str::FromStr;
+use crate::data::parser::custom_data::custom_item::CustomItem;
 use crate::data::pokerole_data::raw_item::RawPokeroleItem;
 
 #[derive(Debug)]
 pub struct Item {
     pub name: String,
-    pub pmd_price: Option<u16>,
-    pub trainer_price: Option<u16>,
+    pub price: Option<u16>,
     pub description: String,
     pub category: String,
-    pub one_use: bool,
+    pub single_use: bool,
 }
 
 impl Item {
     pub(in crate::data) fn new(raw: RawPokeroleItem) -> Self {
         Item {
             name: raw.name,
-            pmd_price: raw.pmd_price,
-            trainer_price: Item::parse_trainer_price(raw.trainer_price),
+            price: Item::parse_price(raw.pmd_price, raw.trainer_price),
             description: raw.description,
             category: Item::parse_category(raw.pocket, raw.category),
-            one_use: raw.one_use,
+            single_use: raw.one_use,
         }
+    }
+
+    pub(in crate::data) fn from_custom_data(raw: &CustomItem) -> Self {
+        Item {
+            name: raw.name.clone(),
+            price: Item::parse_price(raw.price, None),
+            description: raw.description.clone(),
+            category: raw.category.clone(),
+            single_use: raw.single_use,
+        }
+    }
+
+    fn parse_price(pmd: Option<u16>, trainer: Option<String>) -> Option<u16> {
+        if let Some(pmd_price) = pmd {
+            if pmd_price == 0 {
+                return None;
+            }
+
+            return pmd;
+        }
+
+        Item::parse_trainer_price(trainer)
     }
 
     fn parse_trainer_price(raw: Option<String>) -> Option<u16> {
