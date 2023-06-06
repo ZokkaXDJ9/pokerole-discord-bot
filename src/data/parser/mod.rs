@@ -95,7 +95,7 @@ fn parse_pokemon(pokemon_api_data: &HashMap<String, PokemonApiData>, pokerole_da
 
     for x in &custom_data.pokemon {
         if pokemon_names.contains(&x.name) {
-            info!("Overriding {}", x.name)
+            info!("Overriding {}", x.name);
         } else {
             pokemon_names.push(x.name.clone());
         }
@@ -116,7 +116,7 @@ fn parse_moves(pokerole_data: &PokeroleParseResult, custom_data: &CustomDataPars
 
     for x in &custom_data.moves {
         if move_names.contains(&x.name) {
-            info!("Overriding {}", x.name)
+            info!("Overriding {}", x.name);
         } else {
             move_names.push(x.name.clone());
         }
