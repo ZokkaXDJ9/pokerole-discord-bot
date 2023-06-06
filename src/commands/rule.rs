@@ -19,7 +19,7 @@ pub async fn rule(
         result.push_str(&std::format!("{}\n", &rule.text));
 
         if let Some(example) = &rule.example {
-            result.push_str(&std::format!("**Example**: {}", example));
+            result.push_str(&std::format!("> **Example**: {}", example));
         }
 
         ctx.say(result).await?;
