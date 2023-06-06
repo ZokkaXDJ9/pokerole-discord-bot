@@ -1,19 +1,10 @@
+use std::str::FromStr;
 use crate::commands::{Context, Error};
+use crate::parse_error::ParseError;
 use rand::Rng;
 
-/// Roll them dice!
-#[poise::command(slash_command)]
-pub async fn roll(
-    ctx: Context<'_>,
-    #[description = "How many dies?"]
-    dice: Option<u8>,
-    #[description = "How many sides?"]
-    sides: Option<u8>,
-    #[description = "Add a flat value to the result"]
-    flat_addition: Option<u8>,
-) -> Result<(), Error> {
-
-    let dice_amount = dice.unwrap_or(1).clamp(0, 100);
+fn roll_the_dice(amount: Option<u8>, sides: Option<u8>, flat_addition: Option<u8>) -> String {
+    let dice_amount = amount.unwrap_or(1).clamp(0, 100);
     let sides_amount = sides.unwrap_or(6).clamp(0, 100);
     let flat_addition_amount = flat_addition.unwrap_or(0);
 
@@ -85,6 +76,78 @@ pub async fn roll(
         }
     }
 
-    ctx.say(text).await?;
+    text
+}
+
+/// Roll them dice!
+#[poise::command(slash_command)]
+pub async fn r(
+    ctx: Context<'_>,
+    #[description = "1d6+5 will roll 1d6 and add 5."]
+    query: String,
+) -> Result<(), Error> {
+    let mut amount: Option<u8> = None;
+    let mut sides: Option<u8> = None;
+    let mut flat_addition: Option<u8> = None;
+
+    let mut remaining_query = query.clone();
+    if remaining_query.contains("+") {
+        let split: Vec<&str> = remaining_query.split("+").collect();
+        if remaining_query.starts_with("+") {
+            if split.len() > 1 {
+                return Err(Box::new(ParseError::new("Unable to parse query.")));
+            }
+
+            match u8::from_str(split[0]) {
+                Ok(value) => flat_addition = Some(value),
+                Err(_) => return Err(Box::new(ParseError::new("Unable to parse query."))),
+            }
+
+            remaining_query = String::from("");
+        } else {
+            if split.len() != 2 {
+                return Err(Box::new(ParseError::new("Unable to parse query.")));
+            }
+
+            match u8::from_str(split[1]) {
+                Ok(value) => flat_addition = Some(value),
+                Err(_) => return Err(Box::new(ParseError::new("Unable to parse query."))),
+            }
+            remaining_query = String::from(split[0]);
+        }
+    }
+
+    let split: Vec<&str> = remaining_query.split("d").collect();
+    if split.len() != 2 {
+        return Err(Box::new(ParseError::new("Unable to parse query.")));
+    }
+
+    match u8::from_str(split[0]) {
+        Ok(value) => amount = Some(value),
+        Err(_) => return Err(Box::new(ParseError::new("Unable to parse query."))),
+    }
+    match u8::from_str(split[1]) {
+        Ok(value) => sides = Some(value),
+        Err(_) => return Err(Box::new(ParseError::new("Unable to parse query."))),
+    }
+
+    let result = roll_the_dice(amount, sides, flat_addition);
+    ctx.say(result).await?;
+    Ok(())
+}
+
+/// Roll them dice!
+#[poise::command(slash_command)]
+pub async fn roll(
+    ctx: Context<'_>,
+    #[description = "How many dies?"]
+    dice: Option<u8>,
+    #[description = "How many sides?"]
+    sides: Option<u8>,
+    #[description = "Add a flat value to the result"]
+    flat_addition: Option<u8>,
+) -> Result<(), Error> {
+    let result = roll_the_dice(dice, sides, flat_addition);
+    ctx.say(result).await?;
     Ok(())
 }

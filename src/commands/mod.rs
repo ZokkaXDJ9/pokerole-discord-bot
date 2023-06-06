@@ -22,6 +22,7 @@ mod autocompletion;
 pub fn get_all_commands() -> Vec<Command<GameData, Error>> {
     vec![
         roll::roll(),
+        roll::r(),
         r#move::poke_move(),
         ability::ability(),
         item::item(),

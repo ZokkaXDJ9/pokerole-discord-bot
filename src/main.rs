@@ -4,6 +4,7 @@ mod logger;
 mod csv_utils;
 mod enums;
 mod game_data;
+mod parse_error;
 
 use poise::serenity_prelude as serenity;
 
