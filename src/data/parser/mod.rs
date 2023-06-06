@@ -22,12 +22,12 @@ use crate::data::weather::Weather;
 use crate::game_data::GameData;
 
 pub fn initialize_data() -> GameData {
-    // TODO: Move these in to .env
+    let pokerole_api_path = std::env::var("POKEMON_API").expect("missing POKEMON_API");
     let pokerole_data_path = std::env::var("POKEROLE_DATA").expect("missing POKEROLE_DATA");
     let csv_data_path = std::env::var("CSV_DATA").expect("missing CSV_DATA");
     let custom_data_path = std::env::var("CUSTOM_DATA").expect("missing CUSTOM_DATA");
 
-    let pokemon_api_data = pokemon_api_parser::parse_pokemon_api();
+    let pokemon_api_data = pokemon_api_parser::parse_pokemon_api(pokerole_api_path);
     let pokerole_data = pokerole_data::parser::parse(&pokerole_data_path);
     let pokerole_csv_data = pokerole_discord_py_csv_parser::parse(&csv_data_path);
     let custom_data = custom_data::parser::parse(&custom_data_path);

@@ -206,20 +206,20 @@ fn type_id_to_pokemon_type(id: u16) -> PokemonType {
     }
 }
 
-pub fn parse_pokemon_api() -> HashMap<String, PokemonApiData> {
+pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     let english_language_id:u8 = 9;
-    let version_groups: Vec<ApiVersionGroups> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/version_groups.csv");
-    let ability_names: Vec<ApiAbilityName> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/ability_names.csv");
-    let pokemon: Vec<ApiPokemon> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon.csv");
-    let pokemon_abilities: Vec<ApiPokemonAbility> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_abilities.csv");
-    let pokemon_types: Vec<ApiPokemonTypes> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_types.csv");
-    let pokemon_moves: Vec<ApiPokemonMoves> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_moves.csv");
-    let pokemon_move_methods: Vec<ApiPokemonMoveMethods> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_move_methods.csv");
-    let pokemon_species_names: Vec<ApiPokemonSpeciesNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_species_names.csv");
-    let pokemon_forms: Vec<ApiPokemonForm> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_forms.csv");
-    let pokemon_form_types: Vec<ApiPokemonFormTypes> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_form_types.csv");
-    let pokemon_form_names: Vec<ApiPokemonFormNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/pokemon_form_names.csv");
-    let move_names: Vec<ApiMoveNames> = load_csv("/home/jacudibu/code/pokeapi/data/v2/csv/move_names.csv");
+    let version_groups: Vec<ApiVersionGroups> = load_csv(path.clone() + "data/v2/csv/version_groups.csv");
+    let ability_names: Vec<ApiAbilityName> = load_csv(path.clone() + "data/v2/csv/ability_names.csv");
+    let pokemon: Vec<ApiPokemon> = load_csv(path.clone() + "data/v2/csv/pokemon.csv");
+    let pokemon_abilities: Vec<ApiPokemonAbility> = load_csv(path.clone() + "data/v2/csv/pokemon_abilities.csv");
+    let pokemon_types: Vec<ApiPokemonTypes> = load_csv(path.clone() + "data/v2/csv/pokemon_types.csv");
+    let pokemon_moves: Vec<ApiPokemonMoves> = load_csv(path.clone() + "data/v2/csv/pokemon_moves.csv");
+    let pokemon_move_methods: Vec<ApiPokemonMoveMethods> = load_csv(path.clone() + "data/v2/csv/pokemon_move_methods.csv");
+    let pokemon_species_names: Vec<ApiPokemonSpeciesNames> = load_csv(path.clone() + "data/v2/csv/pokemon_species_names.csv");
+    let pokemon_forms: Vec<ApiPokemonForm> = load_csv(path.clone() + "data/v2/csv/pokemon_forms.csv");
+    let pokemon_form_types: Vec<ApiPokemonFormTypes> = load_csv(path.clone() + "data/v2/csv/pokemon_form_types.csv");
+    let pokemon_form_names: Vec<ApiPokemonFormNames> = load_csv(path.clone() + "data/v2/csv/pokemon_form_names.csv");
+    let move_names: Vec<ApiMoveNames> = load_csv(path.clone() + "data/v2/csv/move_names.csv");
 
     let mut ability_id_to_name: HashMap<u16, String> = HashMap::default();
     for x in ability_names {
