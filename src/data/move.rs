@@ -14,7 +14,7 @@ pub struct Move {
     pub accuracy2: Option<CombatOrSocialStat>,
     pub target: String,
     pub effect: String,
-    pub description: String,
+    pub description: Option<String>,
     //pub attributes - includes stuff like never_fail: bool. But that's already written in effect.
     //pub added_effects - includes stuff like stat changes. PARSEABLE stat changes! But they are already written in effect.
     pub category: MoveCategory,
@@ -38,7 +38,7 @@ impl Move {
                 .replace("Basic Heal", "Heal 3 HP")
                 .replace("Complete Heal", "Heal 6 HP")
                 .replace("Full Heal", "Heal 6 HP"),
-            description: raw.description.clone(),
+            description: Move::parse_description(raw.description.clone()),
             category: raw.category
         }
     }
@@ -54,9 +54,17 @@ impl Move {
             accuracy2: Move::parse_accuracy(raw.accuracy2.clone()),
             target: raw.target.clone(),
             effect: raw.effect.clone(),
-            description: raw.description.clone(),
+            description: Move::parse_description(raw.description.clone()),
             category: raw.category
         }
+    }
+
+    fn parse_description(raw: String) -> Option<String> {
+        if raw.is_empty() {
+            return None;
+        }
+
+        return Some(raw);
     }
 
     fn parse_damage1(raw: String) -> Option<Stat> {

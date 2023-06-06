@@ -1,4 +1,3 @@
-use log::error;
 use crate::enums::MoveType;
 use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_move;
@@ -14,13 +13,11 @@ pub async fn poke_move(
 ) -> Result<(), Error> {
     if let Some(poke_move) = ctx.data().moves.get(&poke_move_name.to_lowercase()) {
         let mut result : String = std::format!("### {}\n", &poke_move.name);
-        if poke_move.description.is_empty() {
-            error!("Empty description for {}", poke_move.name);
+        if let Some(description) = &poke_move.description {
+            result.push_str("*");
+            result.push_str(description);
+            result.push_str("*\n");
         }
-
-        result.push_str("*");
-        result.push_str(&poke_move.description);
-        result.push_str("*\n");
 
         result.push_str("**Type**: ");
         if poke_move.typing == MoveType::Typeless {
