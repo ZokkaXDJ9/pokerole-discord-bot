@@ -86,9 +86,9 @@ pub async fn r(
     #[description = "1d6+5 will roll 1d6 and add 5."]
     query: String,
 ) -> Result<(), Error> {
-    let mut amount: Option<u8> = None;
-    let mut sides: Option<u8> = None;
-    let mut flat_addition: Option<u8> = None;
+    let amount: Option<u8>;
+    let sides: Option<u8>;
+    let flat_addition: Option<u8>;
 
     let mut remaining_query = query.clone();
     if remaining_query.contains("+") {
@@ -115,6 +115,8 @@ pub async fn r(
             }
             remaining_query = String::from(split[0]);
         }
+    } else {
+        flat_addition = None;
     }
 
     let split: Vec<&str> = remaining_query.split("d").collect();
