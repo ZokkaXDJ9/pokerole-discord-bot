@@ -1,3 +1,4 @@
+use serenity::utils::MessageBuilder;
 use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_rule;
 
@@ -11,18 +12,20 @@ pub async fn rule(
     name: String,
 ) -> Result<(), Error> {
     if let Some(rule) = ctx.data().rules.get(&name.to_lowercase()) {
-        let mut result = std::format!("### {}\n", &rule.name);
+        let mut builder = MessageBuilder::default();
+        builder.push(std::format!("### {}\n", &rule.name));
         if let Some(flavor) = &rule.flavor {
-            result.push_str(&std::format!("*{}*\n", flavor));
+            builder.push_italic_line(flavor);
         }
 
-        result.push_str(&std::format!("{}\n", &rule.text));
+        builder.push(&rule.text);
 
         if let Some(example) = &rule.example {
-            result.push_str(&std::format!("> **Example**: {}", example));
+            builder.quote_rest();
+            builder.push(std::format!("**Example**: {}", example));
         }
 
-        ctx.say(result).await?;
+        ctx.say(builder.build()).await?;
         return Ok(());
     }
 
