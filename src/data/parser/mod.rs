@@ -38,7 +38,7 @@ pub fn initialize_data() -> GameData {
     let (ability_names, ability_hash_map) = parse_abilities(&pokerole_data);
     let (weather_names, weather_hash_map) = parse_weather(&pokerole_csv_data);
     let (pokemon_names, pokemon_hash_map) = parse_pokemon(&pokemon_api_data, &pokerole_data, &custom_data);
-    let (status_names, status_hash_map) = parse_status_effects(pokerole_csv_data);
+    let (status_names, status_hash_map) = parse_status_effects(pokerole_csv_data, &custom_data);
     let (item_names, item_hash_map) = parse_items(pokerole_data, &custom_data);
 
     GameData {
@@ -82,13 +82,24 @@ fn parse_items(pokerole_data: PokeroleParseResult, custom_data: &CustomDataParse
     (item_names, item_hash_map)
 }
 
-fn parse_status_effects(pokerole_csv_data: RawPokeroleDiscordPyCsvData) -> (Vec<String>, HashMap<String, StatusEffect>) {
+fn parse_status_effects(pokerole_csv_data: RawPokeroleDiscordPyCsvData, custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, StatusEffect>) {
     let mut status_names = Vec::default();
     let mut status_hash_map = HashMap::default();
     for x in pokerole_csv_data.status_effects {
         status_names.push(x.name.clone());
         status_hash_map.insert(x.name.to_lowercase(), StatusEffect::new(x));
     }
+
+    for x in &custom_data.status_effects {
+        if status_names.contains(&x.name) {
+            info!("Overriding {}", x.name);
+        } else {
+            status_names.push(x.name.clone());
+        }
+
+        status_hash_map.insert(x.name.to_lowercase(), StatusEffect::from_custom_data(x));
+    }
+
     (status_names, status_hash_map)
 }
 

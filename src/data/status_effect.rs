@@ -1,3 +1,4 @@
+use crate::data::parser::custom_data::custom_status_effect::CustomStatusEffect;
 use crate::data::pokerole_discord_py_data::pokerole_discord_py_csv_parser::RawPokeStatus;
 
 pub struct StatusEffect {
@@ -16,6 +17,16 @@ impl StatusEffect {
             resist: raw.resist,
             effect: raw.effect,
             duration: raw.duration
+        }
+    }
+
+    pub(in crate::data) fn from_custom_data(raw: &CustomStatusEffect) -> Self {
+        StatusEffect {
+            name: raw.name.clone(),
+            description: raw.description.clone(),
+            resist: raw.resist.clone(),
+            effect: raw.effect.clone(),
+            duration: raw.duration.clone()
         }
     }
 }
