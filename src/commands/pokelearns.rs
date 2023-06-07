@@ -1,5 +1,4 @@
 use serenity::builder::CreateButton;
-use serenity::http::CacheHttp;
 use serenity::model::application::component::ButtonStyle;
 use serenity::model::application::interaction::InteractionResponseType;
 use crate::commands::{Context, Error};
