@@ -8,14 +8,16 @@ pub async fn ability(
     #[description = "Which ability?"]
     #[rename = "ability"]
     #[autocomplete = "autocomplete_ability"]
-    ability_name: String,
+    name: String,
 ) -> Result<(), Error> {
-    if let Some(ability) = ctx.data().abilities.get(&ability_name.to_lowercase()) {
-        let result : String = std::format!("### {}\n{}\n*{}*", &ability.name, &ability.effect, ability.description);
-        ctx.say(result).await?;
-        return Ok(());
+    if let Some(ability) = ctx.data().abilities.get(&name.to_lowercase()) {
+        ctx.say(ability.build_string()).await?;
+    } else {
+        ctx.send(|b| {
+            b.content(std::format!("Unable to find an ability named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name));
+            b.ephemeral(true)
+        }).await?;
     }
 
-    ctx.say("Ability not found. Oh no!").await?;
     Ok(())
 }
