@@ -11,11 +11,13 @@ pub async fn nature(
     name: String,
 ) -> Result<(), Error> {
     if let Some(nature) = ctx.data().natures.get(&name.to_lowercase()) {
-        let result : String = std::format!("### {}\n**Keywords**: {}\n*{}*", &nature.name, &nature.keywords, nature.description);
-        ctx.say(result).await?;
-        return Ok(());
+        ctx.say(nature.build_string()).await?;
+    } else {
+        ctx.send(|b| {
+            b.content(std::format!("Unable to find a nature named **{}**, sorry!", name));
+            b.ephemeral(true)
+        }).await?;
     }
 
-    ctx.say("Nature not found. Oh no!").await?;
     Ok(())
 }

@@ -12,6 +12,19 @@ pub struct Item {
 }
 
 impl Item {
+    pub(crate) fn build_string(&self) -> impl Into<String> + Sized {
+        let mut result: String = std::format!("### {}\n", &self.name);
+
+        if let Some(price) = &self.price {
+            result.push_str(&format!("**Price**: {}\n", price));
+        }
+        result.push_str(&self.description);
+
+        result
+    }
+}
+
+impl Item {
     pub(in crate::data) fn new(raw: RawPokeroleItem) -> Self {
         Item {
             name: raw.name,

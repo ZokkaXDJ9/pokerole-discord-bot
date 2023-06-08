@@ -8,6 +8,15 @@ pub struct Nature {
 }
 
 impl Nature {
+    pub(crate) fn build_string(&self) -> impl Into<String> + Sized {
+        std::format!("### {}\n**Keywords**: {}\n*{}*",
+                     &self.name,
+                     &self.keywords,
+                     &self.description)
+    }
+}
+
+impl Nature {
     pub(in crate::data) fn new(raw: &RawPokeroleNature) -> Self {
         Nature {
             name: raw.name.clone(),

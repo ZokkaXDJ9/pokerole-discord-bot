@@ -11,18 +11,13 @@ pub async fn item(
     name: String,
 ) -> Result<(), Error> {
     if let Some(item) = ctx.data().items.get(&name.to_lowercase()) {
-        let mut result: String = std::format!("### {}\n", &item.name);
-
-        if let Some(price) = &item.price {
-            result.push_str(&format!("**Price**: {}\n", price));
-        }
-
-        result.push_str(&item.description);
-
-        ctx.say(result).await?;
-        return Ok(());
+        ctx.say(item.build_string()).await?;
+    } else {
+        ctx.send(|b| {
+            b.content(std::format!("Unable to find an item named **{}**, sorry!", name));
+            b.ephemeral(true)
+        }).await?;
     }
 
-    ctx.say("Item not found. Oh no!").await?;
     Ok(())
 }

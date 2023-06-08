@@ -10,7 +10,7 @@ pub async fn metronome(
     if let Some(poke_move) = ctx.data().moves.get(&move_name.to_lowercase()) {
         ctx.say(poke_move.build_string()).await?;
     } else {
-        ctx.say(std::format!("Error: randomness rolled {}, but there was no move with that name defined?", move_name)).await?;
+        ctx.say(std::format!("Error: randomness rolled {}, but there was no move with that name defined? This should never happen. D:", move_name)).await?;
     }
 
     Ok(())
