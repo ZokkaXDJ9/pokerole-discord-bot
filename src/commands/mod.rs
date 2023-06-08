@@ -10,7 +10,7 @@ mod status;
 mod rule;
 mod item;
 mod stats;
-mod pokelearns;
+mod learns;
 mod roll;
 mod ability;
 mod nature;
@@ -30,7 +30,7 @@ pub fn get_all_commands() -> Vec<Command<GameData, Error>> {
         stats::stats(),
         status::status(),
         rule::rule(),
-        pokelearns::pokelearns(),
+        learns::learns(),
         nature::nature(),
         timestamp::timestamp(),
         weather::weather(),

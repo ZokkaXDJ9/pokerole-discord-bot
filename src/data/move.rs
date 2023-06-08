@@ -146,8 +146,8 @@ impl Move {
         result.push_str("**\n");
 
         result.push_str("**Target**: ");
-        result.push_str(std::format!("{}", self.target).as_str());
-        result.push_str("\n");
+        result.push_str(self.target.to_string().as_str());
+        result.push('\n');
 
         result.push_str("**Damage Dice**: ");
         if let Some(stat) = self.damage1 {
@@ -164,11 +164,11 @@ impl Move {
         if let Some(stat) = self.accuracy1 {
             result.push_str(std::format!("{:?}", stat).as_str());
 
-            if let Some(_) = self.accuracy2 {
+            if self.accuracy2.is_some() {
                 result.push_str(" + Rank");
             }
         }
-        result.push_str("\n");
+        result.push('\n');
 
         result.push_str("**Effect**: ");
         result.push_str(&self.effect);

@@ -6,7 +6,7 @@ use crate::commands::autocompletion::autocomplete_pokemon;
 
 /// Display Pokemon moves
 #[poise::command(slash_command, prefix_command)]
-pub async fn pokelearns(
+pub async fn learns(
     ctx: Context<'_>,
     #[description = "Which pokemon?"]
     #[rename = "pokemon"]

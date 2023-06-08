@@ -11,7 +11,7 @@ fn autocomplete(partial: &str, commands: &Arc<Vec<String>>, minimum_query_length
 
     let mut result: Vec<String> = commands.iter()
         .filter(move |x| x.to_lowercase().contains(lower_case))
-        .map(|x| x.clone())
+        .cloned()
         .collect();
 
     result.sort_by(|a, b| {
@@ -28,7 +28,7 @@ fn autocomplete(partial: &str, commands: &Arc<Vec<String>>, minimum_query_length
         Ordering::Equal
     });
 
-    return result;
+    result
 }
 
 pub async fn autocomplete_move<'a>(
