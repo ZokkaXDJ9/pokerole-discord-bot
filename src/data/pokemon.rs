@@ -32,6 +32,73 @@ pub struct Pokemon {
     pub moves: LearnablePokemonMoves,
 }
 
+impl Pokemon {
+    pub(crate) fn build_tm_move_string(&self) -> impl Into<String> + Sized {
+        let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
+        if let Some(issue) = self.api_issue {
+            if issue == ApiIssueType::FoundNothing {
+                result.push_str("\nUnable to match any species to this particular pokemon when searching for TM Moves.");
+            } else if issue == ApiIssueType::IsLegendary {
+                result.push_str("\nToo lazy to be bothered to get this to work for legendary pokemon, sorry!");
+            } else {
+                result.push_str("\n**Struggling to match an exact species to this particular pokemon when searching for TM Moves. Take the values here with a grain of salt!**\n");
+                self.append_all_learnable_moves(&mut result);
+            }
+        } else {
+            self.append_all_learnable_moves(&mut result);
+        }
+
+        result
+    }
+
+    fn append_all_learnable_moves(&self, result: &mut String) {
+        Pokemon::append_moves(result, "\n**TM Moves**\n", self.moves.by_machine.clone());
+        Pokemon::append_moves(result, "\n**Egg Moves**\n", self.moves.by_egg.clone());
+        Pokemon::append_moves(result, "\n**Tutor**\n", self.moves.by_tutor.clone());
+        Pokemon::append_moves(result, "\n**Learned in Game through level up, but not here**\n", self.moves.by_level_up.iter()
+            .filter(|x| self.moves.by_pokerole_rank.iter().all(|learn| learn.name.to_lowercase() != x.to_lowercase()))
+            .cloned()
+            .collect());
+    }
+
+}
+
+impl Pokemon {
+    pub(crate) fn build_move_string(&self) -> impl Into<String> + Sized {
+        let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
+
+        self.filter_moves(&mut result, "**Bronze**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Bronze);
+        self.filter_moves(&mut result, "**Silver**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Silver);
+        self.filter_moves(&mut result, "**Gold**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Gold);
+        self.filter_moves(&mut result, "**Platinum**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Platinum);
+        self.filter_moves(&mut result, "**Diamond**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Diamond);
+
+        result
+    }
+
+    fn filter_moves<F>(&self, result: &mut String, title: &str, filter: F)
+        where F: Fn(&PokemonMoveLearnedByRank) -> bool {
+        let moves = self.moves.by_pokerole_rank.iter()
+            .filter(|x| filter(x))
+            .map(|x| x.name.clone())
+            .collect::<Vec<String>>();
+
+        Pokemon::append_moves(result, title, moves);
+    }
+
+    fn append_moves(result: &mut String, title: &str, moves: Vec<String>) {
+        let text = moves.join("  |  ");
+
+        if text.is_empty() {
+            return;
+        }
+
+        result.push_str(title);
+        result.push_str(&text);
+        result.push('\n');
+    }
+}
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize)]
 pub enum ApiIssueType {
     FoundNothing,

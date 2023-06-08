@@ -6,6 +6,25 @@ pub struct Rule {
 }
 
 impl Rule {
+    pub(crate) fn build_string(&self) -> impl Into<String> + Sized {
+        let mut builder = serenity::utils::MessageBuilder::default();
+        builder.push(std::format!("### {}\n", &self.name));
+        if let Some(flavor) = &self.flavor {
+            builder.push_italic_line(flavor);
+        }
+
+        builder.push(&self.text);
+
+        if let Some(example) = &self.example {
+            builder.quote_rest();
+            builder.push(std::format!("**Example**: {}", example));
+        }
+
+        builder.build()
+    }
+}
+
+impl Rule {
     pub fn get_hardcoded_rules() -> Vec<Rule> {
         vec![
             Rule {
