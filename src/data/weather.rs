@@ -15,4 +15,11 @@ impl Weather {
             effect: raw.effect.clone()
         }
     }
+
+    pub(crate) fn build_string(&self) -> impl Into<String> + Sized {
+        std::format!("### {}\n*{}*\n{}",
+                     &self.name,
+                     &self.description,
+                     &self.effect)
+    }
 }

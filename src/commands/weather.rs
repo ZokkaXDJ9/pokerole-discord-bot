@@ -8,14 +8,16 @@ pub async fn weather(
     #[description = "Which weather?"]
     #[rename = "name"]
     #[autocomplete = "autocomplete_weather"]
-    weather_name: String,
+    name: String,
 ) -> Result<(), Error> {
-    if let Some(weather) = ctx.data().weather.get(&weather_name.to_lowercase()) {
-        let result : String = std::format!("### {}\n*{}*\n{}", &weather.name, &weather.description, &weather.effect);
-        ctx.say(result).await?;
-        return Ok(());
+    if let Some(weather) = ctx.data().weather.get(&name.to_lowercase()) {
+        ctx.say(weather.build_string()).await?;
+    } else {
+        ctx.send(|b| {
+            b.content(std::format!("Unable to find a weather condition named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name));
+            b.ephemeral(true)
+        }).await?;
     }
 
-    ctx.say("Weather not found. Oh no!").await?;
     Ok(())
 }
