@@ -18,6 +18,7 @@ mod timestamp;
 mod about;
 
 mod autocompletion;
+mod metronome;
 
 pub fn get_all_commands() -> Vec<Command<GameData, Error>> {
     vec![
@@ -33,6 +34,7 @@ pub fn get_all_commands() -> Vec<Command<GameData, Error>> {
         nature::nature(),
         timestamp::timestamp(),
         weather::weather(),
+        metronome::metronome(),
         about::about()
     ]
 }

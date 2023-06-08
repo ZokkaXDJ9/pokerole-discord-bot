@@ -126,4 +126,53 @@ impl Move {
             }
         }
     }
+
+    pub(crate) fn build_string(&self) -> String {
+        let mut result : String = std::format!("### {}\n", &self.name);
+        if let Some(description) = &self.description {
+            result.push_str("*");
+            result.push_str(description);
+            result.push_str("*\n");
+        }
+
+        result.push_str("**Type**: ");
+        if self.typing == MoveType::Typeless {
+            result.push_str("None");
+        } else {
+            result.push_str(std::format!("{:?}", self.typing).as_str());
+        }
+        result.push_str(" — **");
+        result.push_str(std::format!("{:?}", self.category).as_str());
+        result.push_str("**\n");
+
+        result.push_str("**Target**: ");
+        result.push_str(std::format!("{}", self.target).as_str());
+        result.push_str("\n");
+
+        result.push_str("**Damage Dice**: ");
+        if let Some(stat) = self.damage1 {
+            result.push_str(std::format!("{:?}", stat).as_str());
+            result.push_str(" + ");
+        }
+        if let Some(stat) = self.happiness_damage {
+            result.push_str(std::format!("{:?}", stat).as_str());
+            result.push_str(" + ");
+        }
+        result.push_str(&std::format!("{}\n", self.power));
+
+        result.push_str("**Accuracy Dice**: ");
+        if let Some(stat) = self.accuracy1 {
+            result.push_str(std::format!("{:?}", stat).as_str());
+
+            if let Some(_) = self.accuracy2 {
+                result.push_str(" + Rank");
+            }
+        }
+        result.push_str("\n");
+
+        result.push_str("**Effect**: ");
+        result.push_str(&self.effect);
+
+        result
+    }
 }
