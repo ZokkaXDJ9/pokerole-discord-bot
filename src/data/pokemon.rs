@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 use std::str::FromStr;
+use std::sync::Arc;
 use log::{error, warn};
 use serde::Deserialize;
+use crate::data::ability::Ability;
 use crate::data::enums::poke_role_rank::PokeRoleRank;
 use crate::data::parser::custom_data::custom_pokemon::{CustomPokemon, CustomPokemonMoves};
 use crate::data::pokemon_api::pokemon_api_parser::PokemonApiData;
@@ -33,8 +35,29 @@ pub struct Pokemon {
 }
 
 impl Pokemon {
-    pub(crate) fn build_ability_string(&self) -> impl Into<String> + Sized {
-        String::from("Todo")
+    pub(crate) fn build_ability_string(&self, abilities: &Arc<HashMap<String, Ability>>) -> impl Into<String> + Sized {
+        let mut result = std::format!("## {} Abilities\n", self.name);
+        Pokemon::push_ability(&mut result, &self.ability1, abilities, "");
+        if let Some(ability) = &self.ability2 {
+            Pokemon::push_ability(&mut result, ability, abilities, "");
+        }
+
+        if let Some(ability) = &self.hidden_ability {
+            Pokemon::push_ability(&mut result, ability, abilities, "(Hidden)");
+        }
+
+        if let Some(ability) = &self.event_abilities {
+            Pokemon::push_ability(&mut result, ability, abilities, "(Event / Hidden)");
+        }
+
+        result
+    }
+
+    fn push_ability(result: &mut String, ability_name: &String, abilities: &Arc<HashMap<String, Ability>>, suffix: &str) {
+        match abilities.get(ability_name.to_lowercase().as_str()) {
+            None => result.push_str(std::format!("### {} {}\nNot implemented. :(\n", ability_name, suffix).as_str()),
+            Some(ability) => result.push_str(std::format!("{} {}\n", ability.build_string().into(), suffix).as_str())
+        };
     }
 }
 

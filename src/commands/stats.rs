@@ -92,7 +92,7 @@ async fn match_interaction<'a>(ctx: Context<'a>, button_states: &mut ButtonState
             if m.data.custom_id == "Moves" {
                 learns::list_learns(ctx, pokemon).await?;
             } else {
-                ctx.send(|b| b.content(pokemon.build_ability_string())).await?;
+                ctx.send(|b| b.content(pokemon.build_ability_string(&ctx.data().abilities))).await?;
             }
         },
         None => {
