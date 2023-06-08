@@ -3,6 +3,7 @@ use serenity::model::application::component::ButtonStyle;
 use serenity::model::application::interaction::InteractionResponseType;
 use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_pokemon;
+use crate::data::pokemon::Pokemon;
 
 /// Display Pokemon moves
 #[poise::command(slash_command, prefix_command)]
@@ -14,53 +15,57 @@ pub async fn learns(
     name: String,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&name.to_lowercase()) {
-        let reply = ctx.send(|b| {
-            b.content(pokemon.build_move_string())
-                .components(|b| {
-                    b.create_action_row(|b| {
-                        b.add_button(create_button(false))
-                    })
-                })
-        }).await?;
-
-        let message = reply.message().await?;
-        let interaction = message
-            .await_component_interaction(ctx)
-            .timeout(std::time::Duration::from_secs(3 * 60))
-            .await;
-
-        match &interaction {
-            Some(m) => {
-                m.create_interaction_response(ctx, |response| {
-                    response.kind(InteractionResponseType::UpdateMessage).interaction_response_data(|d| {
-                        d.components(|b| {
-                             b.create_action_row( |row| {
-                                 row.add_button(create_button(true))
-                             })
-                        })
-                    })
-                }).await?;
-
-                ctx.send(|b| b.content(pokemon.build_tm_move_string())).await?;
-            },
-            None => {
-                reply.edit(ctx, |b| {
-                    b.components(|components| {
-                        components.create_action_row( |row| {
-                             row.add_button(create_button(true))
-                        })
-                    })
-                }).await?;
-            }
-        };
-
-        return Ok(());
+        list_learns(ctx, pokemon).await?;
     } else {
         ctx.send(|b| {
             b.content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name));
             b.ephemeral(true)
         }).await?;
     }
+
+    Ok(())
+}
+
+pub(in crate::commands) async fn list_learns<'a>(ctx: Context<'a>, pokemon: &Pokemon) -> Result<(), Error> {
+    let reply = ctx.send(|b| {
+        b.content(pokemon.build_move_string())
+            .components(|b| {
+                b.create_action_row(|b| {
+                    b.add_button(create_button(false))
+                })
+            })
+    }).await?;
+
+    let message = reply.message().await?;
+    let interaction = message
+        .await_component_interaction(ctx)
+        .timeout(std::time::Duration::from_secs(3 * 60))
+        .await;
+
+    match &interaction {
+        Some(m) => {
+            m.create_interaction_response(ctx, |response| {
+                response.kind(InteractionResponseType::UpdateMessage).interaction_response_data(|d| {
+                    d.components(|b| {
+                        b.create_action_row( |row| {
+                            row.add_button(create_button(true))
+                        })
+                    })
+                })
+            }).await?;
+
+            ctx.send(|b| b.content(pokemon.build_tm_move_string())).await?;
+        },
+        None => {
+            reply.edit(ctx, |b| {
+                b.components(|components| {
+                    components.create_action_row( |row| {
+                        row.add_button(create_button(true))
+                    })
+                })
+            }).await?;
+        }
+    };
 
     Ok(())
 }

@@ -5,21 +5,9 @@ use serenity::builder::{CreateButton, CreateComponents};
 use serenity::model::application::component::ButtonStyle;
 use serenity::model::application::interaction::InteractionResponseType;
 use serenity::model::application::interaction::message_component::MessageComponentInteraction;
-use crate::commands::{Context, Error};
+use crate::commands::{Context, Error, learns};
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::data::pokemon::Pokemon;
-
-struct ButtonStates {
-    pub moves: bool,
-    pub abilities: bool,
-}
-
-fn create_buttons<'a>(button_states: &ButtonStates, b: &'a mut CreateComponents) -> &'a mut CreateComponents {
-    b.create_action_row(|b| {
-        b.add_button(create_button("Moves", button_states.moves));
-        b.add_button(create_button("Abilities", button_states.abilities))
-    })
-}
 
 /// Display Pokemon stats
 #[poise::command(slash_command)]
@@ -65,6 +53,17 @@ pub async fn stats(
     Ok(())
 }
 
+struct ButtonStates {
+    pub moves: bool,
+    pub abilities: bool,
+}
+
+fn create_buttons<'a>(button_states: &ButtonStates, b: &'a mut CreateComponents) -> &'a mut CreateComponents {
+    b.create_action_row(|b| {
+        b.add_button(create_button("Moves", button_states.moves));
+        b.add_button(create_button("Abilities", button_states.abilities))
+    })
+}
 
 fn create_button(label: &str, is_disabled: bool) -> CreateButton {
     let mut button = CreateButton::default();
@@ -91,7 +90,7 @@ async fn match_interaction<'a>(ctx: Context<'a>, button_states: &mut ButtonState
             }).await?;
 
             if m.data.custom_id == "Moves" {
-                ctx.send(|b| b.content(pokemon.build_move_string())).await?;
+                learns::list_learns(ctx, pokemon).await?;
             } else {
                 ctx.send(|b| b.content(pokemon.build_ability_string())).await?;
             }
