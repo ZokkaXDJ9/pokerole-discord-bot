@@ -33,6 +33,12 @@ pub struct Pokemon {
 }
 
 impl Pokemon {
+    pub(crate) fn build_ability_string(&self) -> impl Into<String> + Sized {
+        String::from("Todo")
+    }
+}
+
+impl Pokemon {
     pub(crate) fn build_tm_move_string(&self) -> impl Into<String> + Sized {
         let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
         if let Some(issue) = self.api_issue {
