@@ -143,10 +143,16 @@ pub async fn r(
 pub async fn roll(
     ctx: Context<'_>,
     #[description = "How many dies?"]
+    #[min = 1_u8]
+    #[max = 100_u8]
     dice: Option<u8>,
     #[description = "How many sides?"]
+    #[min = 2_u8]
+    #[max = 100_u8]
     sides: Option<u8>,
     #[description = "Add a flat value to the result"]
+    #[min = 0_u8]
+    #[max = 100_u8]
     flat_addition: Option<u8>,
 ) -> Result<(), Error> {
     let result = roll_the_dice(dice, sides, flat_addition);
