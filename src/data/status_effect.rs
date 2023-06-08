@@ -29,4 +29,13 @@ impl StatusEffect {
             duration: raw.duration.clone()
         }
     }
+
+    pub(crate) fn build_string(&self) -> String {
+        std::format!("### {}\n*{}*\n- {}\n- {}\n- {}",
+                     &self.name,
+                     &self.description,
+                     &self.resist,
+                     &self.effect,
+                     &self.duration)
+    }
 }
