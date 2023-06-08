@@ -8,13 +8,13 @@ pub async fn poke_move(
     #[description = "Which move?"]
     #[rename = "move"]
     #[autocomplete = "autocomplete_move"]
-    poke_move_name: String,
+    name: String,
 ) -> Result<(), Error> {
-    if let Some(poke_move) = ctx.data().moves.get(&poke_move_name.to_lowercase()) {
+    if let Some(poke_move) = ctx.data().moves.get(&name.to_lowercase()) {
         ctx.say(poke_move.build_string()).await?;
     } else {
         ctx.send(|b| {
-            b.content(std::format!("Unable to find a move named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", poke_move_name));
+            b.content(std::format!("Unable to find a move named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name));
             b.ephemeral(true)
         }).await?;
     }

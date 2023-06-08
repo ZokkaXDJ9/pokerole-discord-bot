@@ -246,6 +246,45 @@ impl Pokemon {
 
         return Some(raw);
     }
+
+    pub fn build_stats_string(&self) -> String {
+        let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
+        result.push_str(&std::format!("{}m / {}ft   |   {}kg / {}lbs\n",
+                                      self.height.meters,
+                                      self.height.feet,
+                                      self.weight.kilograms,
+                                      self.weight.pounds));
+        result.push_str("**Type**: ");
+        result.push_str(std::format!("{:?}", self.type1).as_str());
+        if let Some(type2) = self.type2 {
+            result.push_str(std::format!(" / {:?}", type2).as_str())
+        }
+        result.push_str("\n");
+
+        result.push_str(&std::format!("**Base HP**: {}\n", self.base_hp));
+
+        self.strength.append_stat_string(&mut result, "Strength");
+        self.dexterity.append_stat_string(&mut result, "Dexterity");
+        self.vitality.append_stat_string(&mut result, "Vitality");
+        self.special.append_stat_string(&mut result, "Special");
+        self.insight.append_stat_string(&mut result, "Insight");
+
+        result.push_str("**Ability**: ");
+        result.push_str(&std::format!("{}", self.ability1));
+        if let Some(ability2) = &self.ability2 {
+            result.push_str(&std::format!(" / {}", ability2))
+        }
+
+        if let Some(hidden) = &self.hidden_ability {
+            result.push_str(&std::format!(" ({})", hidden))
+        }
+
+        if let Some(event) = &self.event_abilities {
+            result.push_str(&std::format!(" ({})", event))
+        }
+
+        result
+    }
 }
 
 #[derive(Debug)]
@@ -265,6 +304,19 @@ impl Stat {
         let max = u8::from_str(splits[1]).expect("Data is always right, riiiight?");
 
         Stat::new(min, max)
+    }
+
+    pub fn append_stat_string(&self, result: &mut String, stat_name: &str) {
+        result.push_str(&std::format!("**{}**: ", stat_name));
+
+        for _ in 0..self.min {
+            result.push_str("⬤");
+        }
+        for _ in 0..self.max-self.min {
+            result.push_str("⭘");
+        }
+
+        result.push_str(&std::format!(" `{}/{}`\n", self.min, self.max));
     }
 }
 
