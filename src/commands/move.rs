@@ -12,9 +12,12 @@ pub async fn poke_move(
 ) -> Result<(), Error> {
     if let Some(poke_move) = ctx.data().moves.get(&poke_move_name.to_lowercase()) {
         ctx.say(poke_move.build_string()).await?;
-        return Ok(());
+    } else {
+        ctx.send(|b| {
+            b.content(std::format!("Unable to find a move named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", poke_move_name));
+            b.ephemeral(true)
+        }).await?;
     }
 
-    ctx.say("Move not found. Oh no!").await?;
     Ok(())
 }
