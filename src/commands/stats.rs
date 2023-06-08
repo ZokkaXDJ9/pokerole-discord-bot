@@ -60,8 +60,8 @@ struct ButtonStates {
 
 fn create_buttons<'a>(button_states: &ButtonStates, b: &'a mut CreateComponents) -> &'a mut CreateComponents {
     b.create_action_row(|b| {
-        b.add_button(create_button("Moves", button_states.moves));
-        b.add_button(create_button("Abilities", button_states.abilities))
+        b.add_button(create_button("Abilities", button_states.abilities));
+        b.add_button(create_button("Moves", button_states.moves))
     })
 }
 
