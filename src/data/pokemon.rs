@@ -345,7 +345,7 @@ impl Pokemon {
 
     pub fn build_stats_string(&self) -> String {
         let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
-        result.push_str(&std::format!("{}m / {}ft   |   {}kg / {}lbs\n",
+        result.push_str(&std::format!("{:.1}m / {:.1}ft   |   {:.1}kg / {:.1}lbs\n",
                                       self.height.meters,
                                       self.height.feet,
                                       self.weight.kilograms,
