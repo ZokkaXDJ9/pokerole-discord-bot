@@ -35,10 +35,6 @@ pub async fn stats(
                 .timeout(std::time::Duration::from_secs(3 * 60))
                 .await;
 
-            if interaction.is_none() {
-                break;
-            }
-
             match_interaction(ctx, &mut button_states, pokemon, &reply, interaction).await?;
             interaction_count += 1;
         }
