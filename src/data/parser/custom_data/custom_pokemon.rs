@@ -1,8 +1,10 @@
 use serde::Deserialize;
+use crate::enums::RegionalVariant;
 
 #[derive(Debug, Deserialize)]
 pub struct CustomPokemon {
     pub number: u16,
+    pub variant: Option<RegionalVariant>,
     pub name: String,
     pub base_hp: u8,
     pub strength: String,

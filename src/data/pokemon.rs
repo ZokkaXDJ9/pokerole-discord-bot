@@ -273,7 +273,7 @@ impl Pokemon {
     }
 
     pub(in crate::data) fn from_custom_data(raw: &CustomPokemon, api: &HashMap<String, PokemonApiData>) -> Self {
-        let regional_variant= None;
+        let regional_variant = raw.variant;
 
         let (api_issue, api_option) = Pokemon::get_api_entry(&raw.name, api, &regional_variant);
         let api_data = api_option.unwrap_or_else(|| panic!("API Data should ALWAYS be found for custom mons. {}", raw.name));

@@ -73,7 +73,6 @@ pub enum RegionalVariant {
     Paldea,
 }
 
-
 #[derive(Debug, Clone, Copy, Deserialize, EnumString)]
 pub enum Stat {
     Strength,
