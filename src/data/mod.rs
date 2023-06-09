@@ -14,3 +14,4 @@ mod pokemon_api;
 pub(in crate::data) mod enums;
 
 pub mod parser;
+pub(crate) mod type_efficiency;

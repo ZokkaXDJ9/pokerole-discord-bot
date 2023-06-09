@@ -7,6 +7,7 @@ use crate::data::nature::Nature;
 use crate::data::pokemon::Pokemon;
 use crate::data::r#move::Move;
 use crate::data::status_effect::StatusEffect;
+use crate::data::type_efficiency::TypeEfficiency;
 use crate::data::weather::Weather;
 
 /// Data which is stored and accessible in all command invocations
@@ -27,5 +28,6 @@ pub struct GameData {
     pub weather_names: Arc<Vec<String>>,
     pub rule_names: Arc<Vec<String>>,
     pub rules: Arc<HashMap<String, Rule>>,
+    pub type_efficiency: Arc<TypeEfficiency>,
 }
 

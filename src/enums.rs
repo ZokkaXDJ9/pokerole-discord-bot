@@ -1,7 +1,7 @@
 use serde::Deserialize;
-use strum_macros::EnumString;
+use strum_macros::{EnumIter, EnumString};
 
-#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq, EnumString)]
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq, EnumString, Hash, EnumIter)]
 pub enum PokemonType {
     Normal,
     Fighting,

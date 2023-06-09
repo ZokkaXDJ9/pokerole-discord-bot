@@ -27,6 +27,7 @@ pub fn initialize_data() -> GameData {
     let csv_data_path = std::env::var("CSV_DATA").expect("missing CSV_DATA");
     let custom_data_path = std::env::var("CUSTOM_DATA").expect("missing CUSTOM_DATA");
 
+    let type_efficiency = pokemon_api_parser::parse_type_efficacy(pokerole_api_path.clone());
     let pokemon_api_data = pokemon_api_parser::parse_pokemon_api(pokerole_api_path);
     let pokerole_data = pokerole_data::parser::parse(&pokerole_data_path);
     let pokerole_csv_data = pokerole_discord_py_csv_parser::parse(&csv_data_path);
@@ -58,6 +59,7 @@ pub fn initialize_data() -> GameData {
         status_effects_names: Arc::new(status_names),
         weather: Arc::new(weather_hash_map),
         weather_names: Arc::new(weather_names),
+        type_efficiency: Arc::new(type_efficiency),
     }
 }
 

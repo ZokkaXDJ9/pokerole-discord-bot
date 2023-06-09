@@ -1,8 +1,10 @@
 use std::collections::{HashMap};
 use log::error;
 use serde::Deserialize;
+use strum::IntoEnumIterator;
 use crate::csv_utils::load_csv;
 use crate::data::pokemon::{Height, Weight};
+use crate::data::type_efficiency::TypeEfficiency;
 use crate::enums::PokemonType;
 
 /// version_groups.csv
@@ -143,6 +145,15 @@ pub struct ApiMoveNames {
     name: String
 }
 
+/// type_efficacy.csv
+/// Tells us how much damage an attack will deal against a certain single type
+#[derive(Debug, Deserialize)]
+struct ApiTypeEfficacy {
+    damage_type_id: u16,
+    target_type_id: u16,
+    damage_factor: u8
+}
+
 #[derive(Debug)]
 pub struct ApiMoveEntry {
     pub move_name: String,
@@ -204,6 +215,38 @@ fn type_id_to_pokemon_type(id: u16) -> PokemonType {
         10002 => PokemonType::Shadow,
         _ => panic!("Weird type id: {}", id)
     }
+}
+
+pub fn parse_type_efficacy(path: String) -> TypeEfficiency {
+    let csv: Vec<ApiTypeEfficacy> = load_csv(path + "data/v2/csv/type_efficacy.csv");
+
+    let mut result: HashMap<PokemonType, HashMap<PokemonType, f32>> = HashMap::default();
+    for x in csv {
+        let this_type = type_id_to_pokemon_type(x.damage_type_id);
+        let entry_option = result.get_mut(&this_type);
+        let entry = match entry_option {
+            Some(e) => e,
+            None => {
+                result.insert(this_type, HashMap::default());
+                result.get_mut(&this_type).unwrap()
+            }
+        };
+
+        let target_type = type_id_to_pokemon_type(x.target_type_id);
+        entry.insert(target_type, x.damage_factor as f32 * 0.01);
+    }
+
+    // FIXME: Technically this has nothing to do with api parsing anymore... :D
+    let mut shadow: HashMap<PokemonType, f32> = HashMap::default();
+    for x in PokemonType::iter() {
+        shadow.insert(x, 2.0);
+    }
+    result.insert(PokemonType::Shadow, shadow);
+    for x in PokemonType::iter() {
+        result.get_mut(&x).unwrap().insert(PokemonType::Shadow, 2.0);
+    }
+
+    TypeEfficiency::new(result)
 }
 
 pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
