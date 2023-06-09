@@ -11,7 +11,7 @@ pub async fn ability(
     name: String,
 ) -> Result<(), Error> {
     if let Some(ability) = ctx.data().abilities.get(&name.to_lowercase()) {
-        ctx.say(ability.build_string()).await?;
+        ctx.say(ability.build_string("")).await?;
     } else {
         ctx.send(|b| {
             b.content(std::format!("Unable to find an ability named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name));

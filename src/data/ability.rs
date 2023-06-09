@@ -18,9 +18,10 @@ impl Ability {
         }
     }
 
-    pub(crate) fn build_string(&self) -> impl Into<String> + Sized {
-        std::format!("### {}\n{}\n*{}*",
+    pub(crate) fn build_string(&self, suffix: &str) -> impl Into<String> + Sized {
+        std::format!("### {} {}\n{}\n*{}*",
                      &self.name,
+                     &suffix,
                      &self.effect,
                      &self.description)
     }

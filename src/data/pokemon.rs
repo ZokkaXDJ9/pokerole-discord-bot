@@ -56,7 +56,7 @@ impl Pokemon {
     fn push_ability(result: &mut String, ability_name: &String, abilities: &Arc<HashMap<String, Ability>>, suffix: &str) {
         match abilities.get(ability_name.to_lowercase().as_str()) {
             None => result.push_str(std::format!("### {} {}\nNot implemented. :(\n", ability_name, suffix).as_str()),
-            Some(ability) => result.push_str(std::format!("{} {}\n", ability.build_string().into(), suffix).as_str())
+            Some(ability) => result.push_str(std::format!("{}\n", ability.build_string(suffix).into()).as_str())
         };
     }
 }
