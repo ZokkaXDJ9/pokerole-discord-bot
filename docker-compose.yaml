@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  pokerole:
+    image: pokerole-bot
+    restart: always
+    deploy:
+      mode: global
+    environment:
+      - POKEMON_API=/data/pokeapi/
+      - POKEROLE_DATA=/data/Pokerole-Data/
+      - CSV_DATA=/data/PokeRole-Discord.py-Base/
+      - CUSTOM_DATA=/data/pokerole-custom-data/
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+    volumes:
+      - ./data:/data/
