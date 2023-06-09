@@ -142,7 +142,7 @@ impl Pokemon {
             return (None, Some(value))
         }
         let fixed_name = name
-            .replace("'", "’") // Fixes Farfetch'd and Sirfetch'd
+            .replace('\'', "’") // Fixes Farfetch'd and Sirfetch'd
             .replace("Flabebe", "Flabébé")
             .replace("Nidoran M", "Nidoran♂")
             .replace("Nidoran F", "Nidoran♀")
@@ -152,11 +152,11 @@ impl Pokemon {
             return (None, Some(value))
         }
         let options: Vec<String> = api.keys()
-            .filter(|x| x.contains(&fixed_name.split(' '.to_owned()).collect::<Vec<&str>>()[0]))
-            .map(|x| x.clone())
+            .filter(|x| x.contains(fixed_name.split(' '.to_owned()).collect::<Vec<&str>>()[0]))
+            .cloned()
             .collect();
 
-        if options.len() == 0 {
+        if options.is_empty() {
             error!("Found no matches for {}", fixed_name);
             return (Some(ApiIssueType::FoundNothing), None);
         }
@@ -167,7 +167,7 @@ impl Pokemon {
 
         if fixed_name.contains("Form)") {
             // What we want is between "<name> (" and " Form)". Bet we can search the keys for that and find a unique match.
-            let form = fixed_name.split("(").collect::<Vec<&str>>()[1].replace(" Form)", "");
+            let form = fixed_name.split('(').collect::<Vec<&str>>()[1].replace(" Form)", "");
             let form_options: Vec<String> = options.iter().filter(|x| x.contains(&form) && !x.contains("Gigantamax")).map(|x| x.to_owned()).collect();
 
             if form_options.len() == 1 {
@@ -181,7 +181,7 @@ impl Pokemon {
     }
 
 
-    fn get_api_entry<'a>(name: &String, api: &'a HashMap<String, PokemonApiData>, regional_variant: &Option<RegionalVariant>)
+    fn get_api_entry<'a>(name: &str, api: &'a HashMap<String, PokemonApiData>, regional_variant: &Option<RegionalVariant>)
         -> (Option<ApiIssueType>, Option<&'a PokemonApiData>) {
         match regional_variant {
             None => Pokemon::try_find(name, api),
@@ -210,7 +210,7 @@ impl Pokemon {
         let moves;
         if let Some(api_data) = api_option {
             moves = LearnablePokemonMoves {
-                by_pokerole_rank: raw.moves.iter().map(|x| PokemonMoveLearnedByRank::new(x)).collect(),
+                by_pokerole_rank: raw.moves.iter().map(PokemonMoveLearnedByRank::new).collect(),
                 by_level_up: api_data.learnable_moves.level_up.iter().map(|x| x.move_name.to_owned()).collect(),
                 by_machine: api_data.learnable_moves.machine.iter().map(|x| x.move_name.to_owned()).collect(),
                 by_tutor: api_data.learnable_moves.tutor.iter().map(|x| x.move_name.to_owned()).collect(),
@@ -218,7 +218,7 @@ impl Pokemon {
             };
         } else {
             moves = LearnablePokemonMoves {
-                by_pokerole_rank: raw.moves.iter().map(|x| PokemonMoveLearnedByRank::new(x)).collect(),
+                by_pokerole_rank: raw.moves.iter().map(PokemonMoveLearnedByRank::new).collect(),
                 by_level_up: vec![],
                 by_machine: vec![],
                 by_tutor: vec![],
@@ -276,7 +276,7 @@ impl Pokemon {
         let regional_variant= None;
 
         let (api_issue, api_option) = Pokemon::get_api_entry(&raw.name, api, &regional_variant);
-        let api_data = api_option.expect(&std::format!("API Data should ALWAYS be found for custom mons. {}", raw.name));
+        let api_data = api_option.unwrap_or_else(|| panic!("API Data should ALWAYS be found for custom mons. {}", raw.name));
 
         let moves = LearnablePokemonMoves {
             by_pokerole_rank: Pokemon::moves_from_custom(&raw.moves),
@@ -332,7 +332,7 @@ impl Pokemon {
             return None;
         }
 
-        return Some(PokemonType::from_str(&raw).unwrap());
+        Some(PokemonType::from_str(&raw).unwrap())
     }
 
     fn parse_ability(raw: String) -> Option<String> {
@@ -340,7 +340,7 @@ impl Pokemon {
             return None;
         }
 
-        return Some(raw);
+        Some(raw)
     }
 
     pub fn build_stats_string(&self) -> String {
@@ -355,7 +355,7 @@ impl Pokemon {
         if let Some(type2) = self.type2 {
             result.push_str(std::format!(" / {:?}", type2).as_str())
         }
-        result.push_str("\n");
+        result.push('\n');
 
         result.push_str(&std::format!("**Base HP**: {}\n", self.base_hp));
 
@@ -366,7 +366,7 @@ impl Pokemon {
         self.insight.append_stat_string(&mut result, "Insight");
 
         result.push_str("**Ability**: ");
-        result.push_str(&std::format!("{}", self.ability1));
+        result.push_str(&self.ability1);
         if let Some(ability2) = &self.ability2 {
             result.push_str(&std::format!(" / {}", ability2))
         }
@@ -395,7 +395,7 @@ impl Stat {
     }
 
     fn from_str(raw: &str) -> Self {
-        let splits: Vec<&str> = raw.split("/").collect();
+        let splits: Vec<&str> = raw.split('/').collect();
         let min = u8::from_str(splits[0]).expect("Data is always right, riight?");
         let max = u8::from_str(splits[1]).expect("Data is always right, riiiight?");
 
@@ -406,10 +406,10 @@ impl Stat {
         result.push_str(&std::format!("**{}**: ", stat_name));
 
         for _ in 0..self.min {
-            result.push_str("⬤");
+            result.push('⬤');
         }
         for _ in 0..self.max-self.min {
-            result.push_str("⭘");
+            result.push('⭘');
         }
 
         result.push_str(&std::format!(" `{}/{}`\n", self.min, self.max));
