@@ -5,7 +5,7 @@ use serenity::builder::{CreateButton, CreateComponents};
 use serenity::model::application::component::ButtonStyle;
 use serenity::model::application::interaction::InteractionResponseType;
 use serenity::model::application::interaction::message_component::MessageComponentInteraction;
-use crate::commands::{Context, Error, learns};
+use crate::commands::{Context, efficiency, Error, learns};
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::data::pokemon::Pokemon;
 
@@ -19,7 +19,7 @@ pub async fn stats(
     name: String,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&name.to_lowercase()) {
-        let mut button_states = ButtonStates {moves: false, abilities: false};
+        let mut button_states = ButtonStates {moves: false, abilities: false, type_effectiveness: false};
 
         let reply = ctx.send(|b| {
             b.content(pokemon.build_stats_string());
@@ -29,7 +29,7 @@ pub async fn stats(
         let message = reply.message().await?;
 
         let mut interaction_count: u8 = 0;
-        while interaction_count < 2 {
+        while interaction_count < 3 {
             let interaction = message
                 .await_component_interaction(ctx)
                 .timeout(std::time::Duration::from_secs(3 * 60))
@@ -52,11 +52,13 @@ pub async fn stats(
 struct ButtonStates {
     pub moves: bool,
     pub abilities: bool,
+    pub type_effectiveness: bool,
 }
 
 fn create_buttons<'a>(button_states: &ButtonStates, b: &'a mut CreateComponents) -> &'a mut CreateComponents {
     b.create_action_row(|b| {
         b.add_button(create_button("Abilities", button_states.abilities));
+        b.add_button(create_button("Type Effectiveness", button_states.type_effectiveness));
         b.add_button(create_button("Moves", button_states.moves))
     })
 }
@@ -75,8 +77,10 @@ async fn match_interaction<'a>(ctx: Context<'a>, button_states: &mut ButtonState
         Some(m) => {
             if m.data.custom_id == "Moves" {
                 button_states.moves = true;
-            } else {
+            } else if m.data.custom_id == "Abilities" {
                 button_states.abilities = true;
+            } else {
+                button_states.type_effectiveness = true;
             }
 
             m.create_interaction_response(ctx, |response| {
@@ -87,8 +91,10 @@ async fn match_interaction<'a>(ctx: Context<'a>, button_states: &mut ButtonState
 
             if m.data.custom_id == "Moves" {
                 learns::list_learns(ctx, pokemon).await?;
-            } else {
+            } else if m.data.custom_id == "Abilities" {
                 ctx.send(|b| b.content(pokemon.build_ability_string(&ctx.data().abilities))).await?;
+            } else {
+                ctx.send(|b| b.content(efficiency::get_type_resistances_string(pokemon, &ctx.data().type_efficiency))).await?;
             }
         },
         None => {

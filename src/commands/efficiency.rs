@@ -17,9 +17,9 @@ fn print(result: &mut String, efficiencies: &[EfficiencyMapping], efficiency: Ef
         return;
     }
 
-    result.push_str(std::format!("**{}**\n", efficiency).as_str());
+    result.push_str(std::format!("### {}\n", efficiency).as_str());
     result.push_str(filtered.join("  |  ").as_str());
-    result.push_str("\n\n");
+    result.push('\n');
 }
 
 struct EfficiencyMapping {
@@ -33,13 +33,13 @@ impl fmt::Display for EfficiencyMapping {
     }
 }
 
-fn get_type_resistances(pokemon: &Pokemon, type_efficiency: &TypeEfficiency) -> String {
+pub fn get_type_resistances_string(pokemon: &Pokemon, type_efficiency: &TypeEfficiency) -> String {
     let efficiencies: Vec<EfficiencyMapping> = PokemonType::iter()
         .filter(|x| x != &PokemonType::Shadow)
         .map(|x| EfficiencyMapping {pokemon_type: x, efficiency: type_efficiency.against_pokemon_as_enum(&x, pokemon)})
         .collect();
 
-    let mut result = std::format!("Type Efficiency against {}\n", pokemon.name);
+    let mut result = std::format!("## Type Efficiency against {}\n", pokemon.name);
     print(&mut result, &efficiencies, Efficiency::SuperEffective);
     print(&mut result, &efficiencies, Efficiency::Effective);
     // print(&mut result, &efficiencies, Efficiency::Normal);
@@ -60,7 +60,7 @@ pub async fn efficiency(
     name: String,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&name.to_lowercase()) {
-        ctx.say(get_type_resistances(pokemon, &ctx.data().type_efficiency)).await?;
+        ctx.say(get_type_resistances_string(pokemon, &ctx.data().type_efficiency)).await?;
     } else {
         ctx.send(|b| {
             b.content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name));
