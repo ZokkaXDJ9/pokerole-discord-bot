@@ -262,7 +262,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     let pokemon_forms: Vec<ApiPokemonForm> = load_csv(path.clone() + "data/v2/csv/pokemon_forms.csv");
     let pokemon_form_types: Vec<ApiPokemonFormTypes> = load_csv(path.clone() + "data/v2/csv/pokemon_form_types.csv");
     let pokemon_form_names: Vec<ApiPokemonFormNames> = load_csv(path.clone() + "data/v2/csv/pokemon_form_names.csv");
-    let move_names: Vec<ApiMoveNames> = load_csv(path.clone() + "data/v2/csv/move_names.csv");
+    let move_names: Vec<ApiMoveNames> = load_csv(path + "data/v2/csv/move_names.csv");
 
     let mut ability_id_to_name: HashMap<u16, String> = HashMap::default();
     for x in ability_names {
@@ -326,7 +326,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
 
         if let Some(name) = x.pokemon_name {
             if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
-                pokemon_id_to_name.insert(pokemon_id.clone(), name);
+                pokemon_id_to_name.insert(*pokemon_id, name);
             } else {
                 error!("Unable to map pokemon form id {} to a pokemon id!", x.pokemon_form_id);
             }
@@ -395,7 +395,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
 
             let new_move_entry = ApiMoveEntry {
                 move_name,
-                generation_id: version_group_id_to_generation_id.get(&pokemon_move.version_group_id).expect("All generation ids should be set").clone(),
+                generation_id: *version_group_id_to_generation_id.get(&pokemon_move.version_group_id).expect("All generation ids should be set"),
             };
 
             let learn_method = method_id_to_name.get(&pokemon_move.pokemon_move_method_id).unwrap().clone();
@@ -406,16 +406,14 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
                 "machine" => pokemon_entry.machine.push(new_move_entry),
                 _ => {}
             }
-        } else {
-            if !missing_pokemon_ids.contains(&pokemon_move.pokemon_id) {
-                missing_pokemon_ids.push(pokemon_move.pokemon_id);
-            }
+        } else if !missing_pokemon_ids.contains(&pokemon_move.pokemon_id) {
+            missing_pokemon_ids.push(pokemon_move.pokemon_id);
         }
     }
 
     for x in missing_pokemon_ids {
         // 10250 - 10271 is Amigento, skip that one for now
-        if x < 10250 || x > 10271 {
+        if !(10250..=10271).contains(&x) {
             log::warn!("Missing pokemon data for pokemon_id {}", x)
         }
 
