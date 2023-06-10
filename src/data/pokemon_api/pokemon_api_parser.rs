@@ -1,158 +1,11 @@
 use std::collections::{HashMap};
 use log::error;
-use serde::Deserialize;
 use strum::IntoEnumIterator;
 use crate::csv_utils::load_csv;
 use crate::data::pokemon::{Height, Weight};
 use crate::data::type_efficiency::TypeEfficiency;
 use crate::enums::PokemonType;
-
-/// version_groups.csv
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiVersionGroups {
-    id: u8,
-    identifier: String,
-    generation_id: u8,
-    order: u8
-}
-
-/// pokemon.csv
-/// Contains base data about pokemon, such as height and weight. Pretty much just height and weight.
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiPokemon {
-    id: u16,
-    identifier: String,
-    species_id: u16,
-    /// in 10cm
-    height: u16,
-    /// in 100g
-    weight: u16,
-    base_experience: Option<u16>,
-    order: Option<u16>,
-    is_default: u8,
-}
-
-/// ability_names.csv
-/// Contains names for all abilities.
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiAbilityName {
-    ability_id: u16,
-    local_language_id: u8,
-    name: String,
-}
-
-/// pokemon_abilities.csv
-/// Contains data about each pokemon's abilities.
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiPokemonAbility {
-    pokemon_id: u16,
-    ability_id: u16,
-    is_hidden: u8,
-    slot: u8,
-}
-
-/// pokemon_moves.csv
-/// Contains info on what moves a pokemon can learn and how.
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiPokemonMoves {
-    pokemon_id: u16,
-    version_group_id: u8,
-    move_id: u16,
-    pokemon_move_method_id: u8,
-    level: u8,
-    order: Option<u8>,
-}
-
-/// pokemon_move_methods.csv
-/// Maps a move is acquired
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiPokemonMoveMethods {
-    id: u8,
-    identifier: String,
-}
-
-/// pokemon_species_names.csv
-/// Contains the name for regular Pokemon
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiPokemonSpeciesNames {
-    pokemon_species_id: u16,
-    local_language_id: u8,
-    name: String,
-    genus: String,
-}
-
-/// pokemon_forms.csv
-/// Contains the names for regional Pokemon and other weird forms
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiPokemonForm {
-    id: u16,
-    identifier: String,
-    form_identifier: Option<String>,
-    pokemon_id: u16,
-    is_default: u8,
-    is_battle_only: u8,
-    is_mega: u8,
-    form_order: u16,
-    order: u16,
-}
-
-/// pokemon_form_names.csv
-/// Contains the names for regional Pokemon and other weird forms
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiPokemonFormNames {
-    pokemon_form_id: u16,
-    local_language_id: u8,
-    form_name: String,
-    pokemon_name: Option<String>
-}
-
-/// pokemon_types.csv
-/// Contains type identifiers for pokemon
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiPokemonTypes {
-    pokemon_id: u16,
-    type_id: u16,
-    slot: u8,
-}
-
-/// pokemon_form_types.csv
-/// Contains type identifiers for pokemon
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiPokemonFormTypes {
-    pokemon_form_id: u16,
-    type_id: u16,
-    slot: u8,
-}
-
-/// move_names.csv
-/// Contains the names for moves
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub struct ApiMoveNames {
-    move_id: u16,
-    local_language_id: u8,
-    name: String
-}
-
-/// type_efficacy.csv
-/// Tells us how much damage an attack will deal against a certain single type
-#[derive(Debug, Deserialize)]
-struct ApiTypeEfficacy {
-    damage_type_id: u16,
-    target_type_id: u16,
-    damage_factor: u8
-}
+use crate::data::pokemon_api::api_types::*;
 
 #[derive(Debug)]
 pub struct ApiMoveEntry {
@@ -194,8 +47,8 @@ impl ApiPokemonLearnableMoves {
     }
 }
 
-fn type_id_to_pokemon_type(id: u16) -> PokemonType {
-    match id {
+fn type_id_to_pokemon_type(id: TypeId) -> PokemonType {
+    match id.0 {
         1 => PokemonType::Normal,
         2 => PokemonType::Fighting,
         3 => PokemonType::Flying,
@@ -216,7 +69,7 @@ fn type_id_to_pokemon_type(id: u16) -> PokemonType {
         18 => PokemonType::Fairy,
         10001 => PokemonType::Normal, // Unknown but ... what pokemon has unknown type?! D:
         10002 => PokemonType::Shadow,
-        _ => panic!("Weird type id: {}", id)
+        _ => panic!("Weird type id: {}", id.0)
     }
 }
 
@@ -267,7 +120,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     let pokemon_form_names: Vec<ApiPokemonFormNames> = load_csv(path.clone() + "data/v2/csv/pokemon_form_names.csv");
     let move_names: Vec<ApiMoveNames> = load_csv(path + "data/v2/csv/move_names.csv");
 
-    let mut ability_id_to_name: HashMap<u16, String> = HashMap::default();
+    let mut ability_id_to_name: HashMap<AbilityId, String> = HashMap::default();
     for x in ability_names {
         if x.local_language_id != english_language_id {
             continue;
@@ -276,14 +129,14 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
         ability_id_to_name.insert(x.ability_id, x.name);
     }
 
-    let mut form_id_to_pokemon_id: HashMap<u16, u16> = HashMap::default();
+    let mut form_id_to_pokemon_id: HashMap<PokemonFormId, PokemonId> = HashMap::default();
     for x in pokemon_forms {
         form_id_to_pokemon_id.insert(x.id, x.pokemon_id);
     }
 
-    let mut pokemon_id_to_pokemon_ability1: HashMap<u16, String> = HashMap::default();
-    let mut pokemon_id_to_pokemon_ability2: HashMap<u16, String> = HashMap::default();
-    let mut pokemon_id_to_pokemon_ability_hidden: HashMap<u16, String> = HashMap::default();
+    let mut pokemon_id_to_pokemon_ability1: HashMap<PokemonId, String> = HashMap::default();
+    let mut pokemon_id_to_pokemon_ability2: HashMap<PokemonId, String> = HashMap::default();
+    let mut pokemon_id_to_pokemon_ability_hidden: HashMap<PokemonId, String> = HashMap::default();
     for x in pokemon_abilities {
         match x.slot {
             1 => pokemon_id_to_pokemon_ability1.insert(x.pokemon_id, ability_id_to_name.get(&x.ability_id).expect("Ability should be set!").clone()),
@@ -293,8 +146,8 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
         };
     }
 
-    let mut pokemon_id_to_pokemon_type1: HashMap<u16, PokemonType> = HashMap::default();
-    let mut pokemon_id_to_pokemon_type2: HashMap<u16, PokemonType> = HashMap::default();
+    let mut pokemon_id_to_pokemon_type1: HashMap<PokemonId, PokemonType> = HashMap::default();
+    let mut pokemon_id_to_pokemon_type2: HashMap<PokemonId, PokemonType> = HashMap::default();
     for x in pokemon_types {
         if x.slot == 1 {
             pokemon_id_to_pokemon_type1.insert(x.pokemon_id, type_id_to_pokemon_type(x.type_id));
@@ -305,22 +158,23 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     for x in pokemon_form_types {
         if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
             if x.slot == 1 {
-                pokemon_id_to_pokemon_type1.insert(pokemon_id.to_owned(), type_id_to_pokemon_type(x.type_id));
+                pokemon_id_to_pokemon_type1.insert(PokemonId(pokemon_id.0), type_id_to_pokemon_type(x.type_id));
             } else {
-                pokemon_id_to_pokemon_type2.insert(pokemon_id.to_owned(), type_id_to_pokemon_type(x.type_id));
+                pokemon_id_to_pokemon_type2.insert(PokemonId(pokemon_id.0), type_id_to_pokemon_type(x.type_id));
             }
         } else {
-            error!("Unable to map pokemon form id {} to a pokemon id!", x.pokemon_form_id);
+            error!("Unable to map pokemon form id {} to a pokemon id!", x.pokemon_form_id.0);
         }
     }
 
-    let mut pokemon_id_to_name: HashMap<u16, String> = HashMap::default();
+    let mut pokemon_id_to_name: HashMap<PokemonId, String> = HashMap::default();
     for x in pokemon_species_names {
         if x.local_language_id != english_language_id {
             continue;
         }
 
-        pokemon_id_to_name.insert(x.pokemon_species_id, x.name);
+        // These should be always the same for species < 10000
+        pokemon_id_to_name.insert( PokemonId(x.pokemon_species_id.0), x.name);
     }
     for x in pokemon_form_names {
         if x.local_language_id != english_language_id {
@@ -329,14 +183,14 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
 
         if let Some(name) = x.pokemon_name {
             if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
-                pokemon_id_to_name.insert(*pokemon_id, name);
+                pokemon_id_to_name.insert(PokemonId(pokemon_id.0), name);
             } else {
-                error!("Unable to map pokemon form id {} to a pokemon id!", x.pokemon_form_id);
+                error!("Unable to map pokemon form id {} to a pokemon id!", x.pokemon_form_id.0);
             }
         }
     }
 
-    let mut move_id_to_name: HashMap<u16, String> = HashMap::default();
+    let mut move_id_to_name: HashMap<MoveId, String> = HashMap::default();
     for x in move_names {
         if x.local_language_id != english_language_id {
             continue;
@@ -416,13 +270,13 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
 
     for x in missing_pokemon_ids {
         // 10250 - 10271 is Amigento, skip that one for now
-        if !(10250..=10271).contains(&x) {
-            log::warn!("Missing pokemon data for pokemon_id {}", x)
+        if !(10250..=10271).contains(&x.0) {
+            log::warn!("Missing pokemon data for pokemon_id {}", x.0)
         }
 
     }
     for x in missing_move_ids {
-        log::warn!("Missing move data for move_id {}", x)
+        log::warn!("Missing move data for move_id {}", x.0)
     }
 
 
