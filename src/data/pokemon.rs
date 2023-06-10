@@ -209,21 +209,21 @@ impl Pokemon {
 
         let moves;
         if let Some(api_data) = api_option {
-            moves = LearnablePokemonMoves {
-                by_pokerole_rank: raw.moves.iter().map(PokemonMoveLearnedByRank::new).collect(),
-                by_level_up: api_data.learnable_moves.level_up.iter().map(|x| x.move_name.to_owned()).collect(),
-                by_machine: api_data.learnable_moves.machine.iter().map(|x| x.move_name.to_owned()).collect(),
-                by_tutor: api_data.learnable_moves.tutor.iter().map(|x| x.move_name.to_owned()).collect(),
-                by_egg: api_data.learnable_moves.egg.iter().map(|x| x.move_name.to_owned()).collect()
-            };
+            moves = LearnablePokemonMoves::create_from(
+                raw.moves.iter().map(PokemonMoveLearnedByRank::new).collect(),
+                api_data.learnable_moves.level_up.iter().map(|x| x.move_name.to_owned()).collect(),
+                api_data.learnable_moves.machine.iter().map(|x| x.move_name.to_owned()).collect(),
+                api_data.learnable_moves.tutor.iter().map(|x| x.move_name.to_owned()).collect(),
+                api_data.learnable_moves.egg.iter().map(|x| x.move_name.to_owned()).collect()
+            );
         } else {
-            moves = LearnablePokemonMoves {
-                by_pokerole_rank: raw.moves.iter().map(PokemonMoveLearnedByRank::new).collect(),
-                by_level_up: vec![],
-                by_machine: vec![],
-                by_tutor: vec![],
-                by_egg: vec![]
-            };
+            moves = LearnablePokemonMoves::create_from(
+                raw.moves.iter().map(PokemonMoveLearnedByRank::new).collect(),
+                vec![],
+                vec![],
+                vec![],
+                vec![]
+            );
         }
 
         Pokemon {
@@ -278,13 +278,13 @@ impl Pokemon {
         let (api_issue, api_option) = Pokemon::get_api_entry(&raw.name, api, &regional_variant);
         let api_data = api_option.unwrap_or_else(|| panic!("API Data should ALWAYS be found for custom mons. {}", raw.name));
 
-        let moves = LearnablePokemonMoves {
-            by_pokerole_rank: Pokemon::moves_from_custom(&raw.moves),
-            by_level_up: api_data.learnable_moves.level_up.iter().map(|x| x.move_name.to_owned()).collect(),
-            by_machine: api_data.learnable_moves.machine.iter().map(|x| x.move_name.to_owned()).collect(),
-            by_tutor: api_data.learnable_moves.tutor.iter().map(|x| x.move_name.to_owned()).collect(),
-            by_egg: api_data.learnable_moves.egg.iter().map(|x| x.move_name.to_owned()).collect()
-        };
+        let moves = LearnablePokemonMoves::create_from(
+            Pokemon::moves_from_custom(&raw.moves),
+            api_data.learnable_moves.level_up.iter().map(|x| x.move_name.to_owned()).collect(),
+            api_data.learnable_moves.machine.iter().map(|x| x.move_name.to_owned()).collect(),
+            api_data.learnable_moves.tutor.iter().map(|x| x.move_name.to_owned()).collect(),
+            api_data.learnable_moves.egg.iter().map(|x| x.move_name.to_owned()).collect()
+        );
 
         Pokemon {
             number: raw.number,
@@ -437,6 +437,31 @@ pub struct LearnablePokemonMoves {
     pub by_machine: Vec<String>,
     pub by_tutor: Vec<String>,
     pub by_egg: Vec<String>,
+}
+
+impl LearnablePokemonMoves {
+    pub fn create_from(by_pokerole_rank: Vec<PokemonMoveLearnedByRank>,
+                       by_level_up: Vec<String>,
+                       by_machine: Vec<String>,
+                       by_tutor: Vec<String>,
+                       by_egg: Vec<String>) -> Self {
+
+        let mut result = LearnablePokemonMoves {
+            by_pokerole_rank,
+            by_level_up,
+            by_machine,
+            by_tutor,
+            by_egg,
+        };
+
+        result.by_pokerole_rank.sort_by(|a, b| a.name.cmp(&b.name));
+        result.by_level_up.sort();
+        result.by_machine.sort();
+        result.by_tutor.sort();
+        result.by_egg.sort();
+
+        result
+    }
 }
 
 #[derive(Debug)]
