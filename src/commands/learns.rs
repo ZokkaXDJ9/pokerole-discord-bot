@@ -54,7 +54,15 @@ pub(in crate::commands) async fn list_learns<'a>(ctx: Context<'a>, pokemon: &Pok
                 })
             }).await?;
 
-            ctx.send(|b| b.content(pokemon.build_tm_move_string())).await?;
+            let result = pokemon.build_tm_move_string().into();
+            if result.len() < 2000 {
+                ctx.send(|b| b.content(result)).await?;
+            } else {
+                let split_index = result.split_at(2000).0.rfind("\n**");
+                let split = result.split_at(split_index.unwrap_or(2000));
+                ctx.send(|b| b.content(split.0)).await?;
+                ctx.send(|b| b.content(split.1)).await?;
+            }
         },
         None => {
             reply.edit(ctx, |b| {
