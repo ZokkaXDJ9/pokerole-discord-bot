@@ -183,11 +183,14 @@ pub struct PokemonApiData {
 }
 
 impl ApiPokemonLearnableMoves {
-    fn has_move(&self, name: String) -> bool {
-        self.level_up.iter().any(|x| x.move_name == name)
-            || self.machine.iter().any(|x| x.move_name == name)
-            || self.tutor.iter().any(|x| x.move_name == name)
-            || self.egg.iter().any(|x| x.move_name == name)
+    fn has_move(&self, name: String, learn_method: &str) -> bool {
+        match learn_method {
+            "level-up" => self.level_up.iter().any(|x| x.move_name == name),
+            "egg" => self.egg.iter().any(|x| x.move_name == name),
+            "tutor" => self.tutor.iter().any(|x| x.move_name == name),
+            "machine" => self.machine.iter().any(|x| x.move_name == name),
+            _ => false
+        }
     }
 }
 
@@ -389,16 +392,16 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
             let move_name = move_name_option.unwrap().clone();
 
             let pokemon_entry = &mut result.get_mut(pokemon_name).unwrap().learnable_moves;
-            if pokemon_entry.has_move(move_name.clone()) {
+            let learn_method = method_id_to_name.get(&pokemon_move.pokemon_move_method_id).unwrap().clone();
+            if pokemon_entry.has_move(move_name.clone(), &learn_method) {
                 continue;
             }
 
             let new_move_entry = ApiMoveEntry {
-                move_name,
+                move_name: move_name.clone(),
                 generation_id: *version_group_id_to_generation_id.get(&pokemon_move.version_group_id).expect("All generation ids should be set"),
             };
 
-            let learn_method = method_id_to_name.get(&pokemon_move.pokemon_move_method_id).unwrap().clone();
             match learn_method.as_str() {
                 "level-up" => pokemon_entry.level_up.push(new_move_entry),
                 "egg" => pokemon_entry.egg.push(new_move_entry),

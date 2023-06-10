@@ -72,8 +72,8 @@ pub(in crate::commands) async fn list_learns<'a>(ctx: Context<'a>, pokemon: &Pok
 
 fn create_button(disabled: bool) -> CreateButton {
     let mut button = CreateButton::default();
-    button.label("Show TM Moves");
-    button.custom_id("Show TM Moves");
+    button.label("Show All Learnable Moves");
+    button.custom_id("Show All Learnable Moves");
     button.style(ButtonStyle::Primary);
     button.disabled(disabled);
     button
