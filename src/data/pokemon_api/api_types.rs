@@ -83,6 +83,33 @@ pub struct ApiPokemonMoveMethods {
     pub identifier: String,
 }
 
+/// pokemon_species.csv
+/// Contains general information regarding a pokemon species
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+pub struct ApiPokemonSpecies {
+    pub id: PokemonSpeciesId,
+    pub identifier: String,
+    pub generation_id: u8,
+    pub evolves_from_species_id: Option<PokemonSpeciesId>,
+    pub evolution_chain_id: u16,
+    pub color_id: u16,
+    pub shape_id: Option<u16>,
+    pub habitat_id: Option<u16>,
+    pub gender_rate: i16, // Genderless seems to be -1
+    pub capture_rate: u16,
+    pub base_happiness: Option<u8>,
+    pub is_baby: u8,
+    pub hatch_counter: Option<u8>,
+    pub has_gender_differences: u8,
+    pub growth_rate_id: u8,
+    pub forms_switchable: u8,
+    pub is_legendary: u8,
+    pub is_mythical: u8,
+    pub order: u16,
+    pub conquest_order: Option<u16>,
+}
+
 /// pokemon_species_names.csv
 /// Contains the name for regular Pokemon
 #[derive(Debug, Deserialize)]

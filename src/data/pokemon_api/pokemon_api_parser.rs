@@ -114,6 +114,8 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     let pokemon_types: Vec<ApiPokemonTypes> = load_csv(path.clone() + "data/v2/csv/pokemon_types.csv");
     let pokemon_moves: Vec<ApiPokemonMoves> = load_csv(path.clone() + "data/v2/csv/pokemon_moves.csv");
     let pokemon_move_methods: Vec<ApiPokemonMoveMethods> = load_csv(path.clone() + "data/v2/csv/pokemon_move_methods.csv");
+    // Useful if we ever want to keep track of egg moves across evos
+    //let pokemon_species: Vec<ApiPokemonSpecies> = load_csv(path.clone() + "data/v2/csv/pokemon_species.csv");
     let pokemon_species_names: Vec<ApiPokemonSpeciesNames> = load_csv(path.clone() + "data/v2/csv/pokemon_species_names.csv");
     let pokemon_forms: Vec<ApiPokemonForm> = load_csv(path.clone() + "data/v2/csv/pokemon_forms.csv");
     let pokemon_form_types: Vec<ApiPokemonFormTypes> = load_csv(path.clone() + "data/v2/csv/pokemon_form_types.csv");
