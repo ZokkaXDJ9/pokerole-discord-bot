@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use crate::data::parser::custom_data::custom_ability::CustomAbility;
 use crate::data::pokerole_data::raw_ability::RawPokeroleAbility;
 
 #[derive(Debug, Deserialize)]
@@ -11,6 +12,14 @@ pub struct Ability {
 
 impl Ability {
     pub(in crate::data) fn new(raw: &RawPokeroleAbility) -> Self {
+        Ability {
+            name: raw.name.clone(),
+            description: raw.description.clone(),
+            effect: raw.effect.clone(),
+        }
+    }
+
+    pub(in crate::data) fn from_custom(raw: &CustomAbility) -> Self {
         Ability {
             name: raw.name.clone(),
             description: raw.description.clone(),

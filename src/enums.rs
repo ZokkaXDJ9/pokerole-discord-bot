@@ -1,5 +1,5 @@
 use std::fmt;
-use std::fmt::{Formatter, Write};
+use std::fmt::{Formatter};
 use serde::Deserialize;
 use strum_macros::{EnumIter, EnumString};
 

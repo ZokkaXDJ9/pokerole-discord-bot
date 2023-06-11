@@ -36,7 +36,7 @@ pub fn initialize_data() -> GameData {
     let (rule_names, rule_hash_map) = parse_rules();
     let (move_names, move_hash_map) = parse_moves(&pokerole_data, &custom_data);
     let (nature_names, nature_hash_map) = parse_natures(&pokerole_data);
-    let (ability_names, ability_hash_map) = parse_abilities(&pokerole_data);
+    let (ability_names, ability_hash_map) = parse_abilities(&pokerole_data, &custom_data);
     let (weather_names, weather_hash_map) = parse_weather(&pokerole_csv_data);
     let (pokemon_names, pokemon_hash_map) = parse_pokemon(&pokemon_api_data, &pokerole_data, &custom_data);
     let (status_names, status_hash_map) = parse_status_effects(pokerole_csv_data, &custom_data);
@@ -161,13 +161,24 @@ fn parse_weather(pokerole_csv_data: &RawPokeroleDiscordPyCsvData) -> (Vec<String
     (weather_names, weather_hash_map)
 }
 
-fn parse_abilities(pokerole_data: &PokeroleParseResult) -> (Vec<String>, HashMap<String, Ability>) {
+fn parse_abilities(pokerole_data: &PokeroleParseResult, custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, Ability>) {
     let mut ability_names = Vec::default();
     let mut ability_hash_map = HashMap::default();
     for x in &pokerole_data.abilities {
         ability_names.push(x.name.clone());
         ability_hash_map.insert(x.name.to_lowercase(), Ability::new(x));
     }
+
+    for x in &custom_data.abilities {
+        if ability_names.contains(&x.name) {
+            info!("Overriding {}", x.name);
+        } else {
+            ability_names.push(x.name.clone());
+        }
+
+        ability_hash_map.insert(x.name.to_lowercase(), Ability::from_custom(x));
+    }
+
     (ability_names, ability_hash_map)
 }
 
