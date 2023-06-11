@@ -150,16 +150,18 @@ impl Move {
         result.push_str(self.target.to_string().as_str());
         result.push('\n');
 
-        result.push_str("**Damage Dice**: ");
-        if let Some(stat) = self.damage1 {
-            result.push_str(std::format!("{:?}", stat).as_str());
-            result.push_str(" + ");
+        if self.damage1.is_some() || self.happiness_damage.is_some() || self.power > 0 {
+            result.push_str("**Damage Dice**: ");
+            if let Some(stat) = self.damage1 {
+                result.push_str(std::format!("{:?}", stat).as_str());
+                result.push_str(" + ");
+            }
+            if let Some(stat) = self.happiness_damage {
+                result.push_str(std::format!("{:?}", stat).as_str());
+                result.push_str(" + ");
+            }
+            result.push_str(&std::format!("{}\n", self.power));
         }
-        if let Some(stat) = self.happiness_damage {
-            result.push_str(std::format!("{:?}", stat).as_str());
-            result.push_str(" + ");
-        }
-        result.push_str(&std::format!("{}\n", self.power));
 
         result.push_str("**Accuracy Dice**: ");
         if let Some(stat) = self.accuracy1 {
