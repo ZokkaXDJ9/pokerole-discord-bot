@@ -47,9 +47,13 @@ Characters who wish to not evolve upon reaching the required rank might choose t
                 example: Some(String::from("Let's say you want to play a Tyranitar. Pupitar is probably not the most fun to play, so you decide to start out fully evolved right from the get go. Until level 3 you will have to play with the base stats of a Larvitar. Once you reach level 3, you can upgrade your base stats to that of a Pupitar, and, finally, once you reach level 6, your base stats may reflect those of a full-powered Tyranitar!"))
             }, Rule {
                 name: String::from("Multi-Target moves"),
-                flavor: Some(String::from("\"Watch out, it's the 'Oops, I Did It Everywhere' attack!\"")),
-                text: String::from("When using moves targeting *All Foes*, declare the order in which your characters focuses on them. Only the first target can receive a critical hit, and for every successive target hit, reduce the damage die count by 1."),
-                example: Some(String::from("You are using Earthquake against three foes! First, you declare the order in which they are to be hit: Ursaring, Absol, Sneasler. Then, you roll accuracy. It's a crit, yay! Roll your regular 8 damage dies against the Ursaring. Critical damage will be applied! Then, roll 7 damage dies against the Lucario. Finally, 6 dies against the Sneasler. Both of those take the regular damage without crit modifiers."))
+                flavor: Some(String::from("Watch out, it's the 'Oops, I Did It Everywhere' attack!")),
+                text: String::from("\
+- Moves targeting **All Foes**: Declare the order in which your character focuses on your enemies.
+- Moves targeting **Area**: Use `/select_random` to determine the order in which the combatants are hit. These moves target *everyone* except the user.
+
+In both cases, only the first target can receive a critical hit, and for every successive target hit, reduce the damage die count by 1. There is *no* target limit."),
+                example: Some(String::from("You are using Razor Leaf against three foes! First, you declare the order in which they are to be hit: Ursaring, Absol, Sneasler. Then, you roll accuracy. It's a crit, yay! Roll your regular 6 damage dies against the Ursaring. Critical damage will be applied! Then, roll 5 damage dies against the Lucario. Finally, 4 dies against the Sneasler. Both of those take the regular damage without crit modifiers."))
             }, Rule {
                 name: String::from("Critical Strike"),
                 flavor: Some(String::from("Hit 'em right between the legs!")),
