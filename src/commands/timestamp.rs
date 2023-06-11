@@ -1,5 +1,6 @@
 use crate::commands::{Context, Error};
 use chrono::{Datelike, NaiveDate, Timelike, TimeZone, Utc};
+use serenity::utils::MessageBuilder;
 
 /// Create a timestamp based of a UTC date.
 #[poise::command(slash_command)]
@@ -30,7 +31,12 @@ pub async fn timestamp(
 
     let unix_timestamp = timestamp_utc.timestamp();
 
-    ctx.say(std::format!("<t:{0}:f> (<t:{0}:R>)", unix_timestamp.to_string())).await?;
+    let result = std::format!("<t:{0}:f> (<t:{0}:R>)", unix_timestamp.to_string());
+    let mut builder = MessageBuilder::default();
+    builder.push_line(&result);
+    builder.push_mono_line(&result);
+
+    ctx.say(builder.to_string()).await?;
 
     Ok(())
 }
