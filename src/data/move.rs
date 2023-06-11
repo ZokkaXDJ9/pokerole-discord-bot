@@ -131,7 +131,7 @@ impl Move {
     pub(crate) fn build_string(&self) -> String {
         let mut result : String = std::format!("### {}\n", &self.name);
         if let Some(description) = &self.description {
-            result.push_str("*");
+            result.push('*');
             result.push_str(description);
             result.push_str("*\n");
         }
@@ -143,7 +143,7 @@ impl Move {
             result.push_str(std::format!("{:?}", self.typing).as_str());
         }
         result.push_str(" — **");
-        result.push_str(std::format!("{:?}", self.category).as_str());
+        result.push_str(std::format!("{}", self.category).as_str());
         result.push_str("**\n");
 
         result.push_str("**Target**: ");
@@ -153,11 +153,11 @@ impl Move {
         if self.damage1.is_some() || self.happiness_damage.is_some() || self.power > 0 {
             result.push_str("**Damage Dice**: ");
             if let Some(stat) = self.damage1 {
-                result.push_str(std::format!("{:?}", stat).as_str());
+                result.push_str(std::format!("{}", stat).as_str());
                 result.push_str(" + ");
             }
             if let Some(stat) = self.happiness_damage {
-                result.push_str(std::format!("{:?}", stat).as_str());
+                result.push_str(std::format!("{}", stat).as_str());
                 result.push_str(" + ");
             }
             result.push_str(&std::format!("{}\n", self.power));
@@ -165,7 +165,7 @@ impl Move {
 
         result.push_str("**Accuracy Dice**: ");
         if let Some(stat) = self.accuracy1 {
-            result.push_str(std::format!("{:?}", stat).as_str());
+            result.push_str(std::format!("{}", stat).as_str());
 
             if self.accuracy2.is_some() {
                 result.push_str(" + Rank");
