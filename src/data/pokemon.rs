@@ -429,6 +429,15 @@ impl fmt::Display for Height{
     }
 }
 
+impl Height {
+    pub fn scale(&self, percentage: u8) -> Height{
+        Height {
+            meters: self.meters * (percentage as f32 * 0.01),
+            feet: self.feet * (percentage as f32 * 0.01),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct Weight {
@@ -439,6 +448,15 @@ pub struct Weight {
 impl fmt::Display for Weight{
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{:.1}kg / {:.1}lbs", self.kilograms, self.pounds)
+    }
+}
+
+impl Weight {
+    pub fn scale(&self, percentage: u8) -> Weight{
+        Weight {
+            kilograms: self.kilograms * (percentage as f32 * 0.01),
+            pounds: self.pounds * (percentage as f32 * 0.01),
+        }
     }
 }
 
