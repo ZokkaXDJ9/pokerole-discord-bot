@@ -100,6 +100,11 @@ Every Character has access to the following moves at any time:
                 text: String::from("Characters afflicted by accuracy reduction (either as a stat change or through a move effect) still roll the regular amount of accuracy dies, but then subtract -X from the amount of successes this roll had."),
                 example: Some(String::from("Let's say you want to use Rock Slide. The move has a -1 Accuracy effect. You roll your regular Dex+Rank amount of dies for your accuracy and land two successes. Now we reduce those successes by -1... which leaves us with one success, so the attack still hits, yay!"))
             }, Rule {
+                name: String::from("SFW / NSFW Channels"),
+                flavor: Some(String::from("Keep it in your pants/sheath!")),
+                text: String::from("Channels which are prefixed SFW are strictly SFW. Everywhere else, NSFW stuff is allowed (and optional), as long as it doesn't just randomly interrupt an ongoing scene without asking first."),
+                example: None
+            }, Rule {
                 name: String::from("Defense"),
                 flavor: Some(String::from("How much of a beating can you really take?")),
                 text: String::from("You Physical Defense is `Vitality / 2`.\nYour Special Defense is `Insight / 2`.nMinimum damage is always 1, unless you resist the attack's type - this is the only case where it gets reduced to 0."),
