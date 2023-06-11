@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Formatter;
 use std::str::FromStr;
 use std::sync::Arc;
 use log::{error, warn};
@@ -345,11 +347,9 @@ impl Pokemon {
 
     pub fn build_stats_string(&self) -> String {
         let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
-        result.push_str(&std::format!("{:.1}m / {:.1}ft   |   {:.1}kg / {:.1}lbs\n",
-                                      self.height.meters,
-                                      self.height.feet,
-                                      self.weight.kilograms,
-                                      self.weight.pounds));
+        result.push_str(&std::format!("{}   |   {}\n",
+                                      self.height,
+                                      self.weight));
         result.push_str("**Type**: ");
         result.push_str(std::format!("{:?}", self.type1).as_str());
         if let Some(type2) = self.type2 {
@@ -423,11 +423,23 @@ pub struct Height {
     pub feet: f32,
 }
 
+impl fmt::Display for Height{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{:.2}m / {:.2}ft", self.meters, self.feet)
+    }
+}
+
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct Weight {
     pub kilograms: f32,
     pub pounds: f32,
+}
+
+impl fmt::Display for Weight{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{:.1}kg / {:.1}lbs", self.kilograms, self.pounds)
+    }
 }
 
 #[derive(Debug)]
