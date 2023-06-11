@@ -20,6 +20,7 @@ mod about;
 mod autocompletion;
 mod metronome;
 mod efficiency;
+mod select_random;
 
 pub fn get_all_commands() -> Vec<Command<GameData, Error>> {
     vec![
@@ -37,6 +38,7 @@ pub fn get_all_commands() -> Vec<Command<GameData, Error>> {
         weather::weather(),
         metronome::metronome(),
         efficiency::efficiency(),
+        select_random::select_random(),
         about::about()
     ]
 }
