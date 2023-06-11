@@ -46,7 +46,7 @@ Characters who wish to not evolve upon reaching the required rank might choose t
 "),
                 example: Some(String::from("Let's say you want to play a Tyranitar. Pupitar is probably not the most fun to play, so you decide to start out fully evolved right from the get go. Until level 3 you will have to play with the base stats of a Larvitar. Once you reach level 3, you can upgrade your base stats to that of a Pupitar, and, finally, once you reach level 6, your base stats may reflect those of a full-powered Tyranitar!"))
             }, Rule {
-                name: String::from("Multi-Target moves"),
+                name: String::from("Multi-Target and Area moves"),
                 flavor: Some(String::from("Watch out, it's the 'Oops, I Did It Everywhere' attack!")),
                 text: String::from("\
 - Moves targeting **All Foes**: Declare the order in which your character focuses on your enemies.
