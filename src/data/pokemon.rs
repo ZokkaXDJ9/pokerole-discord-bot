@@ -83,47 +83,52 @@ impl Pokemon {
     }
 
     fn append_all_learnable_moves(&self, result: &mut String) {
-        Pokemon::append_moves(result, "\n**TM Moves**\n", self.moves.by_machine.clone());
-        Pokemon::append_moves(result, "\n**Egg Moves**\n", self.moves.by_egg.clone());
-        Pokemon::append_moves(result, "\n**Tutor**\n", self.moves.by_tutor.clone());
-        Pokemon::append_moves(result, "\n**Learned in Game through level up, but not here**\n", self.moves.by_level_up.iter()
+        Pokemon::append_moves(result, "", "\n**TM Moves**\n", self.moves.by_machine.clone());
+        Pokemon::append_moves(result, "", "\n**Egg Moves**\n", self.moves.by_egg.clone());
+        Pokemon::append_moves(result, "", "\n**Tutor**\n", self.moves.by_tutor.clone());
+        Pokemon::append_moves(result, "", "\n**Learned in Game through level up, but not here**\n", self.moves.by_level_up.iter()
             .filter(|x| self.moves.by_pokerole_rank.iter().all(|learn| learn.name.to_lowercase() != x.to_lowercase()))
             .cloned()
             .collect());
     }
-
 }
+
+// FIXME: Move these somewhere else. Also check out if we can use serenity::utils::parse_emoji for this.
+const BRONZE: &str = "<:bronze_rank:1117520898426155019>";
+const SILVER: &str = "<:silver_rank:1117520912531595375>";
+const GOLD: &str = "<:gold_rank:1117520927245217872>";
+const PLATINUM: &str = "<:platinum_rank:1117520966151585812>";
+const DIAMOND: &str = "<:diamond_rank:1117520988956020806>";
 
 impl Pokemon {
     pub(crate) fn build_move_string(&self) -> impl Into<String> + Sized {
         let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
-
-        self.filter_moves(&mut result, "**Bronze**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Bronze);
-        self.filter_moves(&mut result, "**Silver**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Silver);
-        self.filter_moves(&mut result, "**Gold**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Gold);
-        self.filter_moves(&mut result, "**Platinum**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Platinum);
-        self.filter_moves(&mut result, "**Diamond**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Diamond);
+        self.filter_moves(&mut result, BRONZE, " **Bronze**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Bronze);
+        self.filter_moves(&mut result, SILVER, " **Silver**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Silver);
+        self.filter_moves(&mut result, GOLD, " **Gold**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Gold);
+        self.filter_moves(&mut result, PLATINUM, " **Platinum**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Platinum);
+        self.filter_moves(&mut result, DIAMOND, " **Diamond**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Diamond);
 
         result
     }
-
-    fn filter_moves<F>(&self, result: &mut String, title: &str, filter: F)
+    fn filter_moves<F>(&self, result: &mut String, emoji: &str, title: &str, filter: F)
         where F: Fn(&PokemonMoveLearnedByRank) -> bool {
         let moves = self.moves.by_pokerole_rank.iter()
             .filter(|x| filter(x))
             .map(|x| x.name.clone())
             .collect::<Vec<String>>();
 
-        Pokemon::append_moves(result, title, moves);
+        Pokemon::append_moves(result, emoji, title, moves);
     }
 
-    fn append_moves(result: &mut String, title: &str, moves: Vec<String>) {
+    fn append_moves(result: &mut String, emoji: &str, title: &str, moves: Vec<String>) {
         let text = moves.join("  |  ");
 
         if text.is_empty() {
             return;
         }
 
+        result.push_str(emoji);
         result.push_str(title);
         result.push_str(&text);
         result.push('\n');
