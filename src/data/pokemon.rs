@@ -11,12 +11,35 @@ use crate::data::parser::custom_data::custom_pokemon::{CustomPokemon, CustomPoke
 use crate::data::pokemon_api::pokemon_api_parser::PokemonApiData;
 use crate::data::pokemon_api::PokemonApiId;
 use crate::data::pokerole_data::raw_pokemon::{RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon};
-use crate::enums::{MysteryDungeonRank, PokemonType, RegionalVariant};
+use crate::enums::{MysteryDungeonRank, PokemonGeneration, PokemonType, RegionalVariant};
+
+#[derive(Debug)]
+pub struct PokemonSpeciesData {
+    pub has_gender_differences: bool,
+    pub generation: PokemonGeneration,
+}
+
+impl PokemonSpeciesData {
+    pub fn from_option(api_option: &Option<&PokemonApiData>) -> Self {
+        match api_option {
+            Some(x) => Self::from(x),
+            None => PokemonSpeciesData{has_gender_differences: false, generation: PokemonGeneration::Nine}
+        }
+    }
+
+    pub fn from(api: &PokemonApiData) -> Self {
+        PokemonSpeciesData{
+            generation: api.generation,
+            has_gender_differences: api.has_gender_differences
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct Pokemon {
     pub number: u16,
     pub poke_api_id: PokemonApiId,
+    pub species_data: PokemonSpeciesData,
     pub regional_variant: Option<RegionalVariant>,
     pub api_issue: Option<ApiIssueType>,
     pub name: String,
@@ -244,6 +267,7 @@ impl Pokemon {
             number: raw.number,
             poke_api_id: api_id,
             name: raw.name.clone(),
+            species_data: PokemonSpeciesData::from_option(&api_option),
             regional_variant,
             api_issue,
             type1: Pokemon::parse_type(raw.type1.clone()).unwrap(),
@@ -305,6 +329,7 @@ impl Pokemon {
             number: raw.number,
             poke_api_id: PokemonApiId(api_data.pokemon_id.0),
             name: raw.name.clone(),
+            species_data: PokemonSpeciesData::from(api_data),
             regional_variant,
             api_issue,
             type1: api_data.type1,

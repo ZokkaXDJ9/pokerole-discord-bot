@@ -1,7 +1,7 @@
 use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::data::pokemon::Pokemon;
-
+use crate::enums::PokemonGeneration;
 
 const GEN5_ANIMATED: &str = "https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/versions/generation-v/black-white/animated/";
 const GEN5_ANIMATED_FEMALE: &str = "https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/versions/generation-v/black-white/animated/female/";
@@ -9,28 +9,32 @@ const GEN5_ANIMATED_FEMALE: &str = "https://github.com/PokeAPI/sprites/blob/mast
 const FRONT_MALE: &str = "https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/";
 const FRONT_FEMALE: &str = "https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/female/";
 
-fn bla(pokemon: &Pokemon) -> String {
+fn build_string(pokemon: &Pokemon) -> String {
     let mut result = String::from("");
 
+    if pokemon.species_data.generation <= PokemonGeneration::Five {
+        result.push_str(std::format!("\
+## Animated Gen 5 sprite
+Male/Unisex: <{}{}.gif>\n", GEN5_ANIMATED, pokemon.poke_api_id.0).as_str());
+
+        if pokemon.species_data.has_gender_differences {
+            result.push_str(std::format!("Female: <{}{}.gif>\n", GEN5_ANIMATED_FEMALE, pokemon.poke_api_id.0).as_str());
+        }
+    }
+
     result.push_str(std::format!("\
-## If it existed in Gen 5
-Animated: <{}{}.gif>
-Female Animated (unless it's the same): <{}{}.gif>
-## Front Sprite:
-Male: <{}{}.png>
-Female (unless it's the same): <{}{}.png>
-",
-        GEN5_ANIMATED, pokemon.poke_api_id.0,
-        GEN5_ANIMATED_FEMALE, pokemon.poke_api_id.0,
-        FRONT_MALE, pokemon.poke_api_id.0,
-        FRONT_FEMALE, pokemon.poke_api_id.0,
-    ).as_str());
+## Regular Front Sprite
+Male/Unisex: <{}{}.gif>\n", FRONT_MALE, pokemon.poke_api_id.0).as_str());
+
+    if pokemon.species_data.has_gender_differences {
+        result.push_str(std::format!("Female: <{}{}.gif>\n", FRONT_FEMALE, pokemon.poke_api_id.0).as_str());
+    }
 
     result
 }
 
 /// Display links to fancy emojis!
-#[poise::command(slash_command)]
+#[poise::command(slash_command, owners_only)]
 pub async fn emoji(
     ctx: Context<'_>,
     #[description = "Which pokemon?"]
@@ -39,7 +43,7 @@ pub async fn emoji(
     name: String,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&name.to_lowercase()) {
-        ctx.say(bla(pokemon)).await?;
+        ctx.say(build_string(pokemon)).await?;
     } else {
         ctx.send(|b| {
             b.content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name));
