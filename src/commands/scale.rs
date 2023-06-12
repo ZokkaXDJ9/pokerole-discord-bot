@@ -18,7 +18,10 @@ pub async fn scale(
     if let Some(pokemon) = ctx.data().pokemon.get(&name.to_lowercase()) {
         let mut builder = MessageBuilder::new();
         builder.push_bold_line(std::format!("{} scaled to {}%", &pokemon.name, percent));
-        builder.push_codeblock(std::format!("{}   |   {}", pokemon.height.scale(percent), pokemon.weight.scale(percent)), None);
+        builder.push_codeblock(std::format!("{}   |   {}",
+                pokemon.height.scale(percent),
+                pokemon.weight.scale(percent)
+            ), None);
         ctx.say(builder.to_string()).await?;
     } else {
         ctx.send(|b| {

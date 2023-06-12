@@ -492,9 +492,11 @@ impl fmt::Display for Weight{
 
 impl Weight {
     pub fn scale(&self, percentage: u8) -> Weight{
+        let factor =  (percentage as f32 * 0.01).powf(2.5);
+
         Weight {
-            kilograms: self.kilograms * (percentage as f32 * 0.01),
-            pounds: self.pounds * (percentage as f32 * 0.01),
+            kilograms: self.kilograms * factor,
+            pounds: self.pounds * factor,
         }
     }
 }
