@@ -6,6 +6,10 @@ use rand::seq::SliceRandom;
 pub async fn metronome(
     ctx: Context<'_>,
 ) -> Result<(), Error> {
+    execute(ctx).await
+}
+
+pub async fn execute<'a>(ctx: Context<'a>) -> Result<(), Error> {
     let move_name = ctx.data().move_names.choose(&mut rand::thread_rng()).expect("There should be a name.");
     if let Some(poke_move) = ctx.data().moves.get(&move_name.to_lowercase()) {
         ctx.say(poke_move.build_string()).await?;
