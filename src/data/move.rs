@@ -68,7 +68,7 @@ impl Move {
             return None;
         }
 
-        return Some(raw);
+        Some(raw)
     }
 
     fn parse_damage1(raw: String) -> Option<Stat> {
