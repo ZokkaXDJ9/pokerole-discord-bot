@@ -4,14 +4,14 @@ use strum::IntoEnumIterator;
 use crate::csv_utils::load_csv;
 use crate::data::pokemon::{Height, Weight};
 use crate::data::type_efficiency::TypeEfficiency;
-use crate::enums::PokemonType;
+use crate::enums::{PokemonGeneration, PokemonType};
 use crate::data::pokemon_api::api_types::*;
 use crate::data::pokemon_api::PokemonApiId;
 
 #[derive(Debug)]
 pub struct ApiMoveEntry {
     pub move_name: String,
-    pub generation_id: u8,
+    pub generation: PokemonGeneration,
 }
 
 #[derive(Debug)]
@@ -26,6 +26,8 @@ pub struct ApiPokemonLearnableMoves {
 pub struct PokemonApiData {
     pub pokemon_id: PokemonApiId,
     pub pokemon_name: String,
+    pub generation: PokemonGeneration,
+    pub has_gender_differences: bool,
     pub height: Height,
     pub weight: Weight,
     pub type1: PokemonType,
@@ -75,6 +77,21 @@ fn type_id_to_pokemon_type(id: TypeId) -> PokemonType {
     }
 }
 
+fn generation_id_to_generation(id: &GenerationId) -> PokemonGeneration {
+    match id.0 {
+        1 => PokemonGeneration::One,
+        2 => PokemonGeneration::Two,
+        3 => PokemonGeneration::Three,
+        4 => PokemonGeneration::Four,
+        5 => PokemonGeneration::Five,
+        6 => PokemonGeneration::Six,
+        7 => PokemonGeneration::Seven,
+        8 => PokemonGeneration::Eight,
+        9 => PokemonGeneration::Nine,
+        _ => panic!("Weird generation id: {}", id.0)
+    }
+}
+
 pub fn parse_type_efficacy(path: String) -> TypeEfficiency {
     let csv: Vec<ApiTypeEfficacy> = load_csv(path + "data/v2/csv/type_efficacy.csv");
 
@@ -116,8 +133,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     let pokemon_types: Vec<ApiPokemonTypes> = load_csv(path.clone() + "data/v2/csv/pokemon_types.csv");
     let pokemon_moves: Vec<ApiPokemonMoves> = load_csv(path.clone() + "data/v2/csv/pokemon_moves.csv");
     let pokemon_move_methods: Vec<ApiPokemonMoveMethods> = load_csv(path.clone() + "data/v2/csv/pokemon_move_methods.csv");
-    // Useful if we ever want to keep track of egg moves across evos
-    //let pokemon_species: Vec<ApiPokemonSpecies> = load_csv(path.clone() + "data/v2/csv/pokemon_species.csv");
+    let pokemon_species: Vec<ApiPokemonSpecies> = load_csv(path.clone() + "data/v2/csv/pokemon_species.csv");
     let pokemon_species_names: Vec<ApiPokemonSpeciesNames> = load_csv(path.clone() + "data/v2/csv/pokemon_species_names.csv");
     let pokemon_forms: Vec<ApiPokemonForm> = load_csv(path.clone() + "data/v2/csv/pokemon_forms.csv");
     let pokemon_form_types: Vec<ApiPokemonFormTypes> = load_csv(path.clone() + "data/v2/csv/pokemon_form_types.csv");
@@ -194,6 +210,11 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
         }
     }
 
+    let mut species_id_to_species: HashMap<PokemonSpeciesId, ApiPokemonSpecies> = HashMap::default();
+    for x in pokemon_species {
+        species_id_to_species.insert(x.id, x);
+    }
+
     let mut move_id_to_name: HashMap<MoveId, String> = HashMap::default();
     for x in move_names {
         if x.local_language_id != english_language_id {
@@ -208,18 +229,22 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
         method_id_to_name.insert(x.id, x.identifier);
     }
 
-    let mut version_group_id_to_generation_id: HashMap<u8, u8> = HashMap::default();
+    let mut version_group_id_to_generation: HashMap<u8, PokemonGeneration> = HashMap::default();
     for x in version_groups {
-        version_group_id_to_generation_id.insert(x.id, x.generation_id);
+        version_group_id_to_generation.insert(x.id, generation_id_to_generation(&x.generation_id));
     }
 
     let mut result: HashMap<String, PokemonApiData> = HashMap::default();
     for x in pokemon {
         let name = pokemon_id_to_name.get(&x.id).unwrap_or(&x.identifier);
+        let species = species_id_to_species.get(&x.species_id)
+            .unwrap_or_else(|| panic!("Species should always be available, but was not for {}", name));
 
         result.insert(name.clone(),  PokemonApiData {
             pokemon_id: PokemonApiId(x.id.0),
             pokemon_name: name.clone(),
+            generation: generation_id_to_generation(&species.generation_id),
+            has_gender_differences: species.has_gender_differences > 0,
             height: Height {meters: x.height as f32 / 10.0, feet: x.height as f32 / 10.0 * 3.28084 },
             weight: Weight {kilograms: x.weight as f32 / 10.0, pounds: x.weight as f32 / 10.0 * 2.20462 },
             type1: pokemon_id_to_pokemon_type1.get(&x.id).expect("").to_owned(),
@@ -258,7 +283,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
 
             let new_move_entry = ApiMoveEntry {
                 move_name: move_name.clone(),
-                generation_id: *version_group_id_to_generation_id.get(&pokemon_move.version_group_id).expect("All generation ids should be set"),
+                generation: *version_group_id_to_generation.get(&pokemon_move.version_group_id).expect("All generation ids should be set"),
             };
 
             match learn_method.as_str() {

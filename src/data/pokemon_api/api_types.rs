@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use crate::data::pokemon_api::PokemonApiId;
 
-#[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Deserialize, Eq, PartialEq, Hash, Copy, Clone)]
 pub struct PokemonSpeciesId(pub u16);
 #[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
 pub struct PokemonFormId(pub u16);
@@ -11,6 +11,8 @@ pub struct AbilityId(pub u16);
 pub struct MoveId(pub u16);
 #[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
 pub struct TypeId(pub u16);
+#[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
+pub struct GenerationId(pub u8);
 
 /// version_groups.csv
 #[derive(Debug, Deserialize)]
@@ -18,7 +20,7 @@ pub struct TypeId(pub u16);
 pub struct ApiVersionGroups {
     pub id: u8,
     pub identifier: String,
-    pub generation_id: u8,
+    pub generation_id: GenerationId,
     pub order: u8
 }
 
@@ -89,7 +91,7 @@ pub struct ApiPokemonMoveMethods {
 pub struct ApiPokemonSpecies {
     pub id: PokemonSpeciesId,
     pub identifier: String,
-    pub generation_id: u8,
+    pub generation_id: GenerationId,
     pub evolves_from_species_id: Option<PokemonSpeciesId>,
     pub evolution_chain_id: u16,
     pub color_id: u16,
