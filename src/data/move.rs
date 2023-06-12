@@ -36,9 +36,9 @@ impl Move {
                 .replace("1 Lethal", "1 Wound")
                 .replace("cure Lethal", "cure Wound")
                 .replace("Lethal", "Inflicts Wounds")
-                .replace("Basic Heal", "Heal 3 HP")
-                .replace("Complete Heal", "Heal 6 HP")
-                .replace("Full Heal", "Heal 6 HP"),
+                .replace("Basic Heal", "Heal 5 HP")
+                .replace("Complete Heal", "Heal 10 HP")
+                .replace("Full Heal", "Heal 10 HP"),
             description: Move::parse_description(raw.description.clone()),
             category: raw.category
         }
