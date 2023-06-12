@@ -30,7 +30,7 @@ Male/Unisex: <{}{}.gif>\n", FRONT_MALE, pokemon.poke_api_id.0).as_str());
         result.push_str(std::format!("Female: <{}{}.gif>\n", FRONT_FEMALE, pokemon.poke_api_id.0).as_str());
     }
 
-    result.push_str("\n\nWhen adding the emoji to the server, make sure to cut out the whitespace around the sprite, and make it square sized so discord doesn't stretch it weirdly.");
+    result.push_str("\n\n**When adding the emoji to the server, make sure to cut out the whitespace around the sprite, and make it square sized so discord doesn't stretch it in some awkward way.**");
 
     result
 }
