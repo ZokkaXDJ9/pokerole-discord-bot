@@ -20,6 +20,16 @@ pub struct Move {
     pub category: MoveCategory,
 }
 
+fn replace_effect_string(raw: &str) -> String {
+    raw.replace("1 lethal", "1 Wound")
+        .replace("1 Lethal", "1 Wound")
+        .replace("cure Lethal", "cure Wound")
+        .replace("Lethal", "Inflicts Wounds")
+        .replace("Basic Heal", "Heal 5 HP")
+        .replace("Complete Heal", "Heal 10 HP")
+        .replace("Full Heal", "Heal 10 HP")
+}
+
 impl Move {
     pub(in crate::data) fn new(raw: &RawPokeroleMove) -> Self {
         Move {
@@ -31,14 +41,7 @@ impl Move {
             accuracy1: Move::parse_accuracy(raw.accuracy1.clone()),
             accuracy2: Move::parse_accuracy(raw.accuracy2.clone()),
             target: raw.target.clone(),
-            effect: raw.effect
-                .replace("1 lethal", "1 Wound")
-                .replace("1 Lethal", "1 Wound")
-                .replace("cure Lethal", "cure Wound")
-                .replace("Lethal", "Inflicts Wounds")
-                .replace("Basic Heal", "Heal 5 HP")
-                .replace("Complete Heal", "Heal 10 HP")
-                .replace("Full Heal", "Heal 10 HP"),
+            effect: replace_effect_string(&raw.effect),
             description: Move::parse_description(raw.description.clone()),
             category: raw.category
         }
@@ -54,7 +57,7 @@ impl Move {
             accuracy1: Move::parse_accuracy(raw.accuracy.clone()),
             accuracy2: Some(CombatOrSocialStat::Rank),
             target: raw.target.clone(),
-            effect: raw.effect.clone(),
+            effect: replace_effect_string(&raw.effect),
             description: Move::parse_description(raw.description.clone()),
             category: raw.category
         }
