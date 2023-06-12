@@ -1,7 +1,6 @@
 use serde::Deserialize;
+use crate::data::pokemon_api::PokemonApiId;
 
-#[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
-pub struct PokemonId(pub u16);
 #[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
 pub struct PokemonSpeciesId(pub u16);
 #[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
@@ -28,7 +27,7 @@ pub struct ApiVersionGroups {
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct ApiPokemon {
-    pub id: PokemonId,
+    pub id: PokemonApiId,
     pub identifier: String,
     pub species_id: PokemonSpeciesId,
     /// in 10cm
@@ -55,7 +54,7 @@ pub struct ApiAbilityName {
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct ApiPokemonAbility {
-    pub pokemon_id: PokemonId,
+    pub pokemon_id: PokemonApiId,
     pub ability_id: AbilityId,
     pub is_hidden: u8,
     pub slot: u8,
@@ -66,7 +65,7 @@ pub struct ApiPokemonAbility {
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct ApiPokemonMoves {
-    pub pokemon_id: PokemonId,
+    pub pokemon_id: PokemonApiId,
     pub version_group_id: u8,
     pub move_id: MoveId,
     pub pokemon_move_method_id: u8,
@@ -129,7 +128,7 @@ pub struct ApiPokemonForm {
     pub id: PokemonFormId,
     pub identifier: String,
     pub form_identifier: Option<String>,
-    pub pokemon_id: PokemonId,
+    pub pokemon_id: PokemonApiId,
     pub is_default: u8,
     pub is_battle_only: u8,
     pub is_mega: u8,
@@ -153,7 +152,7 @@ pub struct ApiPokemonFormNames {
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct ApiPokemonTypes {
-    pub pokemon_id: PokemonId,
+    pub pokemon_id: PokemonApiId,
     pub type_id: TypeId,
     pub slot: u8,
 }

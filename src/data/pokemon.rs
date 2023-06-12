@@ -9,12 +9,14 @@ use crate::data::ability::Ability;
 use crate::data::enums::poke_role_rank::PokeRoleRank;
 use crate::data::parser::custom_data::custom_pokemon::{CustomPokemon, CustomPokemonMoves};
 use crate::data::pokemon_api::pokemon_api_parser::PokemonApiData;
+use crate::data::pokemon_api::PokemonApiId;
 use crate::data::pokerole_data::raw_pokemon::{RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon};
 use crate::enums::{MysteryDungeonRank, PokemonType, RegionalVariant};
 
 #[derive(Debug)]
 pub struct Pokemon {
     pub number: u16,
+    pub poke_api_id: PokemonApiId,
     pub regional_variant: Option<RegionalVariant>,
     pub api_issue: Option<ApiIssueType>,
     pub name: String,
@@ -233,8 +235,14 @@ impl Pokemon {
             );
         }
 
+        let api_id = match api_option {
+            None => PokemonApiId(raw.number),
+            Some(item) => PokemonApiId(item.pokemon_id.0),
+        };
+
         Pokemon {
             number: raw.number,
+            poke_api_id: api_id,
             name: raw.name.clone(),
             regional_variant,
             api_issue,
@@ -295,6 +303,7 @@ impl Pokemon {
 
         Pokemon {
             number: raw.number,
+            poke_api_id: PokemonApiId(api_data.pokemon_id.0),
             name: raw.name.clone(),
             regional_variant,
             api_issue,

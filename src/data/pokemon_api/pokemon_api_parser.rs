@@ -6,6 +6,7 @@ use crate::data::pokemon::{Height, Weight};
 use crate::data::type_efficiency::TypeEfficiency;
 use crate::enums::PokemonType;
 use crate::data::pokemon_api::api_types::*;
+use crate::data::pokemon_api::PokemonApiId;
 
 #[derive(Debug)]
 pub struct ApiMoveEntry {
@@ -23,6 +24,7 @@ pub struct ApiPokemonLearnableMoves {
 
 #[derive(Debug)]
 pub struct PokemonApiData {
+    pub pokemon_id: PokemonApiId,
     pub pokemon_name: String,
     pub height: Height,
     pub weight: Weight,
@@ -131,14 +133,14 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
         ability_id_to_name.insert(x.ability_id, x.name);
     }
 
-    let mut form_id_to_pokemon_id: HashMap<PokemonFormId, PokemonId> = HashMap::default();
+    let mut form_id_to_pokemon_id: HashMap<PokemonFormId, PokemonApiId> = HashMap::default();
     for x in pokemon_forms {
         form_id_to_pokemon_id.insert(x.id, x.pokemon_id);
     }
 
-    let mut pokemon_id_to_pokemon_ability1: HashMap<PokemonId, String> = HashMap::default();
-    let mut pokemon_id_to_pokemon_ability2: HashMap<PokemonId, String> = HashMap::default();
-    let mut pokemon_id_to_pokemon_ability_hidden: HashMap<PokemonId, String> = HashMap::default();
+    let mut pokemon_id_to_pokemon_ability1: HashMap<PokemonApiId, String> = HashMap::default();
+    let mut pokemon_id_to_pokemon_ability2: HashMap<PokemonApiId, String> = HashMap::default();
+    let mut pokemon_id_to_pokemon_ability_hidden: HashMap<PokemonApiId, String> = HashMap::default();
     for x in pokemon_abilities {
         match x.slot {
             1 => pokemon_id_to_pokemon_ability1.insert(x.pokemon_id, ability_id_to_name.get(&x.ability_id).expect("Ability should be set!").clone()),
@@ -148,8 +150,8 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
         };
     }
 
-    let mut pokemon_id_to_pokemon_type1: HashMap<PokemonId, PokemonType> = HashMap::default();
-    let mut pokemon_id_to_pokemon_type2: HashMap<PokemonId, PokemonType> = HashMap::default();
+    let mut pokemon_id_to_pokemon_type1: HashMap<PokemonApiId, PokemonType> = HashMap::default();
+    let mut pokemon_id_to_pokemon_type2: HashMap<PokemonApiId, PokemonType> = HashMap::default();
     for x in pokemon_types {
         if x.slot == 1 {
             pokemon_id_to_pokemon_type1.insert(x.pokemon_id, type_id_to_pokemon_type(x.type_id));
@@ -160,23 +162,23 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     for x in pokemon_form_types {
         if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
             if x.slot == 1 {
-                pokemon_id_to_pokemon_type1.insert(PokemonId(pokemon_id.0), type_id_to_pokemon_type(x.type_id));
+                pokemon_id_to_pokemon_type1.insert(PokemonApiId(pokemon_id.0), type_id_to_pokemon_type(x.type_id));
             } else {
-                pokemon_id_to_pokemon_type2.insert(PokemonId(pokemon_id.0), type_id_to_pokemon_type(x.type_id));
+                pokemon_id_to_pokemon_type2.insert(PokemonApiId(pokemon_id.0), type_id_to_pokemon_type(x.type_id));
             }
         } else {
             error!("Unable to map pokemon form id {} to a pokemon id!", x.pokemon_form_id.0);
         }
     }
 
-    let mut pokemon_id_to_name: HashMap<PokemonId, String> = HashMap::default();
+    let mut pokemon_id_to_name: HashMap<PokemonApiId, String> = HashMap::default();
     for x in pokemon_species_names {
         if x.local_language_id != english_language_id {
             continue;
         }
 
         // These should be always the same for species < 10000
-        pokemon_id_to_name.insert( PokemonId(x.pokemon_species_id.0), x.name);
+        pokemon_id_to_name.insert(PokemonApiId(x.pokemon_species_id.0), x.name);
     }
     for x in pokemon_form_names {
         if x.local_language_id != english_language_id {
@@ -185,7 +187,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
 
         if let Some(name) = x.pokemon_name {
             if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
-                pokemon_id_to_name.insert(PokemonId(pokemon_id.0), name);
+                pokemon_id_to_name.insert(PokemonApiId(pokemon_id.0), name);
             } else {
                 error!("Unable to map pokemon form id {} to a pokemon id!", x.pokemon_form_id.0);
             }
@@ -216,6 +218,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
         let name = pokemon_id_to_name.get(&x.id).unwrap_or(&x.identifier);
 
         result.insert(name.clone(),  PokemonApiData {
+            pokemon_id: PokemonApiId(x.id.0),
             pokemon_name: name.clone(),
             height: Height {meters: x.height as f32 / 10.0, feet: x.height as f32 / 10.0 * 3.28084 },
             weight: Weight {kilograms: x.weight as f32 / 10.0, pounds: x.weight as f32 / 10.0 * 2.20462 },

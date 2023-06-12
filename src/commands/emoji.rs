@@ -20,10 +20,10 @@ Female Animated (unless it's the same): <{}{}.gif>
 Male: <{}{}.png>
 Female (unless it's the same): <{}{}.png>
 ",
-        GEN5_ANIMATED, pokemon.number,
-        GEN5_ANIMATED_FEMALE, pokemon.number,
-        FRONT_MALE, pokemon.number,
-        FRONT_FEMALE, pokemon.number,
+        GEN5_ANIMATED, pokemon.poke_api_id.0,
+        GEN5_ANIMATED_FEMALE, pokemon.poke_api_id.0,
+        FRONT_MALE, pokemon.poke_api_id.0,
+        FRONT_FEMALE, pokemon.poke_api_id.0,
     ).as_str());
 
     result
