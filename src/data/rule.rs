@@ -109,6 +109,11 @@ Every Character has access to the following moves at any time:
                 text: String::from("Channels which are prefixed SFW are strictly SFW. Everywhere else, NSFW stuff is allowed (and optional), as long as it doesn't just randomly interrupt an ongoing scene without asking first."),
                 example: None
             }, Rule {
+                name: String::from("Rerolls"),
+                flavor: Some(String::from("Lady Luck isn't smiling on you today, huh?")),
+                text: String::from("Once per round, a player may expend one point of their Will to reroll an accuracy or chance dice roll. The reroll must be taken (Certain held items may change this) over the original roll."),
+                example: None
+            }, Rule {
                 name: String::from("Defense"),
                 flavor: Some(String::from("How much of a beating can you really take?")),
                 text: String::from("You Physical Defense is `Vitality / 2`.\nYour Special Defense is `Insight / 2`.nMinimum damage is always 1, unless you resist the attack's type - this is the only case where it gets reduced to 0."),
