@@ -30,7 +30,8 @@ pub enum PokemonType {
 pub enum MoveType {
     Normal,
     Fighting,
-    Flying, Poison,
+    Flying,
+    Poison,
     Ground,
     Rock,
     Bug,
@@ -97,6 +98,23 @@ pub enum Stat {
     StrengthOrSpecial,
     /// Copycat
     Copy
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize)]
+pub enum Gender {
+    Genderless,
+    Male,
+    Female,
+}
+
+impl fmt::Display for Gender {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            Gender::Genderless => "–",
+            Gender::Male => "M",
+            Gender::Female => "F",
+        })
+    }
 }
 
 impl fmt::Display for Stat {

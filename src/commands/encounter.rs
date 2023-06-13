@@ -4,7 +4,9 @@ use rand::seq::SliceRandom;
 use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::data::pokemon::{Pokemon};
-use crate::enums::{MysteryDungeonRank, Stat};
+use crate::data::r#move::Move;
+use crate::enums::{Gender, MysteryDungeonRank, PokemonType, Stat};
+use crate::game_data::GameData;
 
 
 /// Encounter some wild pokemon!
@@ -23,7 +25,7 @@ pub async fn encounter(
     amount: Option<u8>
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&pokemon.to_lowercase()) {
-        ctx.say(build_encounter_string(pokemon, level, amount)).await?;
+        ctx.say(build_encounter_string(ctx.data(), pokemon, level, amount)).await?;
     } else {
         ctx.send(|b| {
             b.content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", pokemon));
@@ -34,11 +36,11 @@ pub async fn encounter(
     Ok(())
 }
 
-fn build_encounter_string(pokemon: &Pokemon, level: u8, amount: Option<u8>) -> impl Into<String> + Sized {
+fn build_encounter_string(data: &GameData, pokemon: &Pokemon, level: u8, amount: Option<u8>) -> impl Into<String> + Sized {
     let mut result = String::from("**-- WORK IN PROGRESS --**\n");
     for _ in 0..amount.unwrap_or(1) {
         let mon = EncounterMon::from_pokemon(pokemon, level);
-        result.push_str(std::format!("{:?}", mon).as_str());
+        result.push_str(mon.build_string(pokemon, data).as_str());
     }
 
     result
@@ -47,6 +49,9 @@ fn build_encounter_string(pokemon: &Pokemon, level: u8, amount: Option<u8>) -> i
 #[derive(Debug)]
 struct EncounterMon {
     pub name: String,
+    pub gender: Gender,
+    pub type1: PokemonType,
+    pub type2: Option<PokemonType>,
     pub level: u8,
     pub rank: MysteryDungeonRank,
     pub ability: String,
@@ -64,6 +69,9 @@ impl EncounterMon {
     pub fn from_pokemon(pokemon: &Pokemon, level: u8) -> Self {
         let mut result = EncounterMon {
             name: pokemon.name.clone(),
+            gender: EncounterMon::get_random_gender(pokemon),
+            type1: pokemon.type1,
+            type2: pokemon.type2,
             level: level,
             rank: EncounterMon::get_rank_from_level(level),
             ability: EncounterMon::get_random_ability(pokemon),
@@ -108,6 +116,16 @@ impl EncounterMon {
             .choose_multiple(&mut thread_rng(), move_count as usize);
 
         result
+    }
+
+    fn get_random_gender(pokemon: &Pokemon) -> Gender {
+        // TODO: Use official gender ratio, lul.
+        // Also, genderless mons.
+        if thread_rng().gen_bool(0.5) {
+            Gender::Male
+        } else {
+            Gender::Female
+        }
     }
 
     fn get_random_ability(pokemon: &Pokemon) -> String {
@@ -158,4 +176,39 @@ impl EncounterMon {
             _ => panic!("Unexpected stat: {}", stat)
         }
     }
+
+    pub fn build_string(&self, pokemon: &Pokemon, data: &GameData) -> String{
+        let mut result = std::format!("{} ({}) | **{:?}**\n", self.name, self.gender, self.rank);
+        if let Some(type2) = self.type2 {
+            result.push_str(std::format!("**Types**: {:?} / {:?}\n", self.type1, type2).as_str());
+        } else {
+            result.push_str(std::format!("**Type**: {:?}\n", self.type1).as_str());
+        }
+        result.push_str(std::format!("**Ability**: {}\n", self.ability).as_str());
+        result.push_str(std::format!("```
+STR: {:>2} / {:>2}      Tough:  TODO
+DEX: {:>2} / {:>2}      Cool:   TODO
+VIT: {:>2} / {:>2}      Beauty: TODO
+SPE: {:>2} / {:>2}      Clever: TODO
+INS: {:>2} / {:>2}      Cute:   TODO
+```",           self.strength, pokemon.strength.max,
+                self.dexterity, pokemon.dexterity.max,
+                self.vitality, pokemon.vitality.max,
+                self.special, pokemon.special.max,
+                self.insight, pokemon.insight.max,).as_str());
+
+        result.push_str("*Moves*:\n");
+        for move_name in &self.moves {
+            let m = data.moves.get(&move_name.to_lowercase()).unwrap_or_else(|| panic!("Every move should be set! {}", move_name));
+            result.push_str(std::format!("**{}** – {:?} | {} | {}\n", m.name, m.typing, m.category, m.target).as_str());
+            let accuracy = 0; // TODO
+            let damage = 0;
+            result.push_str(std::format!("Accuracy: **{}** | Damage: **{}** \n", accuracy, damage).as_str());
+            result.push_str(m.effect.as_str()); // TODO: Make effect optional and don't set it if the string just contains a "-"
+            result.push_str("\n\n");
+        }
+
+        result
+    }
+
 }
