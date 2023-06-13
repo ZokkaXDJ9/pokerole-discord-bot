@@ -10,3 +10,14 @@ We poll and combine data from different sources, this allows us to update the da
 - **CUSTOM_DATA** – path to your custom data overrides. In our case, that's https://github.com/Jacudibu/pokerole-custom-data.
 - **DISCORD_TOKEN** – the Discord Token for your bot.
 
+
+## TODO
+A small list of ideas which might be useful to explore in the future.
+- `/encounter` command to swiftly generate some random pokemon to fight.
+- Reaction Roles - this would allow us to get rid of Zira.
+- User Leave notifications - might be useful to have, dunno.
+
+### Features requiring a Database
+- Settings: To allow users to set up their timezone for `/timestamp`
+- Economy: Money could be managed through bot commands
+- Weather: Random Weather changes.
