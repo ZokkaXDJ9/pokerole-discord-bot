@@ -121,7 +121,7 @@ While everything that happened over in the Orre Region is considered non-canon s
 If you where at least Silver Rank, your character may start with Level 2 here.
 If you where Gold or higher, your character may start with Level 3.
 All of these are optional, of course! And no items or other unlocks can be carried over.
-It is fine to start out as an evolved mon here, just check `/rule Evolution` for the details.
+It is fine to start out as an evolved mon here, just check `/rule name:Evolution` for the details.
 Just follow the character creation guide and apply your two level ups afterwards, those will yield you one Combat Stat Point each and promote you to silver, which also yields two extra Social Stat points!"),
                 example: None
             }, Rule {
