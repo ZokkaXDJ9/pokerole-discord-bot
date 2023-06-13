@@ -11,7 +11,7 @@ use crate::data::parser::custom_data::custom_pokemon::{CustomPokemon, CustomPoke
 use crate::data::pokemon_api::pokemon_api_parser::PokemonApiData;
 use crate::data::pokemon_api::PokemonApiId;
 use crate::data::pokerole_data::raw_pokemon::{RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon};
-use crate::enums::{MysteryDungeonRank, PokemonGeneration, PokemonType, RegionalVariant};
+use crate::enums::{MysteryDungeonRank, PokemonGeneration, PokemonType, RegionalVariant, Stat};
 
 #[derive(Debug)]
 pub struct PokemonSpeciesData {
@@ -46,11 +46,11 @@ pub struct Pokemon {
     pub type1: PokemonType,
     pub type2: Option<PokemonType>,
     pub base_hp: u8,
-    pub strength: Stat,
-    pub dexterity: Stat,
-    pub vitality: Stat,
-    pub special: Stat,
-    pub insight: Stat,
+    pub strength: PokemonStat,
+    pub dexterity: PokemonStat,
+    pub vitality: PokemonStat,
+    pub special: PokemonStat,
+    pub insight: PokemonStat,
     pub ability1: String,
     pub ability2: Option<String>,
     pub hidden_ability: Option<String>,
@@ -59,6 +59,19 @@ pub struct Pokemon {
     pub weight: Weight,
     pub dex_description: String,
     pub moves: LearnablePokemonMoves,
+}
+
+impl Pokemon {
+    pub(crate) fn get_stat(&self, stat: &Stat) -> &PokemonStat {
+        match stat {
+            Stat::Strength => &self.strength,
+            Stat::Dexterity => &self.dexterity,
+            Stat::Vitality => &self.vitality,
+            Stat::Special => &self.special,
+            Stat::Insight => &self.insight,
+            _ => panic!("Unexpected stat: {}", stat)
+        }
+    }
 }
 
 impl Pokemon {
@@ -273,11 +286,11 @@ impl Pokemon {
             type1: Pokemon::parse_type(raw.type1.clone()).unwrap(),
             type2: Pokemon::parse_type(raw.type2.clone()),
             base_hp: raw.base_hp,
-            strength: Stat::new(raw.strength, raw.max_strength),
-            dexterity: Stat::new(raw.dexterity, raw.max_dexterity),
-            vitality: Stat::new(raw.vitality, raw.max_vitality),
-            special: Stat::new(raw.special, raw.max_special),
-            insight: Stat::new(raw.insight, raw.max_insight),
+            strength: PokemonStat::new(raw.strength, raw.max_strength),
+            dexterity: PokemonStat::new(raw.dexterity, raw.max_dexterity),
+            vitality: PokemonStat::new(raw.vitality, raw.max_vitality),
+            special: PokemonStat::new(raw.special, raw.max_special),
+            insight: PokemonStat::new(raw.insight, raw.max_insight),
             ability1: raw.ability1.clone(),
             ability2: Pokemon::parse_ability(raw.ability2.clone()),
             hidden_ability: Pokemon::parse_ability(raw.hidden_ability.clone()),
@@ -335,11 +348,11 @@ impl Pokemon {
             type1: api_data.type1,
             type2: api_data.type2,
             base_hp: raw.base_hp,
-            strength: Stat::from_str(&raw.strength),
-            dexterity: Stat::from_str(&raw.dexterity),
-            vitality: Stat::from_str(&raw.vitality),
-            special: Stat::from_str(&raw.special),
-            insight: Stat::from_str(&raw.insight),
+            strength: PokemonStat::from_str(&raw.strength),
+            dexterity: PokemonStat::from_str(&raw.dexterity),
+            vitality: PokemonStat::from_str(&raw.vitality),
+            special: PokemonStat::from_str(&raw.special),
+            insight: PokemonStat::from_str(&raw.insight),
             ability1: api_data.ability1.clone(),
             ability2: api_data.ability2.clone(),
             hidden_ability: api_data.ability_hidden.clone(),
@@ -423,14 +436,14 @@ impl Pokemon {
 }
 
 #[derive(Debug)]
-pub struct Stat {
+pub struct PokemonStat {
     pub min: u8,
     pub max: u8,
 }
 
-impl Stat {
+impl PokemonStat {
     fn new(min: u8, max: u8) -> Self {
-        Stat {min, max}
+        PokemonStat {min, max}
     }
 
     fn from_str(raw: &str) -> Self {
@@ -438,7 +451,7 @@ impl Stat {
         let min = u8::from_str(splits[0]).expect("Data is always right, riight?");
         let max = u8::from_str(splits[1]).expect("Data is always right, riiiight?");
 
-        Stat::new(min, max)
+        PokemonStat::new(min, max)
     }
 
     pub fn append_stat_string(&self, result: &mut String, stat_name: &str) {

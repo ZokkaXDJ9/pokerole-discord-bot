@@ -86,7 +86,7 @@ pub enum RegionalVariant {
     Paldea,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, EnumString)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize, EnumString)]
 pub enum Stat {
     Strength,
     Dexterity,

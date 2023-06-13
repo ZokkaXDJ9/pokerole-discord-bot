@@ -1,9 +1,10 @@
 use rand::{Rng, thread_rng};
 use rand::seq::IteratorRandom;
+use rand::seq::SliceRandom;
 use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::data::pokemon::{Pokemon};
-use crate::enums::MysteryDungeonRank;
+use crate::enums::{MysteryDungeonRank, Stat};
 
 
 /// Encounter some wild pokemon!
@@ -76,9 +77,20 @@ impl EncounterMon {
             moves: Vec::new()
         };
 
+        let mut rng = thread_rng();
+        let mut non_maxed_stat_points = vec!(Stat::Strength, Stat::Vitality, Stat::Dexterity, Stat::Special, Stat::Insight);
         let mut remaining_stat_points = level + 3;
         while remaining_stat_points > 0 {
-            result.increase_random_stat(pokemon);
+            if let Some(mut stat) = non_maxed_stat_points.choose(&mut rng) {
+                result.increase_stat(stat);
+
+                if result.get_stat(stat) == pokemon.get_stat(stat).max {
+                    let el_drop_o = *stat;
+                    stat = &el_drop_o;
+                    non_maxed_stat_points.retain(|x| x != stat);
+                }
+            }
+
             remaining_stat_points -= 1;
         }
 
@@ -115,22 +127,15 @@ impl EncounterMon {
         pokemon.ability1.clone()
     }
 
-    fn increase_random_stat(&mut self, pokemon: &Pokemon) {
-        let rng = thread_rng().gen_range(0..=4);
-        if rng == 0 && self.strength < pokemon.strength.max {
-            self.strength += 1;
-        } else if rng == 1 && self.dexterity < pokemon.dexterity.max {
-            self.dexterity += 1;
-        } else if rng == 2 && self.vitality < pokemon.vitality.max {
-            self.vitality += 1;
-        } else if rng == 3 && self.special < pokemon.special.max {
-            self.special += 1;
-        } else if rng == 4 && self.insight < pokemon.insight.max {
-            self.insight += 1;
-        } else {
-            log::warn!("limit break not implemented for /encounter")
-            // todo: limit break
-        }
+    fn increase_stat(&mut self, stat: &Stat) {
+        match stat {
+            Stat::Strength => self.strength += 1,
+            Stat::Dexterity => self.dexterity += 1,
+            Stat::Vitality => self.vitality += 1,
+            Stat::Special => self.special += 1,
+            Stat::Insight => self.insight += 1,
+            _ => panic!("Unexpected stat: {}", stat)
+        };
     }
 
     fn get_rank_from_level(level: u8) -> MysteryDungeonRank {
@@ -140,6 +145,17 @@ impl EncounterMon {
             4..=7 => MysteryDungeonRank::Gold,
             8..=15 => MysteryDungeonRank::Platinum,
             _ => MysteryDungeonRank::Diamond,
+        }
+    }
+
+    fn get_stat(&self, stat: &Stat) -> u8 {
+        match stat {
+            Stat::Strength => self.strength,
+            Stat::Dexterity => self.dexterity,
+            Stat::Vitality => self.vitality,
+            Stat::Special => self.special,
+            Stat::Insight => self.insight,
+            _ => panic!("Unexpected stat: {}", stat)
         }
     }
 }
