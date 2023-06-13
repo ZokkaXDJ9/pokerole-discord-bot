@@ -69,7 +69,7 @@ impl fmt::Display for MoveCategory {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Deserialize)]
 pub enum MysteryDungeonRank {
     Bronze,
     Silver,

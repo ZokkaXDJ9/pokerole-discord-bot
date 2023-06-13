@@ -24,6 +24,7 @@ mod select_random;
 mod poll;
 mod scale;
 mod emoji;
+mod encounter;
 
 pub fn get_all_commands() -> Vec<Command<GameData, Error>> {
     vec![
@@ -45,6 +46,7 @@ pub fn get_all_commands() -> Vec<Command<GameData, Error>> {
         poll::poll(),
         scale::scale(),
         emoji::emoji(),
+        encounter::encounter(),
         about::about()
     ]
 }
