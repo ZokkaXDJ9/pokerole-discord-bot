@@ -14,7 +14,7 @@ pub async fn calculate_hp_damage_modifier(
 fn build_string(max_hp: u8) -> String {
     let segments = get_hp_segments(max_hp);
 
-    std::format!("With {} max hp, you have the following die thresholds for dies: ```
+    std::format!("With {} max hp, you have the following die thresholds depending on your current hp: ```
 {:>2} - {:>2} -> 1 dice
 {:>2} - {:>2} -> 2 dice
 {:>2} - {:>2} -> 3 dice
