@@ -17,6 +17,7 @@ pub async fn encounter(
     #[autocomplete = "autocomplete_pokemon"]
     pokemon: String,
     #[min = 1_u8]
+    #[max = 100_u8]
     #[description = "Of which level?"]
     level: u8,
     #[min = 1_u8]
@@ -25,7 +26,9 @@ pub async fn encounter(
     amount: Option<u8>
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&pokemon.to_lowercase()) {
-        ctx.say(build_encounter_string(ctx.data(), pokemon, level, amount)).await?;
+        for encounter in build_encounter(pokemon, level, amount) {
+            ctx.say(encounter.build_string(pokemon, ctx.data())).await?;
+        }
     } else {
         ctx.send(|b| {
             b.content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", pokemon));
@@ -36,11 +39,10 @@ pub async fn encounter(
     Ok(())
 }
 
-fn build_encounter_string(data: &GameData, pokemon: &Pokemon, level: u8, amount: Option<u8>) -> impl Into<String> + Sized {
-    let mut result = String::from("**-- WORK IN PROGRESS --**\n");
+fn build_encounter(pokemon: &Pokemon, level: u8, amount: Option<u8>) -> Vec<EncounterMon> {
+    let mut result = Vec::new();
     for _ in 0..amount.unwrap_or(1) {
-        let mon = EncounterMon::from_pokemon(pokemon, level);
-        result.push_str(mon.build_string(pokemon, data).as_str());
+        result.push(EncounterMon::from_pokemon(pokemon, level));
     }
 
     result
