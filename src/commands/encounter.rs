@@ -257,20 +257,21 @@ impl EncounterMon {
         }
         result.push_str(std::format!("**Ability**: {}\n", self.ability).as_str());
         result.push_str(std::format!("```
+HP: {}  |  Def: {:.0}  |  SpDef: {:.0}
 STR: {:>2} / {:>2}      Tough:  {} / 5
 DEX: {:>2} / {:>2}      Cool:   {} / 5
 VIT: {:>2} / {:>2}      Beauty: {} / 5
 SPE: {:>2} / {:>2}      Clever: {} / 5
 INS: {:>2} / {:>2}      Cute:   {} / 5
-  Def: {:.0}
-SpDef: {:.0}
-```\n",         self.strength, pokemon.strength.max, self.tough,
+```\n",         (self.vitality + pokemon.base_hp) * 2,
+                     (self.vitality as f32 * 0.5).ceil(),
+                     (self.insight as f32 * 0.5).ceil(),
+                self.strength, pokemon.strength.max, self.tough,
                 self.dexterity, pokemon.dexterity.max, self.cool,
                 self.vitality, pokemon.vitality.max, self.beauty,
                 self.special, pokemon.special.max, self.clever,
                 self.insight, pokemon.insight.max, self.cute,
-                (self.vitality as f32 * 0.5).ceil(),
-                (self.insight as f32 * 0.5).ceil(),
+
         ).as_str());
 
         result.push_str("## Moves\n");
