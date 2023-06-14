@@ -100,6 +100,15 @@ pub enum Stat {
     Copy
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum SocialStat {
+    Tough,
+    Cool,
+    Beauty,
+    Clever,
+    Cute,
+}
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize)]
 pub enum Gender {
     Genderless,

@@ -4,8 +4,7 @@ use rand::seq::SliceRandom;
 use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::data::pokemon::{Pokemon};
-use crate::data::r#move::Move;
-use crate::enums::{Gender, MysteryDungeonRank, PokemonType, Stat};
+use crate::enums::{Stat, Gender, MysteryDungeonRank, PokemonType, SocialStat};
 use crate::game_data::GameData;
 
 
@@ -62,6 +61,11 @@ struct EncounterMon {
     pub vitality: u8,
     pub special: u8,
     pub insight: u8,
+    pub tough: u8,
+    pub cool: u8,
+    pub beauty: u8,
+    pub clever: u8,
+    pub cute: u8,
     pub moves: Vec<String>,
 }
 
@@ -82,6 +86,11 @@ impl EncounterMon {
             vitality: pokemon.vitality.min,
             special: pokemon.special.min,
             insight: pokemon.insight.min,
+            tough: 1,
+            cool: 1,
+            beauty: 1,
+            clever: 1,
+            cute: 1,
             moves: Vec::new()
         };
 
@@ -102,6 +111,22 @@ impl EncounterMon {
             remaining_stat_points -= 1;
         }
 
+        let mut non_maxed_social_stats = vec!(SocialStat::Tough, SocialStat::Cool, SocialStat::Beauty, SocialStat::Clever, SocialStat::Cute);
+        let mut remaining_social_points = EncounterMon::calculate_social_points(&result.rank);
+        while remaining_social_points > 0 {
+            if let Some(mut stat) = non_maxed_social_stats.choose(&mut rng) {
+                result.increase_social_stat(stat);
+
+                if result.get_social_stat(stat) == 5 {
+                    let el_drop_o = *stat;
+                    stat = &el_drop_o;
+                    non_maxed_social_stats.retain(|x| x != stat);
+                }
+            }
+
+            remaining_social_points -= 1;
+        }
+
         result.hp = (pokemon.base_hp + result.vitality) * 2;
         result.will = result.insight + 2;
 
@@ -116,6 +141,16 @@ impl EncounterMon {
             .choose_multiple(&mut thread_rng(), move_count as usize);
 
         result
+    }
+
+    fn calculate_social_points(rank: &MysteryDungeonRank) -> u8 {
+        match rank {
+            MysteryDungeonRank::Bronze => 4,
+            MysteryDungeonRank::Silver => 4 + 2,
+            MysteryDungeonRank::Gold => 4 + 4,
+            MysteryDungeonRank::Platinum => 4 + 6,
+            MysteryDungeonRank::Diamond => 4 + 8,
+        }
     }
 
     fn get_random_gender(pokemon: &Pokemon) -> Gender {
@@ -152,7 +187,17 @@ impl EncounterMon {
             Stat::Vitality => self.vitality += 1,
             Stat::Special => self.special += 1,
             Stat::Insight => self.insight += 1,
-            _ => panic!("Unexpected stat: {}", stat)
+            _ => panic!("Unexpected combat stat: {}", stat)
+        };
+    }
+
+    fn increase_social_stat(&mut self, stat: &SocialStat) {
+        match stat {
+            SocialStat::Tough => self.tough += 1,
+            SocialStat::Cool => self.cool += 1,
+            SocialStat::Beauty => self.beauty += 1,
+            SocialStat::Clever => self.clever += 1,
+            SocialStat::Cute => self.cute += 1,
         };
     }
 
@@ -173,12 +218,22 @@ impl EncounterMon {
             Stat::Vitality => self.vitality,
             Stat::Special => self.special,
             Stat::Insight => self.insight,
-            _ => panic!("Unexpected stat: {}", stat)
+            _ => panic!("Unexpected combat stat: {}", stat)
+        }
+    }
+
+    fn get_social_stat(&mut self, stat: &SocialStat) -> u8 {
+        match stat {
+            SocialStat::Tough => self.tough,
+            SocialStat::Cool => self.cool,
+            SocialStat::Beauty => self.beauty,
+            SocialStat::Clever => self.clever,
+            SocialStat::Cute => self.cute,
         }
     }
 
     pub fn build_string(&self, pokemon: &Pokemon, data: &GameData) -> String{
-        let mut result = std::format!("{} ({}) | **{:?}**\n", self.name, self.gender, self.rank);
+        let mut result = std::format!("{} ({}) | **Lv.{} | {:?}**\n", self.name, self.gender, self.level, self.rank);
         if let Some(type2) = self.type2 {
             result.push_str(std::format!("**Types**: {:?} / {:?}\n", self.type1, type2).as_str());
         } else {
@@ -186,16 +241,16 @@ impl EncounterMon {
         }
         result.push_str(std::format!("**Ability**: {}\n", self.ability).as_str());
         result.push_str(std::format!("```
-STR: {:>2} / {:>2}      Tough:  TODO
-DEX: {:>2} / {:>2}      Cool:   TODO
-VIT: {:>2} / {:>2}      Beauty: TODO
-SPE: {:>2} / {:>2}      Clever: TODO
-INS: {:>2} / {:>2}      Cute:   TODO
-```",           self.strength, pokemon.strength.max,
-                self.dexterity, pokemon.dexterity.max,
-                self.vitality, pokemon.vitality.max,
-                self.special, pokemon.special.max,
-                self.insight, pokemon.insight.max,).as_str());
+STR: {:>2} / {:>2}      Tough:  {} / 5
+DEX: {:>2} / {:>2}      Cool:   {} / 5
+VIT: {:>2} / {:>2}      Beauty: {} / 5
+SPE: {:>2} / {:>2}      Clever: {} / 5
+INS: {:>2} / {:>2}      Cute:   {} / 5
+```",           self.strength, pokemon.strength.max, self.tough,
+                self.dexterity, pokemon.dexterity.max, self.cool,
+                self.vitality, pokemon.vitality.max, self.beauty,
+                self.special, pokemon.special.max, self.clever,
+                self.insight, pokemon.insight.max, self.cute).as_str());
 
         result.push_str("*Moves*:\n");
         for move_name in &self.moves {
