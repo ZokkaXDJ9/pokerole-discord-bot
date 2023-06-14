@@ -277,7 +277,7 @@ INS: {:>2} / {:>2}      Cute:   {} / 5
         result.push_str("## Moves\n");
         for move_name in &self.moves {
             let m = data.moves.get(&move_name.to_lowercase()).unwrap_or_else(|| panic!("Every move should be set! {}", move_name));
-            result.push_str(std::format!("**{}** – {:?} | {} | {}\n", m.name, m.typing, m.category, m.target).as_str());
+            result.push_str(std::format!("**{}** – {} | {} | {}\n", m.name, m.typing, m.category, m.target).as_str());
             if m.damage1.unwrap_or(Stat::Strength) == Stat::Copy {
                 result.push_str("ACC: **Copy** | DMG: **Copy** \n");
             }

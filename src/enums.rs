@@ -146,10 +146,10 @@ pub enum MoveCategory {
 impl fmt::Display for MoveCategory {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
-            MoveCategory::Physical => "Physical",
-            MoveCategory::Special => "Special",
-            MoveCategory::PhysicalOrSpecial => "Physical / Special",
-            MoveCategory::Support => "Support"
+            MoveCategory::Physical => "<:move_physical:1118637143267487925> Physical",
+            MoveCategory::Special => "<:move_special:1118637141862404217> Special",
+            MoveCategory::PhysicalOrSpecial => "<:move_physical:1118637143267487925> Physical / <:move_special:1118637141862404217> Special",
+            MoveCategory::Support => "<:move_status:1118637139589091338> Support"
         })
     }
 }
