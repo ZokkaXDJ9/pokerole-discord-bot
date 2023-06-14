@@ -249,7 +249,7 @@ impl EncounterMon {
     }
 
     pub fn build_string(&self, pokemon: &Pokemon, data: &GameData) -> String{
-        let mut result = std::format!("{} ({}) | **Lv.{} | {:?}**\n", self.name, self.gender, self.level, self.rank);
+        let mut result = std::format!("{} ({}) | **Lv.{} ({:?})**\n", self.name, self.gender, self.level, self.rank);
         if let Some(type2) = self.type2 {
             result.push_str(std::format!("**Types**: {:?} / {:?}\n", self.type1, type2).as_str());
         } else {
@@ -262,11 +262,16 @@ DEX: {:>2} / {:>2}      Cool:   {} / 5
 VIT: {:>2} / {:>2}      Beauty: {} / 5
 SPE: {:>2} / {:>2}      Clever: {} / 5
 INS: {:>2} / {:>2}      Cute:   {} / 5
-```\n",           self.strength, pokemon.strength.max, self.tough,
+  Def: {:.0}
+SpDef: {:.0}
+```\n",         self.strength, pokemon.strength.max, self.tough,
                 self.dexterity, pokemon.dexterity.max, self.cool,
                 self.vitality, pokemon.vitality.max, self.beauty,
                 self.special, pokemon.special.max, self.clever,
-                self.insight, pokemon.insight.max, self.cute).as_str());
+                self.insight, pokemon.insight.max, self.cute,
+                (self.vitality as f32 * 0.5).ceil(),
+                (self.insight as f32 * 0.5).ceil(),
+        ).as_str());
 
         result.push_str("## Moves\n");
         for move_name in &self.moves {
