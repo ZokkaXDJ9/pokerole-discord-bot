@@ -98,8 +98,10 @@ impl EncounterMon {
         };
 
         let mut rng = thread_rng();
-        let mut non_maxed_stat_points = vec!(Stat::Strength, Stat::Vitality, Stat::Dexterity, Stat::Special, Stat::Insight);
+        let all_stats = vec!(Stat::Strength, Stat::Vitality, Stat::Dexterity, Stat::Special, Stat::Insight);
+        let mut non_maxed_stat_points = all_stats.clone();
         let mut remaining_stat_points = level + 3;
+        let mut limit_break_count = 0;
         while remaining_stat_points > 0 {
             if let Some(mut stat) = non_maxed_stat_points.choose(&mut rng) {
                 result.increase_stat(stat);
@@ -109,9 +111,14 @@ impl EncounterMon {
                     stat = &el_drop_o;
                     non_maxed_stat_points.retain(|x| x != stat);
                 }
+                remaining_stat_points -= 1;
+            } else if remaining_stat_points > 2 + limit_break_count {
+                result.increase_stat(all_stats.choose(&mut rng).unwrap());
+                remaining_stat_points -= 2 + limit_break_count;
+                limit_break_count += 1;
+            } else {
+                break;
             }
-
-            remaining_stat_points -= 1;
         }
 
         let mut non_maxed_social_stats = vec!(SocialStat::Tough, SocialStat::Cool, SocialStat::Beauty, SocialStat::Clever, SocialStat::Cute);
@@ -137,7 +144,6 @@ impl EncounterMon {
             .iter()
             .filter(|x| x.rank <= result.rank)
             .map(|x| x.name.clone());
-
 
         let move_count = result.insight + 2;
         result.moves = available_moves
