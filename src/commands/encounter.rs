@@ -254,13 +254,13 @@ DEX: {:>2} / {:>2}      Cool:   {} / 5
 VIT: {:>2} / {:>2}      Beauty: {} / 5
 SPE: {:>2} / {:>2}      Clever: {} / 5
 INS: {:>2} / {:>2}      Cute:   {} / 5
-```",           self.strength, pokemon.strength.max, self.tough,
+```\n",           self.strength, pokemon.strength.max, self.tough,
                 self.dexterity, pokemon.dexterity.max, self.cool,
                 self.vitality, pokemon.vitality.max, self.beauty,
                 self.special, pokemon.special.max, self.clever,
                 self.insight, pokemon.insight.max, self.cute).as_str());
 
-        result.push_str("*Moves*:\n");
+        result.push_str("## Moves\n");
         for move_name in &self.moves {
             let m = data.moves.get(&move_name.to_lowercase()).unwrap_or_else(|| panic!("Every move should be set! {}", move_name));
             result.push_str(std::format!("**{}** – {:?} | {} | {}\n", m.name, m.typing, m.category, m.target).as_str());
@@ -271,13 +271,21 @@ INS: {:>2} / {:>2}      Cute:   {} / 5
                 let accuracy = self.calculate_accuracy(m);
                 let damage = self.calculate_damage(m);
                 if damage > 0 {
-                    result.push_str(std::format!("ACC: **{}** | DMG: **{}**\n", accuracy, damage).as_str());
+                    if m.typing.has_stab(&Some(self.type1)) || m.typing.has_stab(&self.type2) {
+                        result.push_str(std::format!("ACC: **{}** | DMG: **{} + STAB**\n", accuracy, damage).as_str());
+                    } else {
+                        result.push_str(std::format!("ACC: **{}** | DMG: **{}**\n", accuracy, damage).as_str());
+                    }
                 } else {
                     result.push_str(std::format!("ACC: **{}**\n", accuracy).as_str());
                 }
             }
-            result.push_str(m.effect.as_str()); // TODO: Make effect optional and don't set it if the string just contains a "-"
-            result.push_str("\n\n");
+            if let Some(effect) = &m.effect {
+                result.push_str(effect.as_str());
+                result.push_str("\n\n");
+            } else {
+                result.push('\n');
+            }
         }
 
         result

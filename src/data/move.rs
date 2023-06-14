@@ -13,21 +13,26 @@ pub struct Move {
     pub accuracy1: Option<CombatOrSocialStat>,
     pub accuracy2: Option<CombatOrSocialStat>,
     pub target: String,
-    pub effect: String,
+    pub effect: Option<String>,
     pub description: Option<String>,
     //pub attributes - includes stuff like never_fail: bool. But that's already written in effect.
     //pub added_effects - includes stuff like stat changes. PARSEABLE stat changes! But they are already written in effect.
     pub category: MoveCategory,
 }
 
-fn replace_effect_string(raw: &str) -> String {
-    raw.replace("1 lethal", "1 Wound")
-        .replace("1 Lethal", "1 Wound")
-        .replace("cure Lethal", "cure Wound")
-        .replace("Lethal", "Inflicts Wounds")
-        .replace("Basic Heal", "Heal 5 HP")
-        .replace("Complete Heal", "Heal 10 HP")
-        .replace("Full Heal", "Heal 10 HP")
+fn replace_effect_string(raw: &str) -> Option<String> {
+    if raw == "-" {
+        return None;
+    }
+
+    Some(raw.replace("1 lethal", "1 Wound")
+            .replace("1 Lethal", "1 Wound")
+            .replace("cure Lethal", "cure Wound")
+            .replace("Lethal", "Inflicts Wounds")
+            .replace("Basic Heal", "Heal 5 HP")
+            .replace("Complete Heal", "Heal 10 HP")
+            .replace("Full Heal", "Heal 10 HP")
+    )
 }
 
 impl Move {
@@ -178,8 +183,10 @@ impl Move {
         }
 
         result.push('\n');
-        result.push_str("**Effect**: ");
-        result.push_str(&self.effect);
+        if let Some(effect) = &self.effect {
+            result.push_str("**Effect**: ");
+            result.push_str(effect);
+        }
 
         result
     }

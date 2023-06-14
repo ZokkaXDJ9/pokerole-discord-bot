@@ -50,6 +50,36 @@ pub enum MoveType {
     Typeless,
 }
 
+impl MoveType {
+    pub fn has_stab(&self, poke_type: &Option<PokemonType>) -> bool {
+        if let Some(poke_type) = poke_type {
+            match poke_type {
+                PokemonType::Normal => self == &MoveType::Normal,
+                PokemonType::Fighting => self == &MoveType::Fighting,
+                PokemonType::Flying => self == &MoveType::Flying,
+                PokemonType::Poison => self == &MoveType::Poison,
+                PokemonType::Ground => self == &MoveType::Ground,
+                PokemonType::Rock => self == &MoveType::Rock,
+                PokemonType::Bug => self == &MoveType::Bug,
+                PokemonType::Ghost => self == &MoveType::Ghost,
+                PokemonType::Steel => self == &MoveType::Steel,
+                PokemonType::Fire => self == &MoveType::Fire,
+                PokemonType::Water => self == &MoveType::Water,
+                PokemonType::Grass => self == &MoveType::Grass,
+                PokemonType::Electric => self == &MoveType::Electric,
+                PokemonType::Psychic => self == &MoveType::Psychic,
+                PokemonType::Ice => self == &MoveType::Ice,
+                PokemonType::Dragon => self == &MoveType::Dragon,
+                PokemonType::Dark => self == &MoveType::Dark,
+                PokemonType::Fairy => self == &MoveType::Fairy,
+                PokemonType::Shadow => false
+            }
+        } else {
+            false
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Deserialize)]
 pub enum MoveCategory {
     Physical,
