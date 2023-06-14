@@ -6,6 +6,7 @@ pub(crate) mod nature;
 pub(crate) mod r#move;
 pub(crate) mod weather;
 pub(crate) mod status_effect;
+pub(crate) mod potion;
 
 mod pokerole_data;
 mod pokerole_discord_py_data;

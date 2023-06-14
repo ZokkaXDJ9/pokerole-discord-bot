@@ -5,6 +5,7 @@ use crate::data::rule::Rule;
 use crate::data::item::Item;
 use crate::data::nature::Nature;
 use crate::data::pokemon::Pokemon;
+use crate::data::potion::Potion;
 use crate::data::r#move::Move;
 use crate::data::status_effect::StatusEffect;
 use crate::data::type_efficiency::TypeEfficiency;
@@ -14,6 +15,8 @@ use crate::data::weather::Weather;
 pub struct GameData {
     pub abilities: Arc<HashMap<String, Ability>>,
     pub ability_names: Arc<Vec<String>>,
+    pub potions: Arc<HashMap<String, Potion>>,
+    pub potion_names: Arc<Vec<String>>,
     pub items: Arc<HashMap<String, Item>>,
     pub item_names: Arc<Vec<String>>,
     pub moves: Arc<HashMap<String, Move>>,
