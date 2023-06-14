@@ -4,7 +4,8 @@ use rand::seq::SliceRandom;
 use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::data::pokemon::{Pokemon};
-use crate::enums::{Stat, Gender, MysteryDungeonRank, PokemonType, SocialStat};
+use crate::data::r#move::Move;
+use crate::enums::{Stat, Gender, MysteryDungeonRank, PokemonType, SocialStat, CombatOrSocialStat};
 use crate::game_data::GameData;
 
 
@@ -218,7 +219,14 @@ impl EncounterMon {
             Stat::Vitality => self.vitality,
             Stat::Special => self.special,
             Stat::Insight => self.insight,
-            _ => panic!("Unexpected combat stat: {}", stat)
+            Stat::Copy => 0,
+            Stat::StrengthOrSpecial => {
+                if self.strength > self.special {
+                    self.strength
+                } else {
+                    self.special
+                }
+            }
         }
     }
 
@@ -256,9 +264,18 @@ INS: {:>2} / {:>2}      Cute:   {} / 5
         for move_name in &self.moves {
             let m = data.moves.get(&move_name.to_lowercase()).unwrap_or_else(|| panic!("Every move should be set! {}", move_name));
             result.push_str(std::format!("**{}** – {:?} | {} | {}\n", m.name, m.typing, m.category, m.target).as_str());
-            let accuracy = 0; // TODO
-            let damage = 0;
-            result.push_str(std::format!("Accuracy: **{}** | Damage: **{}** \n", accuracy, damage).as_str());
+            if m.damage1.unwrap_or(Stat::Strength) == Stat::Copy {
+                result.push_str("ACC: **Copy** | DMG: **Copy** \n");
+            }
+            else {
+                let accuracy = self.calculate_accuracy(m);
+                let damage = self.calculate_damage(m);
+                if damage > 0 {
+                    result.push_str(std::format!("ACC: **{}** | DMG: **{}**\n", accuracy, damage).as_str());
+                } else {
+                    result.push_str(std::format!("ACC: **{}**\n", accuracy).as_str());
+                }
+            }
             result.push_str(m.effect.as_str()); // TODO: Make effect optional and don't set it if the string just contains a "-"
             result.push_str("\n\n");
         }
@@ -266,4 +283,72 @@ INS: {:>2} / {:>2}      Cute:   {} / 5
         result
     }
 
+    fn calculate_accuracy(&self, m: &Move) -> u8 {
+        let mut result = 0;
+        if let Some(acc) = m.accuracy1 {
+            result += self.get_die_count_for_stat(acc);
+        }
+
+        if m.accuracy2.is_some() {
+            result += self.rank.die_count();
+        }
+
+        result
+    }
+
+    fn calculate_damage(&self, m: &Move) -> u8 {
+        let mut result = m.power;
+        if let Some(stat) = m.damage1 {
+            result += self.get_stat(&stat);
+        }
+
+        if m.happiness_damage.is_some() {
+            result += self.rank.die_count();
+        }
+
+        result
+    }
+
+    fn get_die_count_for_stat(&self, acc: CombatOrSocialStat) -> u8 {
+        match acc {
+            CombatOrSocialStat::Strength => self.strength,
+            CombatOrSocialStat::Dexterity => self.dexterity,
+            CombatOrSocialStat::Vitality => self.vitality,
+            CombatOrSocialStat::Special => self.special,
+            CombatOrSocialStat::Insight => self.insight,
+            CombatOrSocialStat::Tough => self.tough,
+            CombatOrSocialStat::Cool => self.cool,
+            CombatOrSocialStat::Beauty => self.beauty,
+            CombatOrSocialStat::Clever => self.clever,
+            CombatOrSocialStat::Cute => self.cute,
+            CombatOrSocialStat::Brawl => self.rank.die_count(),
+            CombatOrSocialStat::Channel => self.rank.die_count(),
+            CombatOrSocialStat::Clash => self.rank.die_count(),
+            CombatOrSocialStat::Evasion => self.rank.die_count(),
+            CombatOrSocialStat::Alert => self.rank.die_count(),
+            CombatOrSocialStat::Athletic => self.rank.die_count(),
+            CombatOrSocialStat::Nature => self.rank.die_count(),
+            CombatOrSocialStat::Stealth => self.rank.die_count(),
+            CombatOrSocialStat::Allure => self.rank.die_count(),
+            CombatOrSocialStat::Etiquette => self.rank.die_count(),
+            CombatOrSocialStat::Intimidate => self.rank.die_count(),
+            CombatOrSocialStat::Perform => self.rank.die_count(),
+            CombatOrSocialStat::Will => self.rank.die_count(),
+            CombatOrSocialStat::Copied => 0,
+            CombatOrSocialStat::ToughOrCute => {
+                if self.tough > self.cute {
+                    self.tough
+                } else {
+                    self.cute
+                }
+            },
+            CombatOrSocialStat::MissingBeauty => 5 - self.beauty,
+            CombatOrSocialStat::BrawlOrChannel => self.rank.die_count(),
+            CombatOrSocialStat::Varies => self.rank.die_count(),
+            CombatOrSocialStat::Medicine => self.rank.die_count(),
+            CombatOrSocialStat::Empathy => self.rank.die_count(),
+            CombatOrSocialStat::Rank => self.rank.die_count(),
+        }
+    }
 }
+

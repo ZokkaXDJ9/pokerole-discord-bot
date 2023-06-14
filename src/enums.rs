@@ -79,6 +79,18 @@ pub enum MysteryDungeonRank {
     Diamond
 }
 
+impl MysteryDungeonRank {
+    pub fn die_count(&self) -> u8 {
+        match self {
+            MysteryDungeonRank::Bronze => 1,
+            MysteryDungeonRank::Silver => 2,
+            MysteryDungeonRank::Gold => 3,
+            MysteryDungeonRank::Platinum => 4,
+            MysteryDungeonRank::Diamond => 5,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize)]
 pub enum RegionalVariant {
     Alola,
