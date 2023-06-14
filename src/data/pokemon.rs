@@ -403,9 +403,9 @@ impl Pokemon {
                                       self.height,
                                       self.weight));
         result.push_str("**Type**: ");
-        result.push_str(std::format!("{:?}", self.type1).as_str());
+        result.push_str(std::format!("{}", self.type1).as_str());
         if let Some(type2) = self.type2 {
-            result.push_str(std::format!(" / {:?}", type2).as_str())
+            result.push_str(std::format!(" / {}", type2).as_str())
         }
         result.push('\n');
 

@@ -26,6 +26,33 @@ pub enum PokemonType {
     Shadow,
 }
 
+impl fmt::Display for PokemonType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            PokemonType::Normal => "<:type_normal:1118590014931095662> Normal",
+            PokemonType::Fighting => "<:type_fighting:1118590013194649730> Fighting",
+            PokemonType::Flying => "<:type_flying:1118590010359283773> Flying",
+            PokemonType::Poison => "<:type_poison:1118590008778047529> Poison",
+            PokemonType::Ground => "<:type_ground:1118590006081114325> Ground",
+            PokemonType::Rock => "<:type_rock:1118590005082861820> Rock",
+            PokemonType::Bug => "<:type_bug:1118594892566908959> Bug",
+            PokemonType::Ghost => "<:type_ghost:1118594890461368350> Ghost",
+            PokemonType::Steel => "<:type_steel:1118594889131765821> Steel",
+            PokemonType::Fire => "<:type_fire:1118594887399514145> Fire",
+            PokemonType::Water => "<:type_water:1118594885344297062> Water",
+            PokemonType::Grass => "<:type_grass:1118594883754664107> Grass",
+            PokemonType::Electric => "<:type_electric:1118594871272415243> Electric",
+            PokemonType::Psychic => "<:type_psychic:1118594873755435009> Psychic",
+            PokemonType::Ice => "<:type_ice:1118594875085041825> Ice",
+            PokemonType::Dragon => "<:type_dragon:1118594876444000357> Dragon",
+            PokemonType::Dark => "<:type_dark:1118594879195447387> Dark",
+            PokemonType::Fairy => "<:type_fairy:1118594881368100894> Fairy",
+            PokemonType::Shadow => "Shadow",
+        })
+    }
+}
+
+
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
 pub enum MoveType {
     Normal,
@@ -48,6 +75,33 @@ pub enum MoveType {
     Fairy,
     Any,
     Typeless,
+}
+
+impl fmt::Display for MoveType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            MoveType::Normal => "<:type_normal:1118590014931095662> Normal",
+            MoveType::Fighting => "<:type_fighting:1118590013194649730> Fighting",
+            MoveType::Flying => "<:type_flying:1118590010359283773> Flying",
+            MoveType::Poison => "<:type_poison:1118590008778047529> Poison",
+            MoveType::Ground => "<:type_ground:1118590006081114325> Ground",
+            MoveType::Rock => "<:type_rock:1118590005082861820> Rock",
+            MoveType::Bug => "<:type_bug:1118594892566908959> Bug",
+            MoveType::Ghost => "<:type_ghost:1118594890461368350> Ghost",
+            MoveType::Steel => "<:type_steel:1118594889131765821> Steel",
+            MoveType::Fire => "<:type_fire:1118594887399514145> Fire",
+            MoveType::Water => "<:type_water:1118594885344297062> Water",
+            MoveType::Grass => "<:type_grass:1118594883754664107> Grass",
+            MoveType::Electric => "<:type_electric:1118594871272415243> Electric",
+            MoveType::Psychic => "<:type_psychic:1118594873755435009> Psychic",
+            MoveType::Ice => "<:type_ice:1118594875085041825> Ice",
+            MoveType::Dragon => "<:type_dragon:1118594876444000357> Dragon",
+            MoveType::Dark => "<:type_dark:1118594879195447387> Dark",
+            MoveType::Fairy => "<:type_fairy:1118594881368100894> Fairy",
+            MoveType::Any => "Any",
+            MoveType::Typeless => "Typeless",
+        })
+    }
 }
 
 impl MoveType {

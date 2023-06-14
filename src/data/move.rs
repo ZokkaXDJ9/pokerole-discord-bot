@@ -148,7 +148,7 @@ impl Move {
         if self.typing == MoveType::Typeless {
             result.push_str("None");
         } else {
-            result.push_str(std::format!("{:?}", self.typing).as_str());
+            result.push_str(std::format!("{}", self.typing).as_str());
         }
         if self.name != "Metronome" {
             result.push_str(" — **");

@@ -251,9 +251,9 @@ impl EncounterMon {
     pub fn build_string(&self, pokemon: &Pokemon, data: &GameData) -> String{
         let mut result = std::format!("{} ({}) | **Lv.{} ({:?})**\n", self.name, self.gender, self.level, self.rank);
         if let Some(type2) = self.type2 {
-            result.push_str(std::format!("**Types**: {:?} / {:?}\n", self.type1, type2).as_str());
+            result.push_str(std::format!("**Types**: {} / {}\n", self.type1, type2).as_str());
         } else {
-            result.push_str(std::format!("**Type**: {:?}\n", self.type1).as_str());
+            result.push_str(std::format!("**Type**: {}\n", self.type1).as_str());
         }
         result.push_str(std::format!("**Ability**: {}\n", self.ability).as_str());
         result.push_str(std::format!("```
