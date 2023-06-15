@@ -1,3 +1,4 @@
+use poise::CreateReply;
 use serenity::builder::{CreateActionRow, CreateButton, CreateComponents};
 use serenity::client::Context;
 use serenity::model::application::component::{ActionRowComponent};
@@ -5,6 +6,7 @@ use serenity::model::application::interaction::{InteractionResponseType};
 use serenity::model::prelude::component::{ActionRow, Button};
 use serenity::model::prelude::interaction::message_component::MessageComponentInteraction;
 use crate::{commands, Error, helpers};
+use crate::commands::{efficiency, learns};
 use crate::events::FrameworkContext;
 
 pub async fn handle_button_interaction(context: &Context, framework: FrameworkContext<'_>, interaction: &&MessageComponentInteraction) -> Result<(), Error> {
@@ -13,17 +15,41 @@ pub async fn handle_button_interaction(context: &Context, framework: FrameworkCo
     }
 
     let (command, args) = parse_command(interaction.data.custom_id.as_str());
-    if command == "metronome" {
-        disable_button_on_original_message(context, interaction).await?;
-        interaction.message.reply(context, commands::metronome::get_metronome_text(framework.user_data)).await?;
-    }
-    if command == "learns-all" {
-        disable_button_on_original_message(context, interaction).await?;
-        let pokemon = framework.user_data.pokemon.get(args[0]).unwrap();
-        for response_part in helpers::split_long_messages(pokemon.build_all_learnable_moves_list().into()) {
-            interaction.message.reply(context, response_part).await?;
+    match command {
+        "metronome" => {
+            disable_button_on_original_message(context, interaction).await?;
+            interaction.message.reply(context, commands::metronome::get_metronome_text(framework.user_data)).await?;
+        },
+        "learns-all" => {
+            disable_button_on_original_message(context, interaction).await?;
+            let pokemon = framework.user_data.pokemon.get(args[0]).unwrap();
+            for response_part in helpers::split_long_messages(pokemon.build_all_learnable_moves_list().into()) {
+                interaction.message.reply(context, response_part).await?;
+            }
+        },
+        "efficiency" => {
+            disable_button_on_original_message(context, interaction).await?;
+            let pokemon = framework.user_data.pokemon.get(args[0]).unwrap();
+            interaction.message.reply(context, efficiency::get_type_resistances_string(pokemon, &framework.user_data.type_efficiency)).await?;
+        },
+        "moves" => {
+            disable_button_on_original_message(context, interaction).await?;
+            let pokemon = framework.user_data.pokemon.get(args[0]).unwrap();
+            let mut create_reply = CreateReply::default();
+            learns::create_reply(&mut create_reply, pokemon);
+            interaction.create_followup_message(context, |f| {
+                create_reply.to_slash_followup_response(f);
+                f
+            }).await?;
+        },
+        "abilities" => {
+            disable_button_on_original_message(context, interaction).await?;
+            let pokemon = framework.user_data.pokemon.get(args[0]).unwrap();
+            interaction.message.reply(context, pokemon.build_ability_string(&framework.user_data.abilities).into()).await?;
         }
+        &_ => {}
     }
+
     Ok(())
 }
 

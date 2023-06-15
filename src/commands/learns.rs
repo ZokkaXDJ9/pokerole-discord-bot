@@ -1,5 +1,4 @@
-use serenity::builder::CreateButton;
-use serenity::model::application::component::ButtonStyle;
+use poise::CreateReply;
 use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::data::pokemon::Pokemon;
@@ -15,7 +14,7 @@ pub async fn learns(
     name: String,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&name.to_lowercase()) {
-        list_learns(ctx, pokemon).await?;
+        ctx.send(|b| create_reply(b, pokemon)).await?;
     } else {
         ctx.send(|b| {
             b.content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name));
@@ -26,26 +25,11 @@ pub async fn learns(
     Ok(())
 }
 
-pub(in crate::commands) async fn list_learns<'a>(ctx: Context<'a>, pokemon: &Pokemon) -> Result<(), Error> {
-    let reply = ctx.send(|b| {
-        b.content(pokemon.build_move_string())
-            .components(|b| {
-                b.create_action_row(|b| {
-                    b.add_button(helpers::create_button("Show All Learnable Moves", format!("learns-all_{}", pokemon.name.to_lowercase()).as_str()))
-                })
+pub fn create_reply<'a, 'b>(b: &'a mut CreateReply<'b>, pokemon: &Pokemon) -> &'a mut CreateReply<'b> {
+    b.content(pokemon.build_move_string())
+        .components(|b| {
+            b.create_action_row(|b| {
+                b.add_button(helpers::create_button("Show All Learnable Moves", format!("learns-all_{}", pokemon.name.to_lowercase()).as_str()))
             })
-    }).await?;
-
-    Ok(())
+        })
 }
-
-fn create_button(disabled: bool) -> CreateButton {
-    let mut button = CreateButton::default();
-    button.label("Show All Learnable Moves");
-    button.custom_id("Show All Learnable Moves");
-    button.style(ButtonStyle::Primary);
-    button.disabled(disabled);
-    button
-}
-
-
