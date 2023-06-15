@@ -1,9 +1,7 @@
-use serenity::builder::CreateButton;
-use serenity::model::application::component::ButtonStyle;
-use serenity::model::application::interaction::InteractionResponseType;
-use crate::commands::{Context, Error, metronome};
+use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_move;
 use crate::data::r#move::Move;
+use crate::helpers;
 
 /// Display a move
 #[poise::command(slash_command, rename = "move")]
@@ -35,20 +33,11 @@ async fn execute_metronome<'a>(ctx: Context<'a>, poke_move: &Move) -> Result<(),
         b.content(poke_move.build_string())
             .components(|b| {
                 b.create_action_row(|b| {
-                    b.add_button(create_button("Use Metronome", "metronome"))
+                    b.add_button(helpers::create_button("Use Metronome", "metronome"))
                 })
             })
     }).await?;
 
     reply.message().await?;
     Ok(())
-}
-
-pub fn create_button(label: &str, custom_id: &str) -> CreateButton {
-    let mut button = CreateButton::default();
-    button.label(label);
-    button.custom_id(custom_id);
-    button.style(ButtonStyle::Primary);
-    button.disabled(false);
-    button
 }

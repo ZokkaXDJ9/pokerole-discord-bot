@@ -1,9 +1,9 @@
 use serenity::builder::CreateButton;
 use serenity::model::application::component::ButtonStyle;
-use serenity::model::application::interaction::InteractionResponseType;
 use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::data::pokemon::Pokemon;
+use crate::helpers;
 
 /// Display Pokemon moves
 #[poise::command(slash_command, prefix_command)]
@@ -31,49 +31,10 @@ pub(in crate::commands) async fn list_learns<'a>(ctx: Context<'a>, pokemon: &Pok
         b.content(pokemon.build_move_string())
             .components(|b| {
                 b.create_action_row(|b| {
-                    b.add_button(create_button(false))
+                    b.add_button(helpers::create_button("Show All Learnable Moves", format!("learns-all_{}", pokemon.name.to_lowercase()).as_str()))
                 })
             })
     }).await?;
-
-    let message = reply.message().await?;
-    let interaction = message
-        .await_component_interaction(ctx)
-        .timeout(std::time::Duration::from_secs(3 * 60))
-        .await;
-
-    match &interaction {
-        Some(m) => {
-            m.create_interaction_response(ctx, |response| {
-                response.kind(InteractionResponseType::UpdateMessage).interaction_response_data(|d| {
-                    d.components(|b| {
-                        b.create_action_row( |row| {
-                            row.add_button(create_button(true))
-                        })
-                    })
-                })
-            }).await?;
-
-            let result = pokemon.build_tm_move_string().into();
-            if result.len() < 2000 {
-                ctx.send(|b| b.content(result)).await?;
-            } else {
-                let split_index = result.split_at(2000).0.rfind("\n**");
-                let split = result.split_at(split_index.unwrap_or(2000));
-                ctx.send(|b| b.content(split.0)).await?;
-                ctx.send(|b| b.content(split.1)).await?;
-            }
-        },
-        None => {
-            reply.edit(ctx, |b| {
-                b.components(|components| {
-                    components.create_action_row( |row| {
-                        row.add_button(create_button(true))
-                    })
-                })
-            }).await?;
-        }
-    };
 
     Ok(())
 }

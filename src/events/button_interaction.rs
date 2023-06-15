@@ -4,7 +4,7 @@ use serenity::model::application::component::{ActionRowComponent};
 use serenity::model::application::interaction::{InteractionResponseType};
 use serenity::model::prelude::component::{ActionRow, Button};
 use serenity::model::prelude::interaction::message_component::MessageComponentInteraction;
-use crate::{commands, Error};
+use crate::{commands, Error, helpers};
 use crate::events::FrameworkContext;
 
 
@@ -12,6 +12,14 @@ pub async fn handle_button_interaction(context: &Context, framework: FrameworkCo
     if interaction.data.custom_id == "metronome" {
         disable_button_on_original_message(context, interaction).await?;
         interaction.message.reply(context, commands::metronome::get_metronome_text(framework.user_data)).await?;
+    }
+    if interaction.data.custom_id.starts_with("learns-all") {
+        disable_button_on_original_message(context, interaction).await?;
+        let args: Vec<&str> = interaction.data.custom_id.split('_').collect();
+        let pokemon = framework.user_data.pokemon.get(args[1]).unwrap();
+        for response_part in helpers::split_long_messages(pokemon.build_all_learnable_moves_list().into()) {
+            interaction.message.reply(context, response_part).await?;
+        }
     }
     Ok(())
 }

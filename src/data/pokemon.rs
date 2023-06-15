@@ -102,7 +102,7 @@ impl Pokemon {
 }
 
 impl Pokemon {
-    pub(crate) fn build_tm_move_string(&self) -> impl Into<String> + Sized {
+    pub(crate) fn build_all_learnable_moves_list(&self) -> impl Into<String> + Sized {
         let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
         if let Some(issue) = self.api_issue {
             if issue == ApiIssueType::FoundNothing {

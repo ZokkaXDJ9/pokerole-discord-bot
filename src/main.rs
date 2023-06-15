@@ -6,6 +6,7 @@ mod enums;
 mod game_data;
 mod parse_error;
 mod events;
+mod helpers;
 
 use poise::serenity_prelude as serenity;
 
