@@ -13,7 +13,6 @@ We poll and combine data from different sources, this allows us to update the da
 
 ## TODO
 A small list of ideas which might be useful to explore in the future.
-- `/encounter` command to swiftly generate some random pokemon to fight.
 - Reaction Roles - this would allow us to get rid of Zira.
 - User Leave notifications - might be useful to have, dunno.
 
