@@ -7,6 +7,7 @@ use crate::data::pokemon::{Pokemon};
 use crate::data::r#move::Move;
 use crate::enums::{Stat, Gender, MysteryDungeonRank, PokemonType, SocialStat, CombatOrSocialStat};
 use crate::game_data::GameData;
+use crate::helpers;
 
 
 /// Encounter some wild pokemon!
@@ -27,7 +28,9 @@ pub async fn encounter(
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().pokemon.get(&pokemon.to_lowercase()) {
         for encounter in build_encounter(pokemon, level, amount) {
-            ctx.say(encounter.build_string(pokemon, ctx.data())).await?;
+            for part in helpers::split_long_messages(encounter.build_string(pokemon, ctx.data())) {
+                ctx.say(part).await?;
+            }
         }
     } else {
         ctx.send(|b| {
