@@ -15,10 +15,49 @@ pub fn split_long_messages(message: String) -> Vec<String> {
         return vec!(message);
     }
 
-    // TODO: Prioritize splitting at #, ## and ### sections unless those are too early in the string (<500 or so)
-    let split_index = message.split_at(2000).0.rfind("\n**");
-    let split = message.split_at(split_index.unwrap_or(2000));
+    let mut remaining = message.as_str();
+    let mut result = Vec::default();
+    while remaining.len() > 2000 {
+        let split_index = find_best_split_pos(remaining);
+        let split = message.split_at(split_index);
 
-    // TODO: Subsequent splits in case split.1 is still too long
-    vec!(split.0.to_string(), split.1.to_string())
+        result.push(split.0.to_string());
+        remaining = split.1;
+    }
+    result.push(remaining.to_string());
+
+    result
+}
+
+const MIN_SIZE: usize = 500;
+fn find_best_split_pos(message: &str) -> usize {
+    let split = message.split_at(2000).0;
+    if let Some(index) = split.rfind("\n# ") {
+        if index > MIN_SIZE {
+            return index;
+        }
+    }
+    if let Some(index) = split.rfind("\n## ") {
+        if index > MIN_SIZE {
+            return index;
+        }
+    }
+    if let Some(index) = split.rfind("\n### ") {
+        if index > MIN_SIZE {
+            return index;
+        }
+    }
+    if let Some(index) = split.rfind("\n**") {
+        if index > MIN_SIZE {
+            return index;
+        }
+    }
+    if let Some(index) = split.rfind("\n\n") {
+        return index;
+    }
+    if let Some(index) = split.rfind('\n') {
+        return index;
+    }
+
+    2000
 }
