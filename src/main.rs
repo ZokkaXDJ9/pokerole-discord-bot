@@ -19,8 +19,7 @@ async fn main() {
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: commands::get_all_commands(),
-            // TODO: This should be simplified here
-            event_handler: |serenity_ctx, event, ctx, data| Box::pin(events::handle_events(serenity_ctx, event, ctx, data)),
+            event_handler: |serenity_ctx, event, ctx, _| Box::pin(events::handle_events(serenity_ctx, event, ctx)),
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))

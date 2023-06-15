@@ -2,7 +2,7 @@ use poise::Command;
 use crate::Error;
 use crate::game_data::GameData;
 
-pub type Context<'a> = poise::Context<'a, GameData, Error>;
+type Context<'a> = poise::Context<'a, GameData, Error>;
 
 mod r#move;
 mod weather;
