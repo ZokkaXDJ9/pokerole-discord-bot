@@ -7,21 +7,32 @@ use serenity::model::prelude::interaction::message_component::MessageComponentIn
 use crate::{commands, Error, helpers};
 use crate::events::FrameworkContext;
 
-
 pub async fn handle_button_interaction(context: &Context, framework: FrameworkContext<'_>, interaction: &&MessageComponentInteraction) -> Result<(), Error> {
-    if interaction.data.custom_id == "metronome" {
+    if interaction.data.custom_id.is_empty() {
+        return Ok(());
+    }
+
+    let (command, args) = parse_command(interaction.data.custom_id.as_str());
+    if command == "metronome" {
         disable_button_on_original_message(context, interaction).await?;
         interaction.message.reply(context, commands::metronome::get_metronome_text(framework.user_data)).await?;
     }
-    if interaction.data.custom_id.starts_with("learns-all") {
+    if command == "learns-all" {
         disable_button_on_original_message(context, interaction).await?;
-        let args: Vec<&str> = interaction.data.custom_id.split('_').collect();
-        let pokemon = framework.user_data.pokemon.get(args[1]).unwrap();
+        let pokemon = framework.user_data.pokemon.get(args[0]).unwrap();
         for response_part in helpers::split_long_messages(pokemon.build_all_learnable_moves_list().into()) {
             interaction.message.reply(context, response_part).await?;
         }
     }
     Ok(())
+}
+
+fn parse_command(custom_id: &str) -> (&str, Vec<&str>) {
+    let mut split = custom_id.split('_');
+    let command = split.next();
+    let args: Vec<&str> = split.collect();
+
+    (command.expect("Commands should never be empty at this point!"), args)
 }
 
 async fn disable_button_on_original_message(context: &Context, interaction: &&MessageComponentInteraction) -> serenity::Result<()> {
