@@ -5,8 +5,11 @@ mod csv_utils;
 mod enums;
 mod game_data;
 mod parse_error;
+mod events;
 
 use poise::serenity_prelude as serenity;
+
+pub type Error = Box<dyn std::error::Error + Send + Sync>;
 
 #[tokio::main]
 async fn main() {
@@ -16,6 +19,8 @@ async fn main() {
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: commands::get_all_commands(),
+            // TODO: This should be simplified here
+            event_handler: |serenity_ctx, event, ctx, data| Box::pin(events::handle_events(serenity_ctx, event, ctx, data)),
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
