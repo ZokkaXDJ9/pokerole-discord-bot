@@ -1,5 +1,6 @@
 use crate::commands::{Context, Error};
 use rand::seq::SliceRandom;
+use crate::game_data::GameData;
 
 /// Use the most randomest of moves!
 #[poise::command(slash_command)]
@@ -9,13 +10,16 @@ pub async fn metronome(
     execute(ctx).await
 }
 
-pub async fn execute<'a>(ctx: Context<'a>) -> Result<(), Error> {
-    let move_name = ctx.data().move_names.choose(&mut rand::thread_rng()).expect("There should be a name.");
-    if let Some(poke_move) = ctx.data().moves.get(&move_name.to_lowercase()) {
-        ctx.say(poke_move.build_string()).await?;
-    } else {
-        ctx.say(std::format!("Error: randomness rolled {}, but there was no move with that name defined? This should never happen. D:", move_name)).await?;
-    }
-
+pub async fn execute(ctx: Context<'_>) -> Result<(), Error> {
+    ctx.say(get_metronome_text(ctx.data())).await?;
     Ok(())
+}
+
+pub fn get_metronome_text(data: &GameData) -> String {
+    let move_name = data.move_names.choose(&mut rand::thread_rng()).expect("There should be a name.");
+    return if let Some(poke_move) = data.moves.get(&move_name.to_lowercase()) {
+        poke_move.build_string()
+    } else {
+        format!("Error: randomness rolled {}, but there was no move with that name defined? This should never happen. D:", move_name)
+    }
 }

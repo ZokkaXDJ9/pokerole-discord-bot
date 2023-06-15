@@ -4,29 +4,29 @@ use crate::game_data::GameData;
 
 type Context<'a> = poise::Context<'a, GameData, Error>;
 
-mod r#move;
-mod weather;
-mod status;
-mod rule;
-mod item;
-mod stats;
-mod learns;
-mod roll;
-mod ability;
-mod nature;
-mod timestamp;
-mod about;
-
 mod autocompletion;
-mod metronome;
-mod efficiency;
-mod select_random;
-mod poll;
-mod scale;
-mod emoji;
-mod encounter;
-mod calculate_hp_damage_modifier;
-mod potion;
+
+pub mod r#move;
+pub mod weather;
+pub mod status;
+pub mod rule;
+pub mod item;
+pub mod stats;
+pub mod learns;
+pub mod roll;
+pub mod ability;
+pub mod nature;
+pub mod timestamp;
+pub mod about;
+pub mod metronome;
+pub mod efficiency;
+pub mod select_random;
+pub mod poll;
+pub mod scale;
+pub mod emoji;
+pub mod encounter;
+pub mod calculate_hp_damage_modifier;
+pub mod potion;
 
 pub fn get_all_commands() -> Vec<Command<GameData, Error>> {
     vec![

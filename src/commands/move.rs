@@ -40,41 +40,11 @@ async fn execute_metronome<'a>(ctx: Context<'a>, poke_move: &Move) -> Result<(),
             })
     }).await?;
 
-    let message = reply.message().await?;
-    let interaction = message
-        .await_component_interaction(ctx)
-        .timeout(std::time::Duration::from_secs(3 * 60))
-        .await;
-
-    match &interaction {
-        Some(m) => {
-            m.create_interaction_response(ctx, |response| {
-                response.kind(InteractionResponseType::UpdateMessage).interaction_response_data(|d| {
-                    d.components(|b| {
-                        b.create_action_row( |row| {
-                            row.add_button(create_metronome_button(true))
-                        })
-                    })
-                })
-            }).await?;
-
-            metronome::execute(ctx).await?;
-        },
-        None => {
-            reply.edit(ctx, |b| {
-                b.components(|components| {
-                    components.create_action_row(|row| {
-                        row
-                    })
-                })
-            }).await?;
-        }
-    };
-
-    Ok(())
+    reply.message().await?;
+    return Ok(());
 }
 
-fn create_metronome_button(disabled: bool) -> CreateButton {
+pub fn create_metronome_button(disabled: bool) -> CreateButton {
     let mut button = CreateButton::default();
     button.label("Use Metronome");
     button.custom_id("Use Metronome");
