@@ -35,20 +35,20 @@ async fn execute_metronome<'a>(ctx: Context<'a>, poke_move: &Move) -> Result<(),
         b.content(poke_move.build_string())
             .components(|b| {
                 b.create_action_row(|b| {
-                    b.add_button(create_metronome_button(false))
+                    b.add_button(create_button("Use Metronome", "metronome"))
                 })
             })
     }).await?;
 
     reply.message().await?;
-    return Ok(());
+    Ok(())
 }
 
-pub fn create_metronome_button(disabled: bool) -> CreateButton {
+pub fn create_button(label: &str, custom_id: &str) -> CreateButton {
     let mut button = CreateButton::default();
-    button.label("Use Metronome");
-    button.custom_id("Use Metronome");
+    button.label(label);
+    button.custom_id(custom_id);
     button.style(ButtonStyle::Primary);
-    button.disabled(disabled);
+    button.disabled(false);
     button
 }
