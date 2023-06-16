@@ -165,11 +165,10 @@ impl Pokemon {
             return;
         }
 
-        result.push_str("### ");
         result.push_str(emoji);
-        result.push(' ');
+        result.push_str(" **");
         result.push_str(title);
-        result.push('\n');
+        result.push_str("**\n");
         result.push_str(&text);
         result.push('\n');
     }
