@@ -121,10 +121,10 @@ impl Pokemon {
     }
 
     fn append_all_learnable_moves(&self, result: &mut String) {
-        Pokemon::append_moves(result, "", "\n**TM Moves**\n", self.moves.by_machine.clone());
-        Pokemon::append_moves(result, "", "\n**Egg Moves**\n", self.moves.by_egg.clone());
-        Pokemon::append_moves(result, "", "\n**Tutor**\n", self.moves.by_tutor.clone());
-        Pokemon::append_moves(result, "", "\n**Learned in Game through level up, but not here**\n", self.moves.by_level_up.iter()
+        Pokemon::append_moves(result, ":cd:", "TM Moves", self.moves.by_machine.clone());
+        Pokemon::append_moves(result, ":egg:", "Egg Moves", self.moves.by_egg.clone());
+        Pokemon::append_moves(result, ":teacher:", "Tutor", self.moves.by_tutor.clone());
+        Pokemon::append_moves(result, ":question:", "Learned in Game through level up, but not here", self.moves.by_level_up.iter()
             .filter(|x| self.moves.by_pokerole_rank.iter().all(|learn| learn.name.to_lowercase() != x.to_lowercase()))
             .cloned()
             .collect());
@@ -141,11 +141,11 @@ const DIAMOND: &str = "<:badge_diamond:1117520988956020806>";
 impl Pokemon {
     pub(crate) fn build_move_string(&self) -> impl Into<String> + Sized {
         let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
-        self.filter_moves(&mut result, BRONZE, " **Bronze**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Bronze);
-        self.filter_moves(&mut result, SILVER, " **Silver**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Silver);
-        self.filter_moves(&mut result, GOLD, " **Gold**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Gold);
-        self.filter_moves(&mut result, PLATINUM, " **Platinum**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Platinum);
-        self.filter_moves(&mut result, DIAMOND, " **Diamond**\n", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Diamond);
+        self.filter_moves(&mut result, BRONZE, "Bronze", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Bronze);
+        self.filter_moves(&mut result, SILVER, "Silver", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Silver);
+        self.filter_moves(&mut result, GOLD, "Gold", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Gold);
+        self.filter_moves(&mut result, PLATINUM, "Platinum", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Platinum);
+        self.filter_moves(&mut result, DIAMOND, "Diamond", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Diamond);
 
         result
     }
@@ -166,8 +166,11 @@ impl Pokemon {
             return;
         }
 
+        result.push_str("### ");
         result.push_str(emoji);
+        result.push(' ');
         result.push_str(title);
+        result.push('\n');
         result.push_str(&text);
         result.push('\n');
     }
