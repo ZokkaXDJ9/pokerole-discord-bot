@@ -82,7 +82,7 @@ impl EncounterMon {
             gender: EncounterMon::get_random_gender(pokemon),
             type1: pokemon.type1,
             type2: pokemon.type2,
-            level: level,
+            level,
             rank: EncounterMon::get_rank_from_level(level),
             ability: EncounterMon::get_random_ability(pokemon),
             hp: 0,
@@ -165,7 +165,7 @@ impl EncounterMon {
         }
     }
 
-    fn get_random_gender(pokemon: &Pokemon) -> Gender {
+    fn get_random_gender(_pokemon: &Pokemon) -> Gender {
         // TODO: Use official gender ratio, lul.
         // Also, genderless mons.
         if thread_rng().gen_bool(0.5) {
@@ -258,7 +258,6 @@ impl EncounterMon {
         } else {
             result.push_str(std::format!("**Type**: {}\n", self.type1).as_str());
         }
-        result.push_str(std::format!("**Ability**: {}\n", self.ability).as_str());
         result.push_str(std::format!("```
 HP: {}  |  Def: {:.0}  |  SpDef: {:.0}
 STR: {:>2} / {:>2}      Tough:  {} / 5
@@ -266,7 +265,7 @@ DEX: {:>2} / {:>2}      Cool:   {} / 5
 VIT: {:>2} / {:>2}      Beauty: {} / 5
 SPE: {:>2} / {:>2}      Clever: {} / 5
 INS: {:>2} / {:>2}      Cute:   {} / 5
-```\n",         (self.vitality + pokemon.base_hp) * 2,
+```",         (self.vitality + pokemon.base_hp) * 2,
                      (self.vitality as f32 * 0.5).ceil(),
                      (self.insight as f32 * 0.5).ceil(),
                 self.strength, pokemon.strength.max, self.tough,
@@ -276,6 +275,7 @@ INS: {:>2} / {:>2}      Cute:   {} / 5
                 self.insight, pokemon.insight.max, self.cute,
 
         ).as_str());
+        result.push_str(std::format!("**Ability**: {}\n*{}*\n", self.ability, data.abilities.get(&self.ability.to_lowercase()).unwrap().effect).as_str());
 
         result.push_str("## Moves\n");
         for move_name in &self.moves {
