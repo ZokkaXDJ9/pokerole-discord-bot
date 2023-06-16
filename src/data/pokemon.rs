@@ -131,12 +131,11 @@ impl Pokemon {
     }
 }
 
-// FIXME: Move these somewhere else. Also check out if we can use serenity::utils::parse_emoji for this.
-const BRONZE: &str = "<:badge_bronze:1117520898426155019>";
-const SILVER: &str = "<:badge_silver:1117520912531595375>";
-const GOLD: &str = "<:badge_gold:1117520927245217872>";
-const PLATINUM: &str = "<:badge_platinum:1117520966151585812>";
-const DIAMOND: &str = "<:badge_diamond:1117520988956020806>";
+const BRONZE: &str = "<:badge_bronze:1119186018793435177>";
+const SILVER: &str = "<:badge_silver:1119185975545954314>";
+const GOLD: &str = "<:badge_gold:1119185974149251092>";
+const PLATINUM: &str = "<:badge_platinum:1119185972635107378>";
+const DIAMOND: &str = "<:badge_diamond:1119185970374389760>";
 
 impl Pokemon {
     pub(crate) fn build_move_string(&self) -> impl Into<String> + Sized {
