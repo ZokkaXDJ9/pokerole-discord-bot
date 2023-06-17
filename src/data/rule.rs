@@ -8,9 +8,10 @@ pub struct Rule {
 impl Rule {
     pub(crate) fn build_string(&self) -> impl Into<String> + Sized {
         let mut builder = serenity::utils::MessageBuilder::default();
-        builder.push(std::format!("### {}\n", &self.name));
+        builder.push(std::format!("**{}**\n", &self.name));
         if let Some(flavor) = &self.flavor {
             builder.push_italic_line(flavor);
+            builder.push('\n');
         }
 
         builder.push(&self.text);
@@ -43,8 +44,7 @@ If you stat is already at 10, you cannot limit break it any further."))
 You can evolve at any time or even start out as a fully evolved pokemon, but as long as you haven't reached the level required for your evolution yet, you will have to play with the base stats of your unevolved form. Evolution thresholds are Level 3 for second stage, and Level 6 for third stage evolutions. In severe cases where even the second evo has terrible stats, such as for e.g. the Weedle/Kakuna/Beedrill line, you may apply for an exception to be made.
 If you want to have your evolution happen under specific circumstances, feel free to hit up any Quest Giver to create an evo-quest for you!
 
-Characters who wish to not evolve upon reaching the required rank might choose to do so as well, and still receive the stats and most of the moves the evolved pokemon would have (not the abilities, though)! Think of it as an upgraded 'plus' version. This also does not lock you out from evolving at a later point!
-"),
+Characters who wish to not evolve upon reaching the required rank might choose to do so as well, and still receive the stats and most of the moves the evolved pokemon would have (not the abilities, though)! Think of it as an upgraded 'plus' version. This also does not lock you out from evolving at a later point!"),
                 example: Some(String::from("Let's say you want to play a Tyranitar. Pupitar is probably not the most fun to play, so you decide to start out fully evolved right from the get go. Until level 3 you will have to play with the base stats of a Larvitar. Once you reach level 3, you can upgrade your base stats to that of a Pupitar, and, finally, once you reach level 6, your base stats may reflect those of a full-powered Tyranitar!"))
             }, Rule {
                 name: String::from("Multi-Target and Area moves"),
@@ -75,7 +75,7 @@ Level 6 => Evo #2
 Level 8 => Platinum
 Level 16 => Diamond
 
-Besides the extra die for all the *+ Rank* accuracy rolls, you'll gain 2 social stat points for each rank up!"),
+Besides the extra die for all the `+ Rank` accuracy rolls, you'll gain 2 social stat points for each rank up!"),
                 example: None
             }, Rule {
                 name: String::from("Wound damage"),
@@ -117,7 +117,7 @@ Every Character has access to the following moves at any time:
             }, Rule {
                 name: String::from("Defense"),
                 flavor: Some(String::from("How much of a beating can you really take?")),
-                text: String::from("You Physical Defense is `Vitality / 2`.\nYour Special Defense is `Insight / 2`.nMinimum damage is always 1, unless you resist the attack's type - this is the only case where it gets reduced to 0."),
+                text: String::from("You Physical Defense is `Vitality / 2`.\nYour Special Defense is `Insight / 2`.\nMinimum damage is always 1, unless you resist the attack's type - this is the only case where it gets reduced to 0."),
                 example: Some(String::from("With 4 points in Vitality and 5 points in Insight, you'd get 2 physical and 3 special defense!"))
             }, Rule {
                 name: String::from("Orre Character Import"),
@@ -143,8 +143,7 @@ Also, if you want more or need one earlier, you may request that from our admin 
                 flavor: Some(String::from("And another one! And another one! And...")),
                 text: String::from("\
 Moves with Successive Actions hit multiple times. Every successive hit has a -2 accuracy reduction.
-Keep rolling accuracy until the hit fails, then roll damage as often as you had successful accuracy rolls.
-"),
+Keep rolling accuracy until the hit fails, then roll damage as often as you had successful accuracy rolls."),
                 example: Some(String::from("\
 Let's say you have a Dexterity of 5, are at Silver Rank and want to use Fury Swipes. That means you get 7 accuracy dice. We roll the following:
 - Accuracy roll#1: 3 Successes! -> Hit (-1 base Accuracy from the move, but we still have 2 successes!)
