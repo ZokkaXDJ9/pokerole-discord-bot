@@ -16,6 +16,7 @@ impl Rule {
         builder.push(&self.text);
 
         if let Some(example) = &self.example {
+            builder.push('\n');
             builder.quote_rest();
             builder.push(std::format!("**Example**: {}", example));
         }
