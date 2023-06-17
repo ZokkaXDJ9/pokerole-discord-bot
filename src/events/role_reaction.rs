@@ -4,7 +4,7 @@ use crate::{Error};
 use crate::events::FrameworkContext;
 
 // TODO: Move this into a database.
-const ALLOWED_MESSAGE_IDS: [u64; 3] = [1119646282630303864, 1119648632291983450, 1119649167799762995];
+const ALLOWED_MESSAGE_IDS: [u64; 3] = [1119664626188156978, 1119665389899616396, 1119666186867716137];
 
 pub async fn handle_reaction_add(ctx: &Context, _framework: FrameworkContext<'_>, reaction: &Reaction) -> Result<(), Error> {
     if ALLOWED_MESSAGE_IDS.contains(&reaction.message_id.0) {
@@ -28,8 +28,16 @@ pub async fn handle_reaction_remove(ctx: &Context, _framework: FrameworkContext<
 
 fn emoji_to_role_id(emoji_name: &str) -> u64 {
     match emoji_name {
-        "💡" => 1119636705025200249,
-        "🏖️" => 1119636734049792061,
+        "❤️" => 1115475058958278707,
+        "💙" => 1115475277611544596,
+        "💛" => 1115475324264792074,
+        "🍆" => 1115475361380188171,
+        "🐱" => 1115475400215244861,
+        "🔔" => 1115475494956179598,
+        "⚙️" => 1115475607950721165,
+        "🤖" => 1116615590308749352,
+        "💬" => 1115475646668353577,
+        "📣" => 1119659198968512655,
         _ => panic!("unexpected emoji name! {}", emoji_name)
     }
 }
