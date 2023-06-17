@@ -27,6 +27,7 @@ pub mod emoji;
 pub mod encounter;
 pub mod calculate_hp_damage_modifier;
 pub mod potion;
+mod create_role_reaction_post;
 
 pub fn get_all_commands() -> Vec<Command<GameData, Error>> {
     vec![
@@ -51,6 +52,7 @@ pub fn get_all_commands() -> Vec<Command<GameData, Error>> {
         encounter::encounter(),
         potion::potion(),
         calculate_hp_damage_modifier::calculate_hp_damage_modifier(),
+        create_role_reaction_post::create_role_reaction_post(),
         about::about()
     ]
 }

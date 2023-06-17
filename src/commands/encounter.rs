@@ -9,9 +9,8 @@ use crate::enums::{Stat, Gender, MysteryDungeonRank, PokemonType, SocialStat, Co
 use crate::game_data::GameData;
 use crate::helpers;
 
-
 /// Encounter some wild pokemon!
-#[poise::command(slash_command, default_member_permissions = "ADMINISTRATOR")]
+#[poise::command(slash_command)]
 pub async fn encounter(
     ctx: Context<'_>,
     #[description = "Which pokemon?"]
