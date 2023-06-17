@@ -21,6 +21,14 @@ pub async fn create_role_reaction_post(
     emoji_2: String,
     role_2: Role,
 ) -> Result<(), Error> {
+    if ctx.author().id.0 != 878982444412448829 {
+        ctx.send(|b| {
+            b.content("This command is currently highly WIP and requires some manual hacks to work. Sowwie! Contact Lilo if you really need to use it.");
+            b.ephemeral(true)
+        }).await?;
+        return Ok(());
+    }
+
     let mut reaction_message = MessageBuilder::default();
     let mut command_response = MessageBuilder::default();
     let mut reactions = Vec::default();

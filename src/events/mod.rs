@@ -1,4 +1,5 @@
 mod button_interaction;
+mod role_reaction;
 
 use poise::{Event};
 use serenity::client::Context;
@@ -17,6 +18,8 @@ pub async fn handle_events<'a>(
 ) -> Result<(), Error> {
     match event {
         Event::InteractionCreate {interaction} => handle_interaction(context, framework, interaction).await,
+        Event::ReactionAdd {add_reaction} => role_reaction::handle_reaction_add(context, framework, add_reaction).await,
+        Event::ReactionRemove {removed_reaction} => role_reaction::handle_reaction_remove(context, framework, removed_reaction).await,
         _ => Ok(())
     }
 }
