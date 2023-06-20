@@ -3,6 +3,7 @@
 /target
 
 database.sqlite*
+*backup.sqlite
 
 # Semi-Temporary files until we got Github Actions set up properly
 .env

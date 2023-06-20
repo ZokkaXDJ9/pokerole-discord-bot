@@ -31,6 +31,7 @@ mod create_role_reaction_post;
 
 mod characters;
 mod say;
+mod setting_time_offset;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     let mut result = vec![
@@ -56,6 +57,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         potion::potion(),
         calculate_hp_damage_modifier::calculate_hp_damage_modifier(),
         create_role_reaction_post::create_role_reaction_post(),
+        setting_time_offset::setting_time_offset(),
         say::say(),
         about::about()
     ];
