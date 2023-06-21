@@ -19,16 +19,16 @@ pub async fn initialize_user_data(
                 record.user_id
             ).execute(&ctx.data().database).await;
             if result.is_ok() {
-                ctx.say(format!("Set up user row for <@{}>", record.user_id));
+                ctx.say(format!("Set up user row for <@{}>", record.user_id)).await?;
             } else {
-                ctx.say(format!("Failed to set up user row for <@{}>, assuming it exists.", record.user_id));
+                ctx.say(format!("Failed to set up user row for <@{}>, assuming it exists.", record.user_id)).await?;
             }
 
             let user = UserId::from(record.user_id as u64)
                 .to_user(ctx).await;
             if let Ok(user) = user {
                 let nickname =  user.nick_in(ctx, GuildId::from(record.guild_id as u64)).await
-                    .unwrap_or(ctx.author().name.clone());
+                    .unwrap_or(user.name.clone());
                 let result = sqlx::query!("INSERT INTO user_in_guild (user_id, guild_id, name) VALUES (?, ?, ?)",
                     record.user_id,
                     record.guild_id,
@@ -36,16 +36,16 @@ pub async fn initialize_user_data(
                 ).execute(&ctx.data().database).await;
 
                 if result.is_ok() {
-                    ctx.say(format!("Set up user_in_guild row for <@{}>", record.user_id));
+                    ctx.say(format!("Set up user_in_guild row for <@{}>", record.user_id)).await?;
                 } else {
-                    ctx.say(format!("Failed to set up user_in_guild row for <@{}>???", record.user_id));
+                    ctx.say(format!("Failed to set up user_in_guild row for <@{}>???", record.user_id)).await?;
                 }
             } else {
-                ctx.say(format!("Unable to get user for <@{}>", record.user_id));
+                ctx.say(format!("Unable to get user for <@{}>", record.user_id)).await?;
             }
         }
     } else {
-        send_error(&ctx, "Unable to query character database!");
+        send_error(&ctx, "Unable to query character database!").await?;
     }
 
     Ok(())
