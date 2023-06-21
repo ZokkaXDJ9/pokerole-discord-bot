@@ -45,8 +45,8 @@ impl Cache {
     }
 
     pub async fn update_character_names(&self, db: &Pool<Sqlite>) {
-        let entries = sqlx::query(
-"SELECT character.name, character.user_id, character.guild_id, user_in_guild.nickname
+        let entries = sqlx::query!(
+"SELECT character.name as character_name, character.user_id, character.guild_id, user_in_guild.name as user_name
 FROM character
 LEFT JOIN user_in_guild ON
     user_in_guild.user_id = character.user_id AND
@@ -54,19 +54,22 @@ LEFT JOIN user_in_guild ON
 ")
             .fetch_all(db).await;
 
-        if let Ok(entries) = entries {
-            let mut cache = self.character_cache.lock().await;
-            cache.clear();
-            for x in entries {
-                cache.push(CharacterCacheItem::new(
-                    x.get::<String, usize>(0),
-                    x.get::<i64, usize>(1) as u64,
-                    x.get::<i64, usize>(2) as u64,
-                    x.get::<Option<String>, usize>(3).unwrap_or(String::new()),
-                ))
+        match entries {
+            Ok(entries) => {
+                let mut cache = self.character_cache.lock().await;
+                cache.clear();
+                for x in entries {
+                    cache.push(CharacterCacheItem::new(
+                        x.character_name,
+                        x.user_id as u64,
+                        x.guild_id as u64,
+                        x.user_name.unwrap_or(String::new())
+                    ))
+                }
             }
-        } else {
-            error!("Was unable to update character names!");
+            Err(e) => {
+                error!("Was unable to update character names! {}", e);
+            }
         }
     }
 }
