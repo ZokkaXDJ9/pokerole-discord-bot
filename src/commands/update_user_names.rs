@@ -44,6 +44,8 @@ pub async fn initialize_user_data(
                 ctx.say(format!("Unable to get user for <@{}>", record.user_id)).await?;
             }
         }
+
+        ctx.say("**DONE!**").await?;
     } else {
         send_error(&ctx, "Unable to query character database!").await?;
     }
