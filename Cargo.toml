@@ -19,5 +19,5 @@ rand = { version = "0.8.5", features = ["alloc"] }
 strum = "0.24.1"
 strum_macros = "0.24.3"
 chrono = "0.4.26"
-sqlx = { version = "0.6.3", features = ["runtime-tokio-rustls", "sqlite"] }
+sqlx = { version = "0.6.3", features = ["runtime-tokio-rustls", "sqlite", "chrono"] }
 regex = "1.8.4"
