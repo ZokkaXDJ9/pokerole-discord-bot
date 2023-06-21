@@ -111,11 +111,13 @@ pub async fn log_action<'a>(action_type: ActionType, ctx: &Context<'a>, message:
         .await;
 
     if let Ok(record) = record {
-        let channel_id= ChannelId::from(record.action_log_channel_id as u64);
-        channel_id.send_message(ctx, |f| f
-            .content(std::format!("{} {} (triggered by {})", action_type, message, ctx.author()))
-            .allowed_mentions(|mentions| mentions.empty_users())
-        ).await?;
+        if let Some(action_log_channel_id) = record.action_log_channel_id {
+            let channel_id= ChannelId::from(action_log_channel_id as u64);
+            channel_id.send_message(ctx, |f| f
+                .content(std::format!("{} {} (triggered by {})", action_type, message, ctx.author()))
+                .allowed_mentions(|mentions| mentions.empty_users())
+            ).await?;
+        }
     }
 
     Ok(())

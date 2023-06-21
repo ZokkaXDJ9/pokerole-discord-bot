@@ -12,16 +12,16 @@ pub async fn initialize_guild(
     let action_log_channel_id = action_log_channel.id().0 as i64;
 
     let record = sqlx::query!(
-        "INSERT INTO guild (id, action_log_channel_id, money) VALUES (?, ?, ?)",
+"INSERT INTO guild (id, action_log_channel_id) VALUES (?, ?)
+ON CONFLICT (id) DO UPDATE SET action_log_channel_id = excluded.action_log_channel_id WHERE id = excluded.id",
         guild_id,
         action_log_channel_id,
-        0
     ).execute(&ctx.data().database)
         .await;
 
     if record.is_ok() {
         send_ephemeral_reply(&ctx, "Guild has been successfully initialized!").await?;
-        log_action(ActionType::Initialization, &ctx, "Guild has been initialized. I recommend muting this channel, lul.").await?;
+        log_action(ActionType::Initialization, &ctx, "The action log channel has been set to this lovely place here. I recommend muting this channel, lul.").await?;
         return Ok(());
     }
 
