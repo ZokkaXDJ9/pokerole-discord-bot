@@ -12,10 +12,6 @@ pub async fn reward_experience(
     name: String,
 ) -> Result<(), Error> {
     // TODO: Button to undo the transaction which lasts for a minute or so.
-    if let Err(e) = validate_user_input(name.as_str()) {
-        return send_error(&ctx, e).await;
-    }
-
     if let Ok(result) = change_character_stat(&ctx, "experience", &name, amount as i64, ActionType::Reward).await {
         ctx.say(format!("{} received {} experience points!", name, amount)).await?;
     }

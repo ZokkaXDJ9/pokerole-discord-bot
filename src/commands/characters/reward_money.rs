@@ -14,10 +14,6 @@ pub async fn reward_money(
 ) -> Result<(), Error> {
     // TODO: Option to also add the untaxed amount to guild stash.
     // TODO: Button to undo the transaction which lasts for a minute or so.
-    if let Err(e) = validate_user_input(name.as_str()) {
-        return send_error(&ctx, e).await;
-    }
-
     if let Ok(result) = change_character_stat(&ctx, "money", &name, amount as i64, ActionType::Reward).await {
         ctx.say(format!("{} received {} {}!", name, amount, emoji::POKE_COIN)).await?;
     }

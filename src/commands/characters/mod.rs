@@ -5,6 +5,7 @@ use regex::Regex;
 use serenity::model::id::ChannelId;
 use crate::commands::{Context, send_error};
 use crate::{emoji, Error};
+use crate::cache::CharacterCacheItem;
 use crate::data::Data;
 use crate::enums::MysteryDungeonRank;
 
@@ -132,12 +133,23 @@ pub struct CharacterWithNumericValue {
 }
 
 pub async fn change_character_stat<'a>(ctx: &Context<'a>, database_column: &str, name: &String, amount: i64, action_type: ActionType) -> Result<(), Error> {
-    let guild_id = ctx.guild_id().expect("Command is guild_only").0 as i64;
+    let guild_id = ctx.guild_id().expect("Commands using this function are marked as guild_only").0;
+    let character = parse_user_input_to_character(ctx, guild_id, name).await;
+    match character {
+        Some(character) => {
+            change_character_stat_internal(ctx, database_column, character, amount, action_type).await
+        }
+        None => {
+            send_error(ctx, format!("Unable to find a character named {}", name).as_str()).await
+        }
+    }
+}
 
+async fn change_character_stat_internal<'a>(ctx: &Context<'a>, database_column: &str, character: CharacterCacheItem, amount: i64, action_type: ActionType) -> Result<(), Error> {
     let record = sqlx::query_as::<_, CharacterWithNumericValue>(
         format!("SELECT id, user_id, name, {} as value FROM character WHERE name = ? AND guild_id = ?", database_column).as_str())
-        .bind(name)
-        .bind(guild_id)
+        .bind(&character.name)
+        .bind(character.guild_id as i64)
         .fetch_one(&ctx.data().database)
         .await;
 
@@ -156,7 +168,7 @@ pub async fn change_character_stat<'a>(ctx: &Context<'a>, database_column: &str,
             }
 
             update_character_post(ctx, record.id).await?;
-            let action= if database_column == "money" {
+            let action = if database_column == "money" {
                 emoji::POKE_COIN
             } else {
                 database_column
@@ -174,8 +186,29 @@ pub async fn change_character_stat<'a>(ctx: &Context<'a>, database_column: &str,
             log_action(action_type, ctx, format!("{} {} {} {} {}", added_or_removed, amount.abs(), action, to_or_from, record.name).as_str()).await
         }
         Err(_) => {
-            send_error(ctx, format!("Unable to find a character named {}", name).as_str()).await
-        },
+            send_error(ctx, format!("Unable to find a character named {}.\n**Internal cache must be out of date. Please let me know if this ever happens.**", character.name).as_str()).await
+        }
+    }
+}
+
+pub async fn parse_user_input_to_character<'a>(ctx: &Context<'a>, guild_id: u64, text: &str) -> Option<CharacterCacheItem> {
+    let characters = ctx.data().cache.get_characters().await;
+    for x in &characters {
+        if x.guild_id == guild_id && text == x.get_autocomplete_name() {
+            return Some(x.clone());
+        }
+    }
+
+    // User didn't use an autocomplete name :<
+    let lowercase_input = text.to_lowercase();
+    let name_matches: Vec<&CharacterCacheItem> = characters.iter()
+        .filter(|x| x.guild_id == guild_id && x.name.to_lowercase() == lowercase_input)
+        .collect();
+
+    if name_matches.len() != 1 {
+        None
+    } else {
+        name_matches.get(0).cloned().cloned()
     }
 }
 

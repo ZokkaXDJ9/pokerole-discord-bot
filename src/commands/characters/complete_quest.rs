@@ -10,10 +10,6 @@ pub async fn complete_quest(
     #[autocomplete = "autocomplete_character_name"]
     name: String,
 ) -> Result<(), Error> {
-    if let Err(e) = validate_user_input(name.as_str()) {
-        return send_error(&ctx, e).await;
-    }
-
     if let Ok(result) = change_character_stat(&ctx, "completed_quest_count", &name, 1, ActionType::Reward).await {
         ctx.say(format!("{} completed a quest!", name)).await?;
     }
