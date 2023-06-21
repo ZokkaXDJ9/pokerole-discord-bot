@@ -1,6 +1,6 @@
 use core::fmt;
 use std::fmt::{Formatter};
-use poise::Command;
+use poise::{Command};
 use regex::Regex;
 use serenity::model::id::ChannelId;
 use crate::commands::{Context, send_error};
@@ -160,6 +160,7 @@ async fn parse_character_names<'a>(ctx: &Context<'a>, guild_id: u64, names: &Vec
 }
 
 pub async fn change_character_stat_after_validation<'a>(ctx: &Context<'a>, database_column: &str, character: &CharacterCacheItem, amount: i64, action_type: &ActionType) -> Result<(), Error> {
+    ctx.defer().await?;
     let record = sqlx::query_as::<_, CharacterWithNumericValue>(
         format!("SELECT id, name, {} as value FROM character WHERE name = ? AND guild_id = ?", database_column).as_str())
         .bind(&character.name)
@@ -175,10 +176,10 @@ pub async fn change_character_stat_after_validation<'a>(ctx: &Context<'a>, datab
                 .bind(new_value)
                 .bind(record.id)
                 .bind(record.value)
-                .execute(&ctx.data().database).await?;
+                .execute(&ctx.data().database).await;
 
-            if result.rows_affected() != 1 {
-                return send_stale_data_error(ctx).await;
+            if result.is_err() || result.unwrap().rows_affected() != 1 {
+                return send_stale_data_error(ctx).await
             }
 
             update_character_post(ctx, record.id).await?;

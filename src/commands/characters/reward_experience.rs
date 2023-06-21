@@ -3,6 +3,7 @@ use crate::commands::characters::{ActionType, build_character_list, change_chara
 use crate::commands::autocompletion::autocomplete_character_name;
 
 /// Reward players with cash.
+#[allow(clippy::too_many_arguments)]
 #[poise::command(slash_command, guild_only, default_member_permissions = "ADMINISTRATOR")]
 pub async fn reward_experience(
     ctx: Context<'_>,

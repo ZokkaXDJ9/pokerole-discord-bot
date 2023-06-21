@@ -29,9 +29,11 @@ pub async fn setting_time_offset(
             ).execute(&ctx.data().database).await;
 
             if result.is_ok() && result.unwrap().rows_affected() == 1 {
-                send_ephemeral_reply(&ctx, "Successfully set your local time!").await
+                send_ephemeral_reply(&ctx, "Successfully set your local time!").await?;
+                Ok(())
             } else {
-                send_error(&ctx, "Unable to update your time offsets. Mh! Weird.").await
+                send_error(&ctx, "Unable to update your time offsets. Mh! Weird.").await?;
+                Ok(())
             }
         }
         Err(_) => {
@@ -43,9 +45,11 @@ pub async fn setting_time_offset(
             ).fetch_one(&ctx.data().database).await;
 
             if result.is_ok() {
-                send_ephemeral_reply(&ctx, "Successfully set your local time!").await
+                send_ephemeral_reply(&ctx, "Successfully set your local time!").await?;
+                Ok(())
             } else {
-                send_error(&ctx, "Unable to create a user entry for you. Mh! Weird.").await
+                send_error(&ctx, "Unable to create a user entry for you. Mh! Weird.").await?;
+                Ok(())
             }
         }
     }

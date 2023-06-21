@@ -1,4 +1,4 @@
-use poise::Command;
+use poise::{Command, ReplyHandle};
 use crate::Error;
 use crate::data::Data;
 
@@ -71,19 +71,19 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     result
 }
 
-pub async fn send_error<'a>(ctx: &Context<'a>, content: &str) -> Result<(), Error>{
-    send_ephemeral_reply(ctx, content).await
-}
-
-pub async fn send_ephemeral_reply<'a>(ctx: &Context<'a>, content: &str) -> Result<(), Error>{
-    ctx.send(|b| b
-        .content(content)
-        .ephemeral(true)
-    ).await?;
-
+pub async fn send_error<'a>(ctx: &Context<'a>, content: &str) -> Result<(), Error> {
+    send_ephemeral_reply(ctx, content).await?;
     Ok(())
 }
 
+pub async fn send_ephemeral_reply<'a>(ctx: &Context<'a>, content: &str) -> Result<ReplyHandle<'a>, serenity::Error> {
+    ctx.send(|b| b
+        .content(content)
+        .ephemeral(true)
+    ).await
+}
+
+#[allow(clippy::too_many_arguments)]
 pub fn parse_variadic_args<T>(arg1: T,
                           arg2: Option<T>,
                           arg3: Option<T>,

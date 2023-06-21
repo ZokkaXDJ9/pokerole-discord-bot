@@ -1,5 +1,6 @@
 use crate::commands::{Context, Error, send_ephemeral_reply};
 use chrono::{Datelike, Duration, FixedOffset, NaiveDate, Timelike, TimeZone, Utc};
+use poise::ReplyHandle;
 use serenity::utils::MessageBuilder;
 
 /// Create a timestamp which automagically displays local time for everyone.
@@ -39,7 +40,7 @@ pub async fn timestamp(
     }
 }
 
-async fn send_settings_hint<'a>(ctx: &Context<'a>) -> Result<(), Error> {
+async fn send_settings_hint<'a>(ctx: &Context<'a>) -> Result<ReplyHandle<'a>, serenity::Error> {
     let current_datetime = Utc::now().naive_utc();
     send_ephemeral_reply(ctx, format!("Looks like you don't have your timezone set up!
 Right now, the time you need to enter is in UTC, which means **right now it is {}**.
