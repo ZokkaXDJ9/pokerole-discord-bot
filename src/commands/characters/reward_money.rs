@@ -29,19 +29,19 @@ pub async fn reward_money(
     #[autocomplete = "autocomplete_character_name"]
     character9: Option<String>,
     ) -> Result<(), Error> {
-        // TODO: Button to undo the transaction which lasts for a minute or so.
-        let args = parse_variadic_args(character1,character2, character3,
-                                       character4, character5, character6,
-                                       character7, character8, character9);
+    // TODO: Button to undo the transaction which lasts for a minute or so.
+    let args = parse_variadic_args(character1,character2, character3,
+                                   character4, character5, character6,
+                                   character7, character8, character9);
 
-        match change_character_stat(&ctx, "money", &args, amount as i64, ActionType::Reward).await {
-            Ok(characters) => {
-                ctx.say(format!("{} received {} {}!", build_character_list(characters), amount, emoji::POKE_COIN)).await?;
-            }
-            Err(err) => {
-                send_error(&ctx, err.as_str()).await?;
-            }
+    match change_character_stat(&ctx, "money", &args, amount as i64, ActionType::Reward).await {
+        Ok(characters) => {
+            ctx.say(format!("{} received {} {}!", build_character_list(characters), amount, emoji::POKE_COIN)).await?;
         }
-
-        Ok(())
+        Err(err) => {
+            send_error(&ctx, err.as_str()).await?;
+        }
     }
+
+    Ok(())
+}
