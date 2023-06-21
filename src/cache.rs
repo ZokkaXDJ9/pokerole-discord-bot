@@ -1,9 +1,10 @@
 use tokio::sync::Mutex;
-use sqlx::{Pool, Row, Sqlite};
+use sqlx::{Pool, Sqlite};
 use log::error;
 
 #[derive(Debug, Clone)]
 pub struct CharacterCacheItem {
+    pub id: i64,
     pub name: String,
     pub user_id: u64,
     pub guild_id: u64,
@@ -11,9 +12,10 @@ pub struct CharacterCacheItem {
 }
 
 impl CharacterCacheItem {
-    pub fn new(name: String, user_id: u64, guild_id: u64, user_nickname: String) -> Self {
+    pub fn new(id: i64, name: String, user_id: u64, guild_id: u64, user_nickname: String) -> Self {
         CharacterCacheItem {
             autocomplete_name: CharacterCacheItem::build_autocomplete_name(&name, &user_nickname),
+            id,
             user_id,
             guild_id,
             name,
@@ -46,7 +48,7 @@ impl Cache {
 
     pub async fn update_character_names(&self, db: &Pool<Sqlite>) {
         let entries = sqlx::query!(
-"SELECT character.name as character_name, character.user_id, character.guild_id, user_in_guild.name as user_name
+"SELECT character.id, character.name as character_name, character.user_id, character.guild_id, user_in_guild.name as user_name
 FROM character
 LEFT JOIN user_in_guild ON
     user_in_guild.user_id = character.user_id AND
@@ -60,6 +62,7 @@ LEFT JOIN user_in_guild ON
                 cache.clear();
                 for x in entries {
                     cache.push(CharacterCacheItem::new(
+                        x.id,
                         x.character_name,
                         x.user_id as u64,
                         x.guild_id as u64,

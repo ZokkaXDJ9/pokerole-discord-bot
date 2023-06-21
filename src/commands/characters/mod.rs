@@ -127,7 +127,6 @@ pub async fn log_action<'a>(action_type: ActionType, ctx: &Context<'a>, message:
 #[derive(sqlx::FromRow)]
 pub struct CharacterWithNumericValue {
     id: i64,
-    user_id: i64,
     name: String,
     value: i64
 }
@@ -137,7 +136,7 @@ pub async fn change_character_stat<'a>(ctx: &Context<'a>, database_column: &str,
     let character = parse_user_input_to_character(ctx, guild_id, name).await;
     match character {
         Some(character) => {
-            change_character_stat_internal(ctx, database_column, character, amount, action_type).await
+            change_character_stat_after_validation(ctx, database_column, &character, amount, action_type).await
         }
         None => {
             send_error(ctx, format!("Unable to find a character named {}", name).as_str()).await
@@ -145,9 +144,9 @@ pub async fn change_character_stat<'a>(ctx: &Context<'a>, database_column: &str,
     }
 }
 
-async fn change_character_stat_internal<'a>(ctx: &Context<'a>, database_column: &str, character: CharacterCacheItem, amount: i64, action_type: ActionType) -> Result<(), Error> {
+pub async fn change_character_stat_after_validation<'a>(ctx: &Context<'a>, database_column: &str, character: &CharacterCacheItem, amount: i64, action_type: ActionType) -> Result<(), Error> {
     let record = sqlx::query_as::<_, CharacterWithNumericValue>(
-        format!("SELECT id, user_id, name, {} as value FROM character WHERE name = ? AND guild_id = ?", database_column).as_str())
+        format!("SELECT id, name, {} as value FROM character WHERE name = ? AND guild_id = ?", database_column).as_str())
         .bind(&character.name)
         .bind(character.guild_id as i64)
         .fetch_one(&ctx.data().database)

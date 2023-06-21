@@ -1,8 +1,52 @@
+use crate::cache::CharacterCacheItem;
 use crate::emoji;
 use crate::commands::{Context, Error, send_error};
-use crate::commands::characters::{ActionType, change_character_stat, validate_user_input};
+use crate::commands::characters::{ActionType, change_character_stat_after_validation, parse_user_input_to_character};
 use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::autocompletion::autocomplete_owned_character_name;
+
+
+async fn transfer_money_between_characters<'a>(ctx: &Context<'a>, giver: CharacterCacheItem, receiver: CharacterCacheItem, amount: i64) -> Result<(), Error> {
+    if giver.user_id != ctx.author().id.0 {
+        return send_error(ctx, &format!("You don't seem to own a character named {} on this server.", giver.name)
+        ).await;
+    }
+
+    if giver.id == receiver.id {
+        return send_error(ctx, &format!("*You successfully transferred {} {} from your left to your right hand. Ha. Ha.*",
+                                        amount, emoji::POKE_COIN)
+        ).await;
+    }
+
+    let giver_record = sqlx::query!("SELECT money FROM character WHERE id = ?", giver.id)
+        .fetch_one(&ctx.data().database)
+        .await;
+
+    if let Ok(giver_record) = giver_record {
+        if giver_record.money < amount {
+            return send_error(ctx, format!("**Unable to send {} {}.**\n*{} only owns {} {}.*",
+                                            amount, emoji::POKE_COIN, giver.name, giver_record.money, emoji::POKE_COIN).as_str()
+            ).await;
+        }
+    } else {
+        return send_error(ctx, format!("**Something went wrong when checking how much money {} has. Please try again. Let me know if this ever happens.**",
+                                        giver.name).as_str()
+        ).await;
+    }
+
+    // TODO: Potential flaw: Money gets transferred by someone else in between this might not be detected.
+    // For now, it should be fine if we only subtract the money - people are way more likely to complain in that case. :'D
+    if let Ok(_) = change_character_stat_after_validation(ctx, "money", &giver, -amount, ActionType::TradeOutgoing).await {
+        if let Ok(_) = change_character_stat_after_validation(ctx, "money", &receiver, amount, ActionType::TradeIncoming).await {
+            ctx.say(format!("***{}** gave {} {} to **{}***!", giver.name, amount, emoji::POKE_COIN, receiver.name)).await?;
+        } else {
+            // TODO: The undo might fail.
+            change_character_stat_after_validation(ctx, "money", &giver, amount, ActionType::Undo).await?;
+        }
+    }
+
+    Ok(())
+}
 
 /// Transfer money between characters.
 #[poise::command(slash_command, guild_only)]
@@ -18,62 +62,15 @@ pub async fn give_money(
     receiver: String,
 ) -> Result<(), Error> {
     // TODO: Button to undo the transaction which lasts for a minute or so.
-
-    if let Err(e) = validate_user_input(giver.as_str()) {
-        return send_error(&ctx, e).await;
+    let guild_id = ctx.guild_id().expect("Command is guild_only").0;
+    let giver_option = parse_user_input_to_character(&ctx, guild_id, &giver).await;
+    if giver_option.is_none() {
+        return send_error(&ctx, &format!("Unable to find a character named {}", giver)).await;
     }
-    if let Err(e) = validate_user_input(receiver.as_str()) {
-        return send_error(&ctx, e).await;
-    }
-
-    let amount = amount as i64;
-    let user_id = ctx.author().id.0 as i64;
-    let guild_id = ctx.guild_id().expect("Command is guild_only").0 as i64;
-
-    let sender_record = sqlx::query!("SELECT id, money FROM character WHERE name = ? AND guild_id = ? AND user_id = ?",
-        giver,
-        guild_id,
-        user_id
-    ).fetch_one(&ctx.data().database)
-        .await;
-
-    if let Ok(sender_record) = sender_record {
-        if sender_record.money < amount {
-            return send_error(&ctx, format!("**Unable to send {}.**\n*You only own {} {}.*",
-                                            amount, sender_record.money, emoji::POKE_COIN).as_str()
-            ).await;
-        }
-
-        let receiver_record = sqlx::query!("SELECT id FROM character WHERE name = ? AND guild_id = ?",
-            receiver,
-            guild_id,
-        ).fetch_one(&ctx.data().database)
-            .await;
-
-        if let Ok(receiver_record) = receiver_record {
-            if receiver_record.id == sender_record.id {
-                return send_error(&ctx, format!("*You successfully transferred {} {} from your left to your right hand. Ha. Ha.*",
-                                                amount, emoji::POKE_COIN).as_str()
-                ).await;
-            }
-        } else {
-            return send_error(&ctx, format!("Unable to find a character named {}.", receiver).as_str()).await;
-        }
-    } else {
-        return send_error(&ctx, format!("You don't seem to own a character named {} on this server.", giver).as_str()
-        ).await;
+    let receiver_option = parse_user_input_to_character(&ctx, guild_id, &receiver).await;
+    if receiver_option.is_none() {
+        return send_error(&ctx, &format!("Unable to find a character named {}", receiver)).await;
     }
 
-    // TODO: Potential flaw: Money gets transferred by someone else in between this might not be detected.
-    // For now, it should be fine if we only subtract the money - people are way more likely in that case. :'D
-    if let Ok(_) = change_character_stat(&ctx, "money", &giver, -amount, ActionType::TradeOutgoing).await {
-        if let Ok(_) = change_character_stat(&ctx, "money", &receiver, amount, ActionType::TradeIncoming).await {
-            ctx.say(format!("{} gave {} {} to {}!", giver, amount, emoji::POKE_COIN, receiver)).await?;
-        } else {
-            // TODO: The undo might fail.
-            change_character_stat(&ctx, "money", &giver, amount, ActionType::Undo).await?;
-        }
-    }
-
-    Ok(())
+    transfer_money_between_characters(&ctx, giver_option.unwrap(), receiver_option.unwrap(), amount as i64).await
 }
