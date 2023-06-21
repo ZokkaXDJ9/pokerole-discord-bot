@@ -83,3 +83,31 @@ pub async fn send_ephemeral_reply<'a>(ctx: &Context<'a>, content: &str) -> Resul
 
     Ok(())
 }
+
+pub fn parse_variadic_args<T>(arg1: T,
+                          arg2: Option<T>,
+                          arg3: Option<T>,
+                          arg4: Option<T>,
+                          arg5: Option<T>,
+                          arg6: Option<T>,
+                          arg7: Option<T>,
+                          arg8: Option<T>,
+                          arg9: Option<T>) -> Vec<T> {
+    let mut result = vec!(arg1);
+    add_if_some(&mut result, arg2);
+    add_if_some(&mut result, arg3);
+    add_if_some(&mut result, arg4);
+    add_if_some(&mut result, arg5);
+    add_if_some(&mut result, arg6);
+    add_if_some(&mut result, arg7);
+    add_if_some(&mut result, arg8);
+    add_if_some(&mut result, arg9);
+
+    result
+}
+
+fn add_if_some<T>(vec: &mut Vec<T>, option: Option<T>) {
+    if let Some(x) = option {
+        vec.push(x);
+    }
+}

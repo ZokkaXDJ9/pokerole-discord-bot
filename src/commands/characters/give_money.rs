@@ -36,12 +36,12 @@ async fn transfer_money_between_characters<'a>(ctx: &Context<'a>, giver: Charact
 
     // TODO: Potential flaw: Money gets transferred by someone else in between this might not be detected.
     // For now, it should be fine if we only subtract the money - people are way more likely to complain in that case. :'D
-    if let Ok(_) = change_character_stat_after_validation(ctx, "money", &giver, -amount, ActionType::TradeOutgoing).await {
-        if let Ok(_) = change_character_stat_after_validation(ctx, "money", &receiver, amount, ActionType::TradeIncoming).await {
+    if let Ok(_) = change_character_stat_after_validation(ctx, "money", &giver, -amount, &ActionType::TradeOutgoing).await {
+        if let Ok(_) = change_character_stat_after_validation(ctx, "money", &receiver, amount, &ActionType::TradeIncoming).await {
             ctx.say(format!("***{}** gave {} {} to **{}***!", giver.name, amount, emoji::POKE_COIN, receiver.name)).await?;
         } else {
             // TODO: The undo might fail.
-            change_character_stat_after_validation(ctx, "money", &giver, amount, ActionType::Undo).await?;
+            change_character_stat_after_validation(ctx, "money", &giver, amount, &ActionType::Undo).await?;
         }
     }
 

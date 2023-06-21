@@ -100,7 +100,7 @@ impl fmt::Display for ActionType {
     }
 }
 
-pub async fn log_action<'a>(action_type: ActionType, ctx: &Context<'a>, message: &str) -> Result<(), Error> {
+pub async fn log_action<'a>(action_type: &ActionType, ctx: &Context<'a>, message: &str) -> Result<(), Error> {
     let guild_id = ctx.guild_id();
     if guild_id.is_none() {
         return Ok(());
@@ -131,20 +131,35 @@ pub struct CharacterWithNumericValue {
     value: i64
 }
 
-pub async fn change_character_stat<'a>(ctx: &Context<'a>, database_column: &str, name: &String, amount: i64, action_type: ActionType) -> Result<(), Error> {
+pub async fn change_character_stat<'a>(ctx: &Context<'a>, database_column: &str, names: &Vec<String>, amount: i64, action_type: ActionType) -> Result<Vec<CharacterCacheItem>, String> {
     let guild_id = ctx.guild_id().expect("Commands using this function are marked as guild_only").0;
-    let character = parse_user_input_to_character(ctx, guild_id, name).await;
-    match character {
-        Some(character) => {
-            change_character_stat_after_validation(ctx, database_column, &character, amount, action_type).await
+
+    match parse_character_names(ctx, guild_id, names).await {
+        Ok(characters) => {
+            for x in &characters {
+                let _ = change_character_stat_after_validation(ctx, database_column, x, amount, &action_type).await;
+            }
+            Ok(characters)
         }
-        None => {
-            send_error(ctx, format!("Unable to find a character named {}", name).as_str()).await
-        }
+        Err(error) => Err(error)
     }
 }
 
-pub async fn change_character_stat_after_validation<'a>(ctx: &Context<'a>, database_column: &str, character: &CharacterCacheItem, amount: i64, action_type: ActionType) -> Result<(), Error> {
+async fn parse_character_names<'a>(ctx: &Context<'a>, guild_id: u64, names: &Vec<String>) -> Result<Vec<CharacterCacheItem>, String> {
+    let mut result: Vec<CharacterCacheItem> = Vec::new();
+
+    for x in names {
+        if let Some(character) = parse_user_input_to_character(ctx, guild_id, x).await {
+            result.push(character);
+        } else {
+            return Err(format!("Unable to find a character named {}", x))
+        }
+    }
+
+    Ok(result)
+}
+
+pub async fn change_character_stat_after_validation<'a>(ctx: &Context<'a>, database_column: &str, character: &CharacterCacheItem, amount: i64, action_type: &ActionType) -> Result<(), Error> {
     let record = sqlx::query_as::<_, CharacterWithNumericValue>(
         format!("SELECT id, name, {} as value FROM character WHERE name = ? AND guild_id = ?", database_column).as_str())
         .bind(&character.name)
@@ -223,4 +238,10 @@ pub fn validate_user_input<'a>(text: &str) -> Result<(), &'a str> {
     } else {
         Err("Failed to validate input!")
     }
+}
+
+fn build_character_list(characters: Vec<CharacterCacheItem>) -> String {
+    characters.iter().map(|x| x.name.as_str())
+        .collect::<Vec<&str>>()
+        .join(", ")
 }
