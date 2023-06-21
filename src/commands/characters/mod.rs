@@ -156,6 +156,15 @@ async fn parse_character_names<'a>(ctx: &Context<'a>, guild_id: u64, names: &Vec
         }
     }
 
+    let mut ids = Vec::new();
+    for x in &result {
+        if ids.contains(&x.id) {
+            return Err(format!("Duplicate character: {}", x.get_autocomplete_name()))
+        }
+
+        ids.push(x.id);
+    }
+
     Ok(result)
 }
 
