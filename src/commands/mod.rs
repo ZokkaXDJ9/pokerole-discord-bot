@@ -32,6 +32,7 @@ mod create_role_reaction_post;
 mod characters;
 mod say;
 mod setting_time_offset;
+mod update_user_names;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     let mut result = vec![

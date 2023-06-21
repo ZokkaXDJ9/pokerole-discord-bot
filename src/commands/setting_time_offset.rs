@@ -1,4 +1,3 @@
-use serenity::prelude::Mentionable;
 use crate::commands::{Context, Error, send_ephemeral_reply, send_error};
 
 /// Set an offset for the timestamp command.
@@ -36,11 +35,9 @@ pub async fn setting_time_offset(
             }
         }
         Err(_) => {
-            let mention = ctx.author().mention().to_string();
             let result = sqlx::query!(
-                "INSERT INTO user (id, mention, setting_time_offset_hours, setting_time_offset_minutes) VALUES (?, ?, ?, ?) RETURNING id",
+                "INSERT INTO user (id, setting_time_offset_hours, setting_time_offset_minutes) VALUES (?, ?, ?) RETURNING id",
                 user_id,
-                mention,
                 hours,
                 minutes,
             ).fetch_one(&ctx.data().database).await;

@@ -11,17 +11,21 @@ pub struct CharacterCacheItem {
 }
 
 impl CharacterCacheItem {
-    pub fn new(name: String, user_id: u64, guild_id: u64) -> Self {
+    pub fn new(name: String, user_id: u64, guild_id: u64, user_nickname: String) -> Self {
         CharacterCacheItem {
+            autocomplete_name: CharacterCacheItem::build_autocomplete_name(&name, &user_nickname),
             user_id,
             guild_id,
-            name: name.clone(),
-            autocomplete_name: name,
+            name,
         }
     }
 
     pub fn get_autocomplete_name(&self) -> &String {
         &self.autocomplete_name
+    }
+
+    fn build_autocomplete_name(name: &str, nickname: &str) -> String {
+        format!("{} (@{})", name, nickname)
     }
 }
 
@@ -41,7 +45,11 @@ impl Cache {
     }
 
     pub async fn update_character_names(&self, db: &Pool<Sqlite>) {
-        let entries = sqlx::query("SELECT name, user_id, guild_id FROM character")
+        let entries = sqlx::query(
+"SELECT character.name, character.user_id, character.guild_id user.nickname
+FROM character
+LEFT JOIN user ON user.id = character.id
+")
             .fetch_all(db).await;
 
         if let Ok(entries) = entries {
@@ -52,6 +60,7 @@ impl Cache {
                     x.get::<String, usize>(0),
                     x.get::<i64, usize>(1) as u64,
                     x.get::<i64, usize>(2) as u64,
+                    x.get::<Option<String>, usize>(3).unwrap_or(String::new()),
                 ))
             }
         } else {

@@ -9,3 +9,4 @@ database.sqlite*
 .env
 build_and_deploy.sh
 update_data.sh
+backup_data.sh
