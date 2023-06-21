@@ -22,8 +22,8 @@ ON CONFLICT (id) DO UPDATE SET action_log_channel_id = excluded.action_log_chann
     if record.is_ok() {
         send_ephemeral_reply(&ctx, "Guild has been successfully initialized!").await?;
         log_action(ActionType::Initialization, &ctx, "The action log channel has been set to this lovely place here. I recommend muting this channel, lul.").await?;
-        return Ok(());
+        Ok(())
+    } else {
+        send_error(&ctx, "Something went wrong! Has this guild already been initialized?").await
     }
-
-    send_error(&ctx, "Something went wrong! Has this guild already been initialized?").await
 }
