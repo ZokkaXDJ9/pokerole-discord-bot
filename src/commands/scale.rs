@@ -12,7 +12,8 @@ pub async fn scale(
     #[autocomplete = "autocomplete_pokemon"]
     name: String,
     #[description = "To which percentage? (Whole number)"]
-    #[min = 1_u8]
+    #[min = 67_u8]
+    #[max = 133_u8]
     percent: u8,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().game.pokemon.get(&name.to_lowercase()) {
