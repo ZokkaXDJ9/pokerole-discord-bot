@@ -1,3 +1,4 @@
+use serenity::model::id::{GuildId, UserId};
 use serenity::model::user::User;
 use crate::commands::{Context, Error, send_ephemeral_reply, send_error};
 use crate::commands::characters::{ActionType, log_action, update_character_post, validate_user_input};
@@ -26,6 +27,10 @@ pub async fn initialize_character(
 
     let user_id = player.id.0 as i64;
     let guild_id = ctx.guild_id().expect("Command is guild_only").0 as i64;
+
+    ensure_guild_exists(&ctx, guild_id).await;
+    ensure_user_exists(&ctx, user_id, guild_id).await;
+
     let stat_message_id = message.id.0 as i64;
     let stat_channel_id = message.channel_id.0 as i64;
 
@@ -54,4 +59,27 @@ pub async fn initialize_character(
     message.delete(ctx).await?;
 
     Ok(())
+}
+
+async fn ensure_guild_exists<'a>(ctx: &Context<'a>, guild_id: i64) {
+    let _ = sqlx::query!("INSERT OR IGNORE INTO guild (id) VALUES (?)",
+                guild_id
+    ).execute(&ctx.data().database).await;
+}
+
+async fn ensure_user_exists<'a>(ctx: &Context<'a>, user_id: i64, guild_id: i64) {
+    let _ = sqlx::query!("INSERT OR IGNORE INTO user (id) VALUES (?)",
+                user_id
+    ).execute(&ctx.data().database).await;
+
+    let user = UserId::from(user_id as u64).to_user(ctx).await;
+    if let Ok(user) = user {
+        let nickname =  user.nick_in(ctx, GuildId::from(guild_id as u64)).await
+            .unwrap_or(user.name.clone());
+        let _ = sqlx::query!("INSERT OR IGNORE INTO user_in_guild (user_id, guild_id, name) VALUES (?, ?, ?)",
+            user_id,
+            guild_id,
+            nickname
+        ).execute(&ctx.data().database).await;
+    }
 }

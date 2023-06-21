@@ -46,9 +46,11 @@ impl Cache {
 
     pub async fn update_character_names(&self, db: &Pool<Sqlite>) {
         let entries = sqlx::query(
-"SELECT character.name, character.user_id, character.guild_id user.nickname
+"SELECT character.name, character.user_id, character.guild_id, user_in_guild.nickname
 FROM character
-LEFT JOIN user ON user.id = character.id
+LEFT JOIN user_in_guild ON
+    user_in_guild.user_id = character.user_id AND
+    user_in_guild.guild_id = character.guild_id
 ")
             .fetch_all(db).await;
 
