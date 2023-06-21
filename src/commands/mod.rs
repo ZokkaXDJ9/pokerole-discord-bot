@@ -60,7 +60,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         create_role_reaction_post::create_role_reaction_post(),
         setting_time_offset::setting_time_offset(),
         say::say(),
-        update_user_names::initialize_user_data(),
+        update_user_names::update_user_names(),
         about::about()
     ];
 
