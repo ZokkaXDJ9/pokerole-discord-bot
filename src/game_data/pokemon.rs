@@ -50,6 +50,7 @@ pub struct Pokemon {
     pub poke_api_id: PokemonApiId,
     pub species_data: PokemonSpeciesData,
     pub regional_variant: Option<RegionalVariant>,
+    pub evolves_from: Option<PokemonApiId>,
     pub api_issue: Option<ApiIssueType>,
     pub name: String,
     pub type1: PokemonType,
@@ -67,6 +68,36 @@ pub struct Pokemon {
     pub height: Height,
     pub weight: Weight,
     pub moves: LearnablePokemonMoves,
+}
+
+impl Pokemon {
+    pub(crate) fn add_pre_evo_moves(&mut self, pre_evo_learns: &LearnablePokemonMoves) {
+        let mut was_pre_evo_move_added = false;
+        for x in &pre_evo_learns.by_pokerole_rank {
+            if self.moves.by_pokerole_rank.iter().all(|f| f.name != x.name) {
+                let name = if x.name.contains('¹') {
+                    x.name.replace('¹', "²")
+                } else {
+                    x.name.to_owned() + "¹"
+                };
+
+                self.moves
+                    .by_pokerole_rank
+                    .push(PokemonMoveLearnedByRank { name, rank: x.rank });
+                was_pre_evo_move_added = true;
+            }
+        }
+
+        for x in &pre_evo_learns.by_egg {
+            self.moves.by_egg.push(x.clone());
+        }
+
+        if was_pre_evo_move_added {
+            self.moves
+                .by_pokerole_rank
+                .sort_by(|a, b| a.name.cmp(&b.name));
+        }
+    }
 }
 
 impl Pokemon {
@@ -342,7 +373,7 @@ impl Pokemon {
         }
     }
 
-    pub(in crate::game_data) fn new(
+    pub(in crate::game_data) fn from_pokerole_data(
         raw: &RawPokerolePokemon,
         api: &HashMap<String, PokemonApiData>,
     ) -> Self {
@@ -398,9 +429,12 @@ impl Pokemon {
             );
         }
 
-        let api_id = match api_option {
-            None => PokemonApiId(raw.number),
-            Some(item) => PokemonApiId(item.pokemon_id.0),
+        let (api_id, evolves_from_api_id) = match api_option {
+            None => {
+                //warn!("Unable to match {}", raw.name);
+                (PokemonApiId(raw.number), None)
+            }
+            Some(item) => (PokemonApiId(item.pokemon_id.0), item.evolves_from),
         };
 
         Pokemon {
@@ -408,6 +442,7 @@ impl Pokemon {
             poke_api_id: api_id,
             name: raw.name.clone(),
             species_data: PokemonSpeciesData::from_option(&api_option),
+            evolves_from: evolves_from_api_id,
             regional_variant,
             api_issue,
             type1: Pokemon::parse_type(raw.type1.clone()).unwrap(),
@@ -514,6 +549,7 @@ impl Pokemon {
             species_data: PokemonSpeciesData::from(api_data),
             regional_variant,
             api_issue,
+            evolves_from: api_data.evolves_from,
             type1: api_data.type1,
             type2: api_data.type2,
             base_hp: raw.base_hp,
@@ -680,7 +716,7 @@ impl Weight {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LearnablePokemonMoves {
     pub by_pokerole_rank: Vec<PokemonMoveLearnedByRank>,
     pub by_level_up: Vec<String>,
@@ -715,7 +751,7 @@ impl LearnablePokemonMoves {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PokemonMoveLearnedByRank {
     pub rank: MysteryDungeonRank,
     pub name: String,

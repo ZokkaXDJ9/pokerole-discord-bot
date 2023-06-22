@@ -5,9 +5,9 @@ use crate::game_data::ability::Ability;
 use crate::game_data::item::Item;
 use crate::game_data::nature::Nature;
 use crate::game_data::parser::custom_data::parser::CustomDataParseResult;
-use crate::game_data::pokemon::Pokemon;
-use crate::game_data::pokemon_api::pokemon_api_parser;
+use crate::game_data::pokemon::{LearnablePokemonMoves, Pokemon};
 use crate::game_data::pokemon_api::pokemon_api_parser::PokemonApiData;
+use crate::game_data::pokemon_api::{pokemon_api_parser, PokemonApiId};
 use crate::game_data::pokerole_data;
 use crate::game_data::pokerole_data::parser::PokeroleParseResult;
 use crate::game_data::pokerole_discord_py_data::pokerole_discord_py_csv_parser;
@@ -18,7 +18,7 @@ use crate::game_data::rule::Rule;
 use crate::game_data::status_effect::StatusEffect;
 use crate::game_data::weather::Weather;
 use crate::game_data::GameData;
-use log::info;
+use log::{info, warn};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -138,14 +138,20 @@ fn parse_pokemon(
     custom_data: &CustomDataParseResult,
 ) -> (Vec<String>, HashMap<String, Pokemon>) {
     let mut pokemon_names = Vec::default();
-    let mut pokemon_hash_map = HashMap::default();
+    let mut parsed_pokemon = Vec::default();
+    let mut learnable_moves_by_api_id: HashMap<PokemonApiId, LearnablePokemonMoves> =
+        HashMap::default();
+
     for x in &pokerole_data.pokemon {
         if x.number == 0 {
             // Skip the egg!
             continue;
         }
         pokemon_names.push(x.name.clone());
-        pokemon_hash_map.insert(x.name.to_lowercase(), Pokemon::new(x, &pokemon_api_data));
+
+        let pokemon = Pokemon::from_pokerole_data(x, pokemon_api_data);
+        learnable_moves_by_api_id.insert(pokemon.poke_api_id, pokemon.moves.clone());
+        parsed_pokemon.push(pokemon);
     }
 
     for x in &custom_data.pokemon {
@@ -155,10 +161,31 @@ fn parse_pokemon(
             pokemon_names.push(x.name.clone());
         }
 
-        pokemon_hash_map.insert(
-            x.name.to_lowercase(),
-            Pokemon::from_custom_data(x, &pokemon_api_data),
-        );
+        let pokemon = Pokemon::from_custom_data(x, pokemon_api_data);
+        learnable_moves_by_api_id.insert(pokemon.poke_api_id, pokemon.moves.clone());
+        parsed_pokemon.push(pokemon);
+    }
+
+    parsed_pokemon.sort_by(|a, b| a.poke_api_id.0.cmp(&b.poke_api_id.0));
+    for x in &mut parsed_pokemon {
+        if let Some(pre_evo_id) = x.evolves_from {
+            let opt = learnable_moves_by_api_id.get(&pre_evo_id);
+            if let Some(base_moves) = opt {
+                x.add_pre_evo_moves(base_moves);
+            } else {
+                warn!(
+                    "No moves found for {}'s pre-evo ID {}",
+                    x.name, pre_evo_id.0
+                )
+            }
+        }
+
+        learnable_moves_by_api_id.insert(x.poke_api_id, x.moves.clone());
+    }
+
+    let mut pokemon_hash_map = HashMap::default();
+    for x in parsed_pokemon {
+        pokemon_hash_map.insert(x.name.to_lowercase(), x);
     }
 
     (pokemon_names, pokemon_hash_map)
