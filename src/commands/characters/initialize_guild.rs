@@ -1,13 +1,14 @@
+use crate::commands::characters::{log_action, ActionType};
+use crate::commands::{send_ephemeral_reply, send_error, Context, Error};
 use serenity::model::channel::Channel;
-use crate::commands::{Context, Error, send_ephemeral_reply, send_error};
-use crate::commands::characters::{ActionType, log_action};
 
 /// Create a new guild within the database.
-#[poise::command(slash_command, guild_only, default_member_permissions = "ADMINISTRATOR")]
-pub async fn initialize_guild(
-    ctx: Context<'_>,
-    action_log_channel: Channel,
-) -> Result<(), Error> {
+#[poise::command(
+    slash_command,
+    guild_only,
+    default_member_permissions = "ADMINISTRATOR"
+)]
+pub async fn initialize_guild(ctx: Context<'_>, action_log_channel: Channel) -> Result<(), Error> {
     let guild_id = ctx.guild_id().expect("Command is guild_only").0 as i64;
     let action_log_channel_id = action_log_channel.id().0 as i64;
 
@@ -24,6 +25,10 @@ ON CONFLICT (id) DO UPDATE SET action_log_channel_id = excluded.action_log_chann
         log_action(&ActionType::Initialization, &ctx, "The action log channel has been set to this lovely place here. I recommend muting this channel, lul.").await?;
         Ok(())
     } else {
-        send_error(&ctx, "Something went wrong! Has this guild already been initialized?").await
+        send_error(
+            &ctx,
+            "Something went wrong! Has this guild already been initialized?",
+        )
+        .await
     }
 }

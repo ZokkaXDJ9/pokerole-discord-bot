@@ -1,7 +1,7 @@
-use std::default::Default;
-use serenity::utils::MessageBuilder;
-use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_pokemon;
+use crate::commands::{Context, Error};
+use serenity::utils::MessageBuilder;
+use std::default::Default;
 
 /// Scale a pokemon's size and weight!
 #[poise::command(slash_command)]
@@ -19,10 +19,14 @@ pub async fn scale(
     if let Some(pokemon) = ctx.data().game.pokemon.get(&name.to_lowercase()) {
         let mut builder = MessageBuilder::new();
         builder.push_bold_line(std::format!("{} scaled to {}%", &pokemon.name, percent));
-        builder.push_codeblock(std::format!("{}   |   {}",
+        builder.push_codeblock(
+            std::format!(
+                "{}   |   {}",
                 pokemon.height.scale(percent),
                 pokemon.weight.scale(percent)
-            ), None);
+            ),
+            None,
+        );
         ctx.say(builder.to_string()).await?;
     } else {
         ctx.send(|b| {

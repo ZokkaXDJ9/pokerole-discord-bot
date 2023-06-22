@@ -1,6 +1,6 @@
-use serde::Deserialize;
 use crate::game_data::parser::custom_data::custom_ability::CustomAbility;
 use crate::game_data::pokerole_data::raw_ability::RawPokeroleAbility;
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -28,10 +28,12 @@ impl Ability {
     }
 
     pub(crate) fn build_string(&self, suffix: &str) -> impl Into<String> + Sized {
-        std::format!("### {} {}\n{}\n*{}*",
-                     &self.name,
-                     &suffix,
-                     &self.effect,
-                     &self.description)
+        std::format!(
+            "### {} {}\n{}\n*{}*",
+            &self.name,
+            &suffix,
+            &self.effect,
+            &self.description
+        )
     }
 }

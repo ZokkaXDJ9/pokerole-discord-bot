@@ -1,15 +1,15 @@
+use crate::enums::PokemonType;
+use crate::game_data::pokemon::Pokemon;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use crate::game_data::pokemon::Pokemon;
-use crate::enums::PokemonType;
 
 pub struct TypeEfficiency {
-    data: HashMap<PokemonType, HashMap<PokemonType, f32>>
+    data: HashMap<PokemonType, HashMap<PokemonType, f32>>,
 }
 
 impl TypeEfficiency {
     pub fn new(data: HashMap<PokemonType, HashMap<PokemonType, f32>>) -> Self {
-        TypeEfficiency {data}
+        TypeEfficiency { data }
     }
 }
 
@@ -31,18 +31,23 @@ impl Display for Efficiency {
             Efficiency::SuperIneffective => "Super Ineffective (-2)",
             Efficiency::Effective => "Effective (+1)",
             Efficiency::SuperEffective => "Super Effective (+2)",
-            Efficiency::Immune => "Immune (No Damage)"
+            Efficiency::Immune => "Immune (No Damage)",
         })
     }
 }
 
 impl TypeEfficiency {
     pub fn against_pokemon(&self, move_type: &PokemonType, pokemon: &Pokemon) -> f32 {
-        let type1 = self.data.get(move_type).unwrap().get(&pokemon.type1).unwrap();
+        let type1 = self
+            .data
+            .get(move_type)
+            .unwrap()
+            .get(&pokemon.type1)
+            .unwrap();
 
         let type2 = match pokemon.type2 {
             None => &1.0,
-            Some(t) => self.data.get(move_type).unwrap().get(&t).unwrap()
+            Some(t) => self.data.get(move_type).unwrap().get(&t).unwrap(),
         };
 
         type1 * type2
@@ -52,7 +57,11 @@ impl TypeEfficiency {
         (a - b).abs() < 0.1
     }
 
-    pub fn against_pokemon_as_enum(&self, move_type: &PokemonType, pokemon: &Pokemon) -> Efficiency {
+    pub fn against_pokemon_as_enum(
+        &self,
+        move_type: &PokemonType,
+        pokemon: &Pokemon,
+    ) -> Efficiency {
         let value = self.against_pokemon(move_type, pokemon);
 
         if TypeEfficiency::float_equals(value, 4.0) {

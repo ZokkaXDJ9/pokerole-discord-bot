@@ -1,8 +1,8 @@
-use std::str::FromStr;
-use log::error;
+use crate::enums::{CombatOrSocialStat, HappinessDamageModifier, MoveCategory, MoveType, Stat};
 use crate::game_data::parser::custom_data::custom_move::CustomMove;
 use crate::game_data::pokerole_data::raw_move::RawPokeroleMove;
-use crate::enums::{CombatOrSocialStat, HappinessDamageModifier, MoveCategory, MoveType, Stat};
+use log::error;
+use std::str::FromStr;
 
 pub struct Move {
     pub name: String,
@@ -25,13 +25,14 @@ fn replace_effect_string(raw: &str) -> Option<String> {
         return None;
     }
 
-    Some(raw.replace("1 lethal", "1 Wound")
+    Some(
+        raw.replace("1 lethal", "1 Wound")
             .replace("1 Lethal", "1 Wound")
             .replace("cure Lethal", "cure Wound")
             .replace("Lethal", "Inflicts Wounds")
             .replace("Basic Heal", "Heal 5 HP")
             .replace("Complete Heal", "Heal 10 HP")
-            .replace("Full Heal", "Heal 10 HP")
+            .replace("Full Heal", "Heal 10 HP"),
     )
 }
 
@@ -48,7 +49,7 @@ impl Move {
             target: raw.target.clone(),
             effect: replace_effect_string(&raw.effect),
             description: Move::parse_description(raw.description.clone()),
-            category: raw.category
+            category: raw.category,
         }
     }
 
@@ -64,7 +65,7 @@ impl Move {
             target: raw.target.clone(),
             effect: replace_effect_string(&raw.effect),
             description: Move::parse_description(raw.description.clone()),
-            category: raw.category
+            category: raw.category,
         }
     }
 
@@ -83,17 +84,15 @@ impl Move {
 
         return match Stat::from_str(&raw) {
             Ok(result) => Some(result),
-            Err(_) => {
-                match raw.as_str() {
-                    "Strength/special" => Some(Stat::StrengthOrSpecial),
-                    "Same as the copied move" => Some(Stat::Copy),
-                    _ => {
-                        error!("Cannot parse damage modifier: {}", &raw);
-                        None
-                    }
+            Err(_) => match raw.as_str() {
+                "Strength/special" => Some(Stat::StrengthOrSpecial),
+                "Same as the copied move" => Some(Stat::Copy),
+                _ => {
+                    error!("Cannot parse damage modifier: {}", &raw);
+                    None
                 }
-            }
-        }
+            },
+        };
     }
 
     fn parse_happiness_damage(raw: String) -> Option<HappinessDamageModifier> {
@@ -108,7 +107,7 @@ impl Move {
                 error!("Cannot parse happiness damage modifier: {}", &raw);
                 None
             }
-        }
+        };
     }
 
     fn parse_accuracy(raw: String) -> Option<CombatOrSocialStat> {
@@ -118,26 +117,24 @@ impl Move {
 
         return match CombatOrSocialStat::from_str(&raw) {
             Ok(result) => Some(result),
-            Err(_) => {
-                match raw.as_str() {
-                    "Missing beauty" => Some(CombatOrSocialStat::MissingBeauty),
-                    "BRAWL/CHANNEL" => Some(CombatOrSocialStat::BrawlOrChannel),
-                    "Tough/cute" => Some(CombatOrSocialStat::ToughOrCute),
-                    "Same as the copied move" => Some(CombatOrSocialStat::Copied),
-                    "BRAWL" => Some(CombatOrSocialStat::Brawl),
-                    "PERFORM" => Some(CombatOrSocialStat::Perform),
-                    "ALLURE" => Some(CombatOrSocialStat::Allure),
-                    _ => {
-                        error!("Cannot parse accuracy modifier: {}", &raw);
-                        None
-                    }
+            Err(_) => match raw.as_str() {
+                "Missing beauty" => Some(CombatOrSocialStat::MissingBeauty),
+                "BRAWL/CHANNEL" => Some(CombatOrSocialStat::BrawlOrChannel),
+                "Tough/cute" => Some(CombatOrSocialStat::ToughOrCute),
+                "Same as the copied move" => Some(CombatOrSocialStat::Copied),
+                "BRAWL" => Some(CombatOrSocialStat::Brawl),
+                "PERFORM" => Some(CombatOrSocialStat::Perform),
+                "ALLURE" => Some(CombatOrSocialStat::Allure),
+                _ => {
+                    error!("Cannot parse accuracy modifier: {}", &raw);
+                    None
                 }
-            }
-        }
+            },
+        };
     }
 
     pub(crate) fn build_string(&self) -> String {
-        let mut result : String = std::format!("### {}\n", &self.name);
+        let mut result: String = std::format!("### {}\n", &self.name);
         if let Some(description) = &self.description {
             result.push('*');
             result.push_str(description);

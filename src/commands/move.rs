@@ -1,5 +1,5 @@
-use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_move;
+use crate::commands::{Context, Error};
 use crate::game_data::r#move::Move;
 use crate::helpers;
 
@@ -29,14 +29,15 @@ pub async fn poke_move(
 }
 
 async fn execute_metronome<'a>(ctx: Context<'a>, poke_move: &Move) -> Result<(), Error> {
-    let reply = ctx.send(|b| {
-        b.content(poke_move.build_string())
-            .components(|b| {
+    let reply = ctx
+        .send(|b| {
+            b.content(poke_move.build_string()).components(|b| {
                 b.create_action_row(|b| {
                     b.add_button(helpers::create_button("Use Metronome", "metronome", false))
                 })
             })
-    }).await?;
+        })
+        .await?;
 
     reply.message().await?;
     Ok(())

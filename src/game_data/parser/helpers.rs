@@ -1,11 +1,16 @@
+use log::{error, info};
+use serde::de::DeserializeOwned;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use log::{error, info};
-use serde::de::DeserializeOwned;
 
 /// Data Objects which should be ignored
-const REJECTED_DATA_FILE_NAMES: [&str; 4] = ["Any Move.json", "Potion.json", "Super Potion.json", "Hyper Potion.json"];
+const REJECTED_DATA_FILE_NAMES: [&str; 4] = [
+    "Any Move.json",
+    "Potion.json",
+    "Super Potion.json",
+    "Hyper Potion.json",
+];
 
 fn parse_file<T: DeserializeOwned>(file_path: &str) -> Result<T, Box<dyn std::error::Error>> {
     let mut file = File::open(file_path)?;
@@ -21,7 +26,10 @@ pub fn parse_directory<P: AsRef<Path>, T: DeserializeOwned>(path: P) -> Vec<T> {
 
     let entries = std::fs::read_dir(path).expect("Failed to read directory");
     for entry in entries.flatten() {
-        if REJECTED_DATA_FILE_NAMES.iter().any(|x| entry.path().ends_with(x)) {
+        if REJECTED_DATA_FILE_NAMES
+            .iter()
+            .any(|x| entry.path().ends_with(x))
+        {
             info!("Skipping {:?}", entry.path());
             continue;
         }
@@ -31,7 +39,7 @@ pub fn parse_directory<P: AsRef<Path>, T: DeserializeOwned>(path: P) -> Vec<T> {
         if file_path.is_file() && file_path.extension().map_or(false, |ext| ext == "json") {
             match parse_file::<T>(file_path.to_str().expect("")) {
                 Ok(parsed) => result.push(parsed),
-                Err(err) => error!("Failed to parse file {:?}: {}", file_path, err)
+                Err(err) => error!("Failed to parse file {:?}: {}", file_path, err),
             }
         }
     }

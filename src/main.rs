@@ -1,20 +1,20 @@
-mod commands;
-mod game_data;
-mod logger;
-mod csv_utils;
-mod enums;
-mod data;
-mod parse_error;
-mod events;
-mod helpers;
 mod cache;
+mod commands;
+mod csv_utils;
+mod data;
 mod emoji;
+mod enums;
+mod events;
+mod game_data;
+mod helpers;
+mod logger;
+mod parse_error;
 
-use std::str::FromStr;
-use std::sync::Arc;
+use crate::data::Data;
 use poise::serenity_prelude as serenity;
 use sqlx::{Pool, Sqlite};
-use crate::data::Data;
+use std::str::FromStr;
+use std::sync::Arc;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 
@@ -24,13 +24,16 @@ async fn main() {
 
     let data = Data::new(
         initialize_database().await,
-        Arc::new(game_data::parser::initialize_data().await)
-    ).await;
+        Arc::new(game_data::parser::initialize_data().await),
+    )
+    .await;
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: commands::get_all_commands(),
-            event_handler: |serenity_ctx, event, ctx, _| Box::pin(events::handle_events(serenity_ctx, event, ctx)),
+            event_handler: |serenity_ctx, event, ctx, _| {
+                Box::pin(events::handle_events(serenity_ctx, event, ctx))
+            },
             ..Default::default()
         })
         .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
@@ -50,11 +53,15 @@ async fn initialize_database() -> Pool<Sqlite> {
     let database = sqlx::sqlite::SqlitePoolOptions::new()
         .max_connections(5)
         .connect_with(
-            sqlx::sqlite::SqliteConnectOptions::from_str(url.as_str()).expect("Unable to parse DATABASE_URL")
+            sqlx::sqlite::SqliteConnectOptions::from_str(url.as_str())
+                .expect("Unable to parse DATABASE_URL"),
         )
         .await
         .expect("Couldn't connect to database");
 
-    sqlx::migrate!("./migrations").run(&database).await.expect("Couldn't run database migrations");
+    sqlx::migrate!("./migrations")
+        .run(&database)
+        .await
+        .expect("Couldn't run database migrations");
     database
 }

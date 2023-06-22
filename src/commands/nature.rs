@@ -1,5 +1,5 @@
-use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_nature;
+use crate::commands::{Context, Error};
 
 /// Display an Ability
 #[poise::command(slash_command)]
@@ -14,9 +14,13 @@ pub async fn nature(
         ctx.say(nature.build_string()).await?;
     } else {
         ctx.send(|b| {
-            b.content(std::format!("Unable to find a nature named **{}**, sorry!", name));
+            b.content(std::format!(
+                "Unable to find a nature named **{}**, sorry!",
+                name
+            ));
             b.ephemeral(true)
-        }).await?;
+        })
+        .await?;
     }
 
     Ok(())

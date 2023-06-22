@@ -6,5 +6,5 @@ pub enum PokeRoleRank {
     Ace,
     Pro,
     Master,
-    Champion
+    Champion,
 }

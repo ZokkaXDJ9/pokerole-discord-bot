@@ -9,10 +9,12 @@ pub struct Nature {
 
 impl Nature {
     pub(crate) fn build_string(&self) -> impl Into<String> + Sized {
-        std::format!("### {}\n**Keywords**: {}\n*{}*",
-                     &self.name,
-                     &self.keywords,
-                     &self.description)
+        std::format!(
+            "### {}\n**Keywords**: {}\n*{}*",
+            &self.name,
+            &self.keywords,
+            &self.description
+        )
     }
 }
 

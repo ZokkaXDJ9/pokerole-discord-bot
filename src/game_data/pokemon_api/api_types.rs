@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use crate::game_data::pokemon_api::PokemonApiId;
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Eq, PartialEq, Hash, Copy, Clone)]
 pub struct PokemonSpeciesId(pub u16);
@@ -25,7 +25,7 @@ pub struct ApiVersionGroups {
     pub id: u8,
     pub identifier: String,
     pub generation_id: GenerationId,
-    pub order: u8
+    pub order: u8,
 }
 
 /// pokemon.csv
@@ -150,7 +150,7 @@ pub struct ApiPokemonFormNames {
     pub pokemon_form_id: PokemonFormId,
     pub local_language_id: LanguageId,
     pub form_name: String,
-    pub pokemon_name: Option<String>
+    pub pokemon_name: Option<String>,
 }
 
 /// pokemon_types.csv
@@ -191,7 +191,7 @@ pub struct ApiPokemonFormTypes {
 pub struct ApiMoveNames {
     pub move_id: MoveId,
     pub local_language_id: LanguageId,
-    pub name: String
+    pub name: String,
 }
 
 /// type_efficacy.csv
@@ -200,7 +200,7 @@ pub struct ApiMoveNames {
 pub struct ApiTypeEfficacy {
     pub damage_type_id: TypeId,
     pub target_type_id: TypeId,
-    pub damage_factor: u8
+    pub damage_factor: u8,
 }
 
 /// version_names.csv
@@ -209,6 +209,5 @@ pub struct ApiTypeEfficacy {
 pub struct ApiVersionNames {
     pub version_id: VersionId,
     pub local_language_id: LanguageId,
-    pub name: String
+    pub name: String,
 }
-

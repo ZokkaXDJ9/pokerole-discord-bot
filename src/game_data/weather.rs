@@ -12,14 +12,16 @@ impl Weather {
         Weather {
             name: raw.name.clone(),
             description: raw.description.clone(),
-            effect: raw.effect.clone()
+            effect: raw.effect.clone(),
         }
     }
 
     pub(crate) fn build_string(&self) -> impl Into<String> + Sized {
-        std::format!("### {}\n*{}*\n{}",
-                     &self.name,
-                     &self.description,
-                     &self.effect)
+        std::format!(
+            "### {}\n*{}*\n{}",
+            &self.name,
+            &self.description,
+            &self.effect
+        )
     }
 }

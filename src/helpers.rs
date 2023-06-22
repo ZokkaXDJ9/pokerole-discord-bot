@@ -12,7 +12,7 @@ pub fn create_button(label: &str, custom_id: &str, is_disabled: bool) -> CreateB
 
 pub fn split_long_messages(message: String) -> Vec<String> {
     if message.len() < 2000 {
-        return vec!(message);
+        return vec![message];
     }
 
     let mut remaining = message.as_str();

@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use crate::enums::{MoveCategory, MoveType};
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]

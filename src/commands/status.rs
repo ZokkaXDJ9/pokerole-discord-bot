@@ -1,5 +1,5 @@
-use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_status_effect;
+use crate::commands::{Context, Error};
 
 /// Display status effects
 #[poise::command(slash_command)]

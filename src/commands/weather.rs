@@ -1,5 +1,5 @@
-use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_weather;
+use crate::commands::{Context, Error};
 
 /// Display the Weather
 #[poise::command(slash_command)]

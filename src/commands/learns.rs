@@ -1,8 +1,8 @@
-use poise::CreateReply;
-use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_pokemon;
+use crate::commands::{Context, Error};
 use crate::game_data::pokemon::Pokemon;
 use crate::helpers;
+use poise::CreateReply;
 
 /// Display Pokemon moves
 #[poise::command(slash_command, prefix_command)]
@@ -25,11 +25,17 @@ pub async fn learns(
     Ok(())
 }
 
-pub fn create_reply<'a, 'b>(b: &'a mut CreateReply<'b>, pokemon: &Pokemon) -> &'a mut CreateReply<'b> {
-    b.content(pokemon.build_move_string())
-        .components(|b| {
-            b.create_action_row(|b| {
-                b.add_button(helpers::create_button("Show All Learnable Moves", format!("learns-all_{}", pokemon.name.to_lowercase()).as_str(), false))
-            })
+pub fn create_reply<'a, 'b>(
+    b: &'a mut CreateReply<'b>,
+    pokemon: &Pokemon,
+) -> &'a mut CreateReply<'b> {
+    b.content(pokemon.build_move_string()).components(|b| {
+        b.create_action_row(|b| {
+            b.add_button(helpers::create_button(
+                "Show All Learnable Moves",
+                format!("learns-all_{}", pokemon.name.to_lowercase()).as_str(),
+                false,
+            ))
         })
+    })
 }

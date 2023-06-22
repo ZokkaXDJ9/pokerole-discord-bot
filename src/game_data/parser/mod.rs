@@ -1,11 +1,7 @@
 pub(in crate::game_data) mod custom_data;
 pub(in crate::game_data) mod helpers;
 
-use std::collections::HashMap;
-use std::sync::Arc;
-use log::{info};
 use crate::game_data::ability::Ability;
-use crate::game_data::rule::Rule;
 use crate::game_data::item::Item;
 use crate::game_data::nature::Nature;
 use crate::game_data::parser::custom_data::parser::CustomDataParseResult;
@@ -18,9 +14,13 @@ use crate::game_data::pokerole_discord_py_data::pokerole_discord_py_csv_parser;
 use crate::game_data::pokerole_discord_py_data::pokerole_discord_py_csv_parser::RawPokeroleDiscordPyCsvData;
 use crate::game_data::potion::Potion;
 use crate::game_data::r#move::Move;
+use crate::game_data::rule::Rule;
 use crate::game_data::status_effect::StatusEffect;
 use crate::game_data::weather::Weather;
 use crate::game_data::GameData;
+use log::info;
+use std::collections::HashMap;
+use std::sync::Arc;
 
 pub async fn initialize_data() -> GameData {
     let pokerole_api_path = std::env::var("POKEMON_API").expect("missing POKEMON_API");
@@ -39,7 +39,8 @@ pub async fn initialize_data() -> GameData {
     let (nature_names, nature_hash_map) = parse_natures(&pokerole_data);
     let (ability_names, ability_hash_map) = parse_abilities(&pokerole_data, &custom_data);
     let (weather_names, weather_hash_map) = parse_weather(&pokerole_csv_data);
-    let (pokemon_names, pokemon_hash_map) = parse_pokemon(&pokemon_api_data, &pokerole_data, &custom_data);
+    let (pokemon_names, pokemon_hash_map) =
+        parse_pokemon(&pokemon_api_data, &pokerole_data, &custom_data);
     let (status_names, status_hash_map) = parse_status_effects(pokerole_csv_data, &custom_data);
     let (item_names, item_hash_map) = parse_items(pokerole_data, &custom_data);
     let (potion_names, potion_hash_map) = parse_potions(&custom_data);
@@ -67,7 +68,10 @@ pub async fn initialize_data() -> GameData {
     }
 }
 
-fn parse_items(pokerole_data: PokeroleParseResult, custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, Item>) {
+fn parse_items(
+    pokerole_data: PokeroleParseResult,
+    custom_data: &CustomDataParseResult,
+) -> (Vec<String>, HashMap<String, Item>) {
     let mut item_names = Vec::default();
     let mut item_hash_map = HashMap::default();
     for x in pokerole_data.items {
@@ -104,7 +108,10 @@ fn parse_potions(custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<S
     (potion_names, potion_hash_map)
 }
 
-fn parse_status_effects(pokerole_csv_data: RawPokeroleDiscordPyCsvData, custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, StatusEffect>) {
+fn parse_status_effects(
+    pokerole_csv_data: RawPokeroleDiscordPyCsvData,
+    custom_data: &CustomDataParseResult,
+) -> (Vec<String>, HashMap<String, StatusEffect>) {
     let mut status_names = Vec::default();
     let mut status_hash_map = HashMap::default();
     for x in pokerole_csv_data.status_effects {
@@ -125,7 +132,11 @@ fn parse_status_effects(pokerole_csv_data: RawPokeroleDiscordPyCsvData, custom_d
     (status_names, status_hash_map)
 }
 
-fn parse_pokemon(pokemon_api_data: &HashMap<String, PokemonApiData>, pokerole_data: &PokeroleParseResult, custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, Pokemon>) {
+fn parse_pokemon(
+    pokemon_api_data: &HashMap<String, PokemonApiData>,
+    pokerole_data: &PokeroleParseResult,
+    custom_data: &CustomDataParseResult,
+) -> (Vec<String>, HashMap<String, Pokemon>) {
     let mut pokemon_names = Vec::default();
     let mut pokemon_hash_map = HashMap::default();
     for x in &pokerole_data.pokemon {
@@ -144,13 +155,19 @@ fn parse_pokemon(pokemon_api_data: &HashMap<String, PokemonApiData>, pokerole_da
             pokemon_names.push(x.name.clone());
         }
 
-        pokemon_hash_map.insert(x.name.to_lowercase(), Pokemon::from_custom_data(x, &pokemon_api_data));
+        pokemon_hash_map.insert(
+            x.name.to_lowercase(),
+            Pokemon::from_custom_data(x, &pokemon_api_data),
+        );
     }
 
     (pokemon_names, pokemon_hash_map)
 }
 
-fn parse_moves(pokerole_data: &PokeroleParseResult, custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, Move>) {
+fn parse_moves(
+    pokerole_data: &PokeroleParseResult,
+    custom_data: &CustomDataParseResult,
+) -> (Vec<String>, HashMap<String, Move>) {
     let mut move_names = Vec::default();
     let mut move_hash_map = HashMap::default();
     for x in &pokerole_data.moves {
@@ -171,7 +188,9 @@ fn parse_moves(pokerole_data: &PokeroleParseResult, custom_data: &CustomDataPars
     (move_names, move_hash_map)
 }
 
-fn parse_weather(pokerole_csv_data: &RawPokeroleDiscordPyCsvData) -> (Vec<String>, HashMap<String, Weather>) {
+fn parse_weather(
+    pokerole_csv_data: &RawPokeroleDiscordPyCsvData,
+) -> (Vec<String>, HashMap<String, Weather>) {
     let mut weather_names = Vec::default();
     let mut weather_hash_map = HashMap::default();
     for x in &pokerole_csv_data.weather {
@@ -181,7 +200,10 @@ fn parse_weather(pokerole_csv_data: &RawPokeroleDiscordPyCsvData) -> (Vec<String
     (weather_names, weather_hash_map)
 }
 
-fn parse_abilities(pokerole_data: &PokeroleParseResult, custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, Ability>) {
+fn parse_abilities(
+    pokerole_data: &PokeroleParseResult,
+    custom_data: &CustomDataParseResult,
+) -> (Vec<String>, HashMap<String, Ability>) {
     let mut ability_names = Vec::default();
     let mut ability_hash_map = HashMap::default();
     for x in &pokerole_data.abilities {

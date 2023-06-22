@@ -1,13 +1,13 @@
-use rand::{Rng, thread_rng};
-use rand::seq::IteratorRandom;
-use rand::seq::SliceRandom;
-use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::game_data::pokemon::{Pokemon};
+use crate::commands::{Context, Error};
+use crate::enums::{CombatOrSocialStat, Gender, MysteryDungeonRank, PokemonType, SocialStat, Stat};
+use crate::game_data::pokemon::Pokemon;
 use crate::game_data::r#move::Move;
-use crate::enums::{Stat, Gender, MysteryDungeonRank, PokemonType, SocialStat, CombatOrSocialStat};
 use crate::game_data::GameData;
 use crate::helpers;
+use rand::seq::IteratorRandom;
+use rand::seq::SliceRandom;
+use rand::{thread_rng, Rng};
 
 /// Encounter some wild pokemon!
 #[poise::command(slash_command)]
@@ -23,11 +23,13 @@ pub async fn encounter(
     #[min = 1_u8]
     #[max = 5_u8]
     #[description = "How many? Defaults to 1."]
-    amount: Option<u8>
+    amount: Option<u8>,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().game.pokemon.get(&pokemon.to_lowercase()) {
         for encounter in build_encounter(pokemon, level, amount) {
-            for part in helpers::split_long_messages(encounter.build_string(pokemon, &ctx.data().game)) {
+            for part in
+                helpers::split_long_messages(encounter.build_string(pokemon, &ctx.data().game))
+            {
                 ctx.say(part).await?;
             }
         }
@@ -96,11 +98,17 @@ impl EncounterMon {
             beauty: 1,
             clever: 1,
             cute: 1,
-            moves: Vec::new()
+            moves: Vec::new(),
         };
 
         let mut rng = thread_rng();
-        let all_stats = vec!(Stat::Strength, Stat::Vitality, Stat::Dexterity, Stat::Special, Stat::Insight);
+        let all_stats = vec![
+            Stat::Strength,
+            Stat::Vitality,
+            Stat::Dexterity,
+            Stat::Special,
+            Stat::Insight,
+        ];
         let mut non_maxed_stat_points = all_stats.clone();
         let mut remaining_stat_points = level + 3;
         let mut limit_break_count = 0;
@@ -123,7 +131,13 @@ impl EncounterMon {
             }
         }
 
-        let mut non_maxed_social_stats = vec!(SocialStat::Tough, SocialStat::Cool, SocialStat::Beauty, SocialStat::Clever, SocialStat::Cute);
+        let mut non_maxed_social_stats = vec![
+            SocialStat::Tough,
+            SocialStat::Cool,
+            SocialStat::Beauty,
+            SocialStat::Clever,
+            SocialStat::Cute,
+        ];
         let mut remaining_social_points = EncounterMon::calculate_social_points(&result.rank);
         while remaining_social_points > 0 {
             if let Some(mut stat) = non_maxed_social_stats.choose(&mut rng) {
@@ -142,14 +156,15 @@ impl EncounterMon {
         result.hp = (pokemon.base_hp + result.vitality) * 2;
         result.will = result.insight + 2;
 
-        let available_moves = pokemon.moves.by_pokerole_rank
+        let available_moves = pokemon
+            .moves
+            .by_pokerole_rank
             .iter()
             .filter(|x| x.rank <= result.rank)
             .map(|x| x.name.clone());
 
         let move_count = result.insight + 2;
-        result.moves = available_moves
-            .choose_multiple(&mut thread_rng(), move_count as usize);
+        result.moves = available_moves.choose_multiple(&mut thread_rng(), move_count as usize);
 
         result
     }
@@ -198,7 +213,7 @@ impl EncounterMon {
             Stat::Vitality => self.vitality += 1,
             Stat::Special => self.special += 1,
             Stat::Insight => self.insight += 1,
-            _ => panic!("Unexpected combat stat: {}", stat)
+            _ => panic!("Unexpected combat stat: {}", stat),
         };
     }
 
@@ -240,47 +255,93 @@ impl EncounterMon {
         }
     }
 
-    pub fn build_string(&self, pokemon: &Pokemon, data: &GameData) -> String{
-        let mut result = std::format!("{} ({}) | **Lv.{} ({})**\n", self.name, self.gender, self.level, self.rank.emoji_string());
+    pub fn build_string(&self, pokemon: &Pokemon, data: &GameData) -> String {
+        let mut result = std::format!(
+            "{} ({}) | **Lv.{} ({})**\n",
+            self.name,
+            self.gender,
+            self.level,
+            self.rank.emoji_string()
+        );
         if let Some(type2) = self.type2 {
             result.push_str(std::format!("**Types**: {} / {}\n", self.type1, type2).as_str());
         } else {
             result.push_str(std::format!("**Type**: {}\n", self.type1).as_str());
         }
-        result.push_str(std::format!("```
+        result.push_str(
+            std::format!(
+                "```
 HP: {}  |  Def: {:.0}  |  SpDef: {:.0}
 STR: {:>2} / {:>2}      Tough:  {} / 5
 DEX: {:>2} / {:>2}      Cool:   {} / 5
 VIT: {:>2} / {:>2}      Beauty: {} / 5
 SPE: {:>2} / {:>2}      Clever: {} / 5
 INS: {:>2} / {:>2}      Cute:   {} / 5
-```",         (self.vitality + pokemon.base_hp) * 2,
-                     (self.vitality as f32 * 0.5).ceil(),
-                     (self.insight as f32 * 0.5).ceil(),
-                self.strength, pokemon.strength.max, self.tough,
-                self.dexterity, pokemon.dexterity.max, self.cool,
-                self.vitality, pokemon.vitality.max, self.beauty,
-                self.special, pokemon.special.max, self.clever,
-                self.insight, pokemon.insight.max, self.cute,
-
-        ).as_str());
-        result.push_str(std::format!("**Ability**: {}\n*{}*\n", self.ability, data.abilities.get(&self.ability.to_lowercase()).unwrap().effect).as_str());
+```",
+                (self.vitality + pokemon.base_hp) * 2,
+                (self.vitality as f32 * 0.5).ceil(),
+                (self.insight as f32 * 0.5).ceil(),
+                self.strength,
+                pokemon.strength.max,
+                self.tough,
+                self.dexterity,
+                pokemon.dexterity.max,
+                self.cool,
+                self.vitality,
+                pokemon.vitality.max,
+                self.beauty,
+                self.special,
+                pokemon.special.max,
+                self.clever,
+                self.insight,
+                pokemon.insight.max,
+                self.cute,
+            )
+            .as_str(),
+        );
+        result.push_str(
+            std::format!(
+                "**Ability**: {}\n*{}*\n",
+                self.ability,
+                data.abilities
+                    .get(&self.ability.to_lowercase())
+                    .unwrap()
+                    .effect
+            )
+            .as_str(),
+        );
 
         result.push_str("## Moves\n");
         for move_name in &self.moves {
-            let m = data.moves.get(&move_name.to_lowercase()).unwrap_or_else(|| panic!("Every move should be set! {}", move_name));
-            result.push_str(std::format!("**{}** – {} | {} | {}\n", m.name, m.typing, m.category, m.target).as_str());
+            let m = data
+                .moves
+                .get(&move_name.to_lowercase())
+                .unwrap_or_else(|| panic!("Every move should be set! {}", move_name));
+            result.push_str(
+                std::format!(
+                    "**{}** – {} | {} | {}\n",
+                    m.name,
+                    m.typing,
+                    m.category,
+                    m.target
+                )
+                .as_str(),
+            );
             if m.damage1.unwrap_or(Stat::Strength) == Stat::Copy {
                 result.push_str("ACC: **Copy** | DMG: **Copy** \n");
-            }
-            else {
+            } else {
                 let accuracy = self.calculate_accuracy(m);
                 let damage = self.calculate_damage(m);
                 if damage > 0 {
                     if m.typing.has_stab(&Some(self.type1)) || m.typing.has_stab(&self.type2) {
-                        result.push_str(std::format!("ACC: **{}** | DMG: **{} + STAB**\n", accuracy, damage).as_str());
+                        result.push_str(
+                            std::format!("ACC: **{}** | DMG: **{} + STAB**\n", accuracy, damage)
+                                .as_str(),
+                        );
                     } else {
-                        result.push_str(std::format!("ACC: **{}** | DMG: **{}**\n", accuracy, damage).as_str());
+                        result.push_str(
+                            std::format!("ACC: **{}** | DMG: **{}**\n", accuracy, damage).as_str(),
+                        );
                     }
                 } else {
                     result.push_str(std::format!("ACC: **{}**\n", accuracy).as_str());
@@ -355,7 +416,7 @@ INS: {:>2} / {:>2}      Cute:   {} / 5
                 } else {
                     self.cute
                 }
-            },
+            }
             CombatOrSocialStat::MissingBeauty => 5 - self.beauty,
             CombatOrSocialStat::BrawlOrChannel => self.rank.die_count(),
             CombatOrSocialStat::Varies => self.rank.die_count(),
@@ -365,4 +426,3 @@ INS: {:>2} / {:>2}      Cute:   {} / 5
         }
     }
 }
-

@@ -1,4 +1,4 @@
-use crate::commands::{Context, Error, send_ephemeral_reply, send_error};
+use crate::commands::{send_ephemeral_reply, send_error, Context, Error};
 
 /// Set an offset for the timestamp command.
 #[poise::command(slash_command)]
@@ -17,7 +17,9 @@ pub async fn setting_time_offset(
     let user = sqlx::query!(
         "SELECT setting_time_offset_hours, setting_time_offset_minutes FROM user WHERE id = ?",
         user_id
-    ).fetch_one(&ctx.data().database).await;
+    )
+    .fetch_one(&ctx.data().database)
+    .await;
 
     match user {
         Ok(_) => {

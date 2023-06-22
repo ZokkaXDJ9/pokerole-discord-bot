@@ -1,24 +1,24 @@
-use core::fmt;
-use std::fmt::{Formatter};
-use poise::{Command};
-use regex::Regex;
-use serenity::model::id::ChannelId;
-use crate::commands::{Context, send_error};
-use crate::{emoji, Error};
 use crate::cache::CharacterCacheItem;
+use crate::commands::{send_error, Context};
 use crate::data::Data;
 use crate::enums::MysteryDungeonRank;
+use crate::{emoji, Error};
+use core::fmt;
+use poise::Command;
+use regex::Regex;
+use serenity::model::id::ChannelId;
+use std::fmt::Formatter;
 
-mod initialize_character;
-mod reward_money;
-mod reward_experience;
-mod initialize_guild;
 mod complete_quest;
-mod initialize_character_post;
 mod give_money;
+mod initialize_character;
+mod initialize_character_post;
+mod initialize_guild;
+mod reward_experience;
+mod reward_money;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
-    vec!(
+    vec![
         complete_quest::complete_quest(),
         give_money::give_money(),
         initialize_character::initialize_character(),
@@ -26,7 +26,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         initialize_guild::initialize_guild(),
         reward_experience::reward_experience(),
         reward_money::reward_money(),
-    )
+    ]
 }
 
 pub async fn send_stale_data_error<'a>(ctx: &Context<'a>) -> Result<(), Error> {
@@ -39,7 +39,11 @@ You can copy the command string either by just pressing the up key inside the te
 
 pub async fn update_character_post<'a>(ctx: &Context<'a>, id: i64) -> Result<(), Error> {
     if let Some(result) = build_character_string(ctx, id).await {
-        let message = ctx.serenity_context().http.get_message(result.1 as u64, result.2 as u64).await;
+        let message = ctx
+            .serenity_context()
+            .http
+            .get_message(result.1 as u64, result.2 as u64)
+            .await;
         if let Ok(mut message) = message {
             message.edit(ctx, |f| f.content(result.0)).await?;
         }
@@ -49,16 +53,19 @@ pub async fn update_character_post<'a>(ctx: &Context<'a>, id: i64) -> Result<(),
 }
 
 // TODO: we really should just change this to a query_as thingy...
-pub async fn build_character_string<'a>(ctx: &Context<'a>, character_id: i64) -> Option<(String, i64, i64)> {
+pub async fn build_character_string<'a>(
+    ctx: &Context<'a>,
+    character_id: i64,
+) -> Option<(String, i64, i64)> {
     let entry = sqlx::query!(
-                "SELECT name, experience, money, completed_quest_count, stat_message_id, stat_channel_id \
+        "SELECT name, experience, money, completed_quest_count, stat_message_id, stat_channel_id \
                 FROM character WHERE id = ? \
                 ORDER BY rowid \
                 LIMIT 1",
-                character_id,
-            )
-        .fetch_one(&ctx.data().database)
-        .await;
+        character_id,
+    )
+    .fetch_one(&ctx.data().database)
+    .await;
 
     match entry {
         Ok(entry) => {
@@ -66,19 +73,29 @@ pub async fn build_character_string<'a>(ctx: &Context<'a>, character_id: i64) ->
             let experience = entry.experience % 100;
             let rank = MysteryDungeonRank::from_level(level as u8);
 
-            Some((format!("\
+            Some((
+                format!(
+                    "\
 ## {} {}
 {} {}
 **Level**: {} `({} / 100)`
 Completed Quests: {}
 ",
-                         rank.emoji_string(), entry.name, entry.money, emoji::POKE_COIN, level, experience, entry.completed_quest_count)
-                  , entry.stat_channel_id, entry.stat_message_id))
+                    rank.emoji_string(),
+                    entry.name,
+                    entry.money,
+                    emoji::POKE_COIN,
+                    level,
+                    experience,
+                    entry.completed_quest_count
+                ),
+                entry.stat_channel_id,
+                entry.stat_message_id,
+            ))
         }
         Err(_) => None,
     }
 }
-
 
 pub enum ActionType {
     Initialization,
@@ -100,24 +117,38 @@ impl fmt::Display for ActionType {
     }
 }
 
-pub async fn log_action<'a>(action_type: &ActionType, ctx: &Context<'a>, message: &str) -> Result<(), Error> {
+pub async fn log_action<'a>(
+    action_type: &ActionType,
+    ctx: &Context<'a>,
+    message: &str,
+) -> Result<(), Error> {
     let guild_id = ctx.guild_id();
     if guild_id.is_none() {
         return Ok(());
     }
 
     let guild_id = guild_id.expect("should only be called in guild_only").0 as i64;
-    let record = sqlx::query!("SELECT action_log_channel_id FROM guild WHERE id = ?", guild_id)
-        .fetch_one(&ctx.data().database)
-        .await;
+    let record = sqlx::query!(
+        "SELECT action_log_channel_id FROM guild WHERE id = ?",
+        guild_id
+    )
+    .fetch_one(&ctx.data().database)
+    .await;
 
     if let Ok(record) = record {
         if let Some(action_log_channel_id) = record.action_log_channel_id {
-            let channel_id= ChannelId::from(action_log_channel_id as u64);
-            channel_id.send_message(ctx, |f| f
-                .content(std::format!("{} {} (triggered by {})", action_type, message, ctx.author()))
-                .allowed_mentions(|mentions| mentions.empty_users())
-            ).await?;
+            let channel_id = ChannelId::from(action_log_channel_id as u64);
+            channel_id
+                .send_message(ctx, |f| {
+                    f.content(std::format!(
+                        "{} {} (triggered by {})",
+                        action_type,
+                        message,
+                        ctx.author()
+                    ))
+                    .allowed_mentions(|mentions| mentions.empty_users())
+                })
+                .await?;
         }
     }
 
@@ -128,38 +159,61 @@ pub async fn log_action<'a>(action_type: &ActionType, ctx: &Context<'a>, message
 pub struct CharacterWithNumericValue {
     id: i64,
     name: String,
-    value: i64
+    value: i64,
 }
 
-pub async fn change_character_stat<'a>(ctx: &Context<'a>, database_column: &str, names: &Vec<String>, amount: i64, action_type: ActionType) -> Result<Vec<CharacterCacheItem>, String> {
-    let guild_id = ctx.guild_id().expect("Commands using this function are marked as guild_only").0;
+pub async fn change_character_stat<'a>(
+    ctx: &Context<'a>,
+    database_column: &str,
+    names: &Vec<String>,
+    amount: i64,
+    action_type: ActionType,
+) -> Result<Vec<CharacterCacheItem>, String> {
+    let guild_id = ctx
+        .guild_id()
+        .expect("Commands using this function are marked as guild_only")
+        .0;
 
     match parse_character_names(ctx, guild_id, names).await {
         Ok(characters) => {
             for x in &characters {
-                let _ = change_character_stat_after_validation(ctx, database_column, x, amount, &action_type).await;
+                let _ = change_character_stat_after_validation(
+                    ctx,
+                    database_column,
+                    x,
+                    amount,
+                    &action_type,
+                )
+                .await;
             }
             Ok(characters)
         }
-        Err(error) => Err(error)
+        Err(error) => Err(error),
     }
 }
 
-async fn parse_character_names<'a>(ctx: &Context<'a>, guild_id: u64, names: &Vec<String>) -> Result<Vec<CharacterCacheItem>, String> {
+async fn parse_character_names<'a>(
+    ctx: &Context<'a>,
+    guild_id: u64,
+    names: &Vec<String>,
+) -> Result<Vec<CharacterCacheItem>, String> {
     let mut result: Vec<CharacterCacheItem> = Vec::new();
 
     for x in names {
         if let Some(character) = parse_user_input_to_character(ctx, guild_id, x).await {
             result.push(character);
         } else {
-            return Err(format!("Unable to find a character named {}", x))
+            return Err(format!("Unable to find a character named {}", x));
         }
     }
 
     let mut ids = Vec::new();
     for x in &result {
         if ids.contains(&x.id) {
-            return Err(format!("Duplicate character: {}", x.get_autocomplete_name()))
+            return Err(format!(
+                "Duplicate character: {}",
+                x.get_autocomplete_name()
+            ));
         }
 
         ids.push(x.id);
@@ -168,14 +222,25 @@ async fn parse_character_names<'a>(ctx: &Context<'a>, guild_id: u64, names: &Vec
     Ok(result)
 }
 
-pub async fn change_character_stat_after_validation<'a>(ctx: &Context<'a>, database_column: &str, character: &CharacterCacheItem, amount: i64, action_type: &ActionType) -> Result<(), Error> {
+pub async fn change_character_stat_after_validation<'a>(
+    ctx: &Context<'a>,
+    database_column: &str,
+    character: &CharacterCacheItem,
+    amount: i64,
+    action_type: &ActionType,
+) -> Result<(), Error> {
     ctx.defer().await?;
     let record = sqlx::query_as::<_, CharacterWithNumericValue>(
-        format!("SELECT id, name, {} as value FROM character WHERE name = ? AND guild_id = ?", database_column).as_str())
-        .bind(&character.name)
-        .bind(character.guild_id as i64)
-        .fetch_one(&ctx.data().database)
-        .await;
+        format!(
+            "SELECT id, name, {} as value FROM character WHERE name = ? AND guild_id = ?",
+            database_column
+        )
+        .as_str(),
+    )
+    .bind(&character.name)
+    .bind(character.guild_id as i64)
+    .fetch_one(&ctx.data().database)
+    .await;
 
     match record {
         Ok(record) => {
@@ -215,7 +280,11 @@ pub async fn change_character_stat_after_validation<'a>(ctx: &Context<'a>, datab
     }
 }
 
-pub async fn parse_user_input_to_character<'a>(ctx: &Context<'a>, guild_id: u64, text: &str) -> Option<CharacterCacheItem> {
+pub async fn parse_user_input_to_character<'a>(
+    ctx: &Context<'a>,
+    guild_id: u64,
+    text: &str,
+) -> Option<CharacterCacheItem> {
     let characters = ctx.data().cache.get_characters().await;
     for x in &characters {
         if x.guild_id == guild_id && text == x.get_autocomplete_name() {
@@ -225,7 +294,8 @@ pub async fn parse_user_input_to_character<'a>(ctx: &Context<'a>, guild_id: u64,
 
     // User didn't use an autocomplete name :<
     let lowercase_input = text.to_lowercase();
-    let name_matches: Vec<&CharacterCacheItem> = characters.iter()
+    let name_matches: Vec<&CharacterCacheItem> = characters
+        .iter()
         .filter(|x| x.guild_id == guild_id && x.name.to_lowercase() == lowercase_input)
         .collect();
 
@@ -251,7 +321,9 @@ pub fn validate_user_input<'a>(text: &str) -> Result<(), &'a str> {
 }
 
 fn build_character_list(characters: Vec<CharacterCacheItem>) -> String {
-    characters.iter().map(|x| x.name.as_str())
+    characters
+        .iter()
+        .map(|x| x.name.as_str())
         .collect::<Vec<&str>>()
         .join(", ")
 }

@@ -1,6 +1,6 @@
-use tokio::sync::Mutex;
-use sqlx::{Pool, Sqlite};
 use log::error;
+use sqlx::{Pool, Sqlite};
+use tokio::sync::Mutex;
 
 #[derive(Debug, Clone)]
 pub struct CharacterCacheItem {
@@ -66,7 +66,7 @@ LEFT JOIN user_in_guild ON
                         x.character_name,
                         x.user_id as u64,
                         x.guild_id as u64,
-                        x.user_name.unwrap_or(String::new())
+                        x.user_name.unwrap_or(String::new()),
                     ))
                 }
             }

@@ -1,19 +1,19 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-pub(crate) mod rule;
-pub(crate) mod pokemon;
 pub(crate) mod ability;
 pub(crate) mod item;
-pub(crate) mod nature;
 pub(crate) mod r#move;
-pub(crate) mod weather;
-pub(crate) mod status_effect;
+pub(crate) mod nature;
+pub(crate) mod pokemon;
 pub(crate) mod potion;
+pub(crate) mod rule;
+pub(crate) mod status_effect;
+pub(crate) mod weather;
 
+mod pokemon_api;
 mod pokerole_data;
 mod pokerole_discord_py_data;
-mod pokemon_api;
 
 pub(in crate::game_data) mod enums;
 

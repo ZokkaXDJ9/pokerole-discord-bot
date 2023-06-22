@@ -1,6 +1,6 @@
-pub(in super) mod raw_pokemon;
-pub(in super) mod raw_nature;
-pub(in super) mod raw_move;
-pub(in super) mod raw_item;
-pub(in super) mod raw_ability;
-pub(in super) mod parser;
+pub(super) mod parser;
+pub(super) mod raw_ability;
+pub(super) mod raw_item;
+pub(super) mod raw_move;
+pub(super) mod raw_nature;
+pub(super) mod raw_pokemon;

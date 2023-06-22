@@ -1,5 +1,5 @@
-use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_ability;
+use crate::commands::{Context, Error};
 
 /// Display an Ability
 #[poise::command(slash_command)]

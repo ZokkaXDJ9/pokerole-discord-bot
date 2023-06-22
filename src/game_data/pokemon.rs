@@ -1,40 +1,42 @@
-use std::collections::HashMap;
-use std::fmt;
-use std::fmt::{Formatter};
-use std::str::FromStr;
-use std::sync::Arc;
-use log::{error, warn};
-use serde::Deserialize;
 use crate::emoji;
+use crate::enums::{MysteryDungeonRank, PokemonGeneration, PokemonType, RegionalVariant, Stat};
 use crate::game_data::ability::Ability;
 use crate::game_data::enums::poke_role_rank::PokeRoleRank;
 use crate::game_data::parser::custom_data::custom_pokemon::{CustomPokemon, CustomPokemonMoves};
 use crate::game_data::pokemon_api::pokemon_api_parser::{PokedexEntry, PokemonApiData};
 use crate::game_data::pokemon_api::PokemonApiId;
-use crate::game_data::pokerole_data::raw_pokemon::{RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon};
-use crate::enums::{MysteryDungeonRank, PokemonGeneration, PokemonType, RegionalVariant, Stat};
+use crate::game_data::pokerole_data::raw_pokemon::{
+    RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon,
+};
+use log::{error, warn};
+use serde::Deserialize;
+use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Formatter;
+use std::str::FromStr;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct PokemonSpeciesData {
     pub has_gender_differences: bool,
     pub generation: PokemonGeneration,
-    pub pokedex_entries: Vec<PokedexEntry>
+    pub pokedex_entries: Vec<PokedexEntry>,
 }
 
 impl PokemonSpeciesData {
     pub fn from_option(api_option: &Option<&PokemonApiData>) -> Self {
         match api_option {
             Some(x) => Self::from(x),
-            None => PokemonSpeciesData{
+            None => PokemonSpeciesData {
                 has_gender_differences: false,
                 generation: PokemonGeneration::Nine,
                 pokedex_entries: Vec::new(),
-            }
+            },
         }
     }
 
     pub fn from(api: &PokemonApiData) -> Self {
-        PokemonSpeciesData{
+        PokemonSpeciesData {
             generation: api.generation,
             has_gender_differences: api.has_gender_differences,
             pokedex_entries: api.pokedex_entries.clone(),
@@ -89,13 +91,16 @@ impl Pokemon {
             Stat::Vitality => &self.vitality,
             Stat::Special => &self.special,
             Stat::Insight => &self.insight,
-            _ => panic!("Unexpected stat: {}", stat)
+            _ => panic!("Unexpected stat: {}", stat),
         }
     }
 }
 
 impl Pokemon {
-    pub(crate) fn build_ability_string(&self, abilities: &Arc<HashMap<String, Ability>>) -> impl Into<String> + Sized {
+    pub(crate) fn build_ability_string(
+        &self,
+        abilities: &Arc<HashMap<String, Ability>>,
+    ) -> impl Into<String> + Sized {
         let mut result = std::format!("## {} Abilities\n", self.name);
         Pokemon::push_ability(&mut result, &self.ability1, abilities, "");
         if let Some(ability) = &self.ability2 {
@@ -113,10 +118,19 @@ impl Pokemon {
         result
     }
 
-    fn push_ability(result: &mut String, ability_name: &String, abilities: &Arc<HashMap<String, Ability>>, suffix: &str) {
+    fn push_ability(
+        result: &mut String,
+        ability_name: &String,
+        abilities: &Arc<HashMap<String, Ability>>,
+        suffix: &str,
+    ) {
         match abilities.get(ability_name.to_lowercase().as_str()) {
-            None => result.push_str(std::format!("### {} {}\nNot implemented. :(\n", ability_name, suffix).as_str()),
-            Some(ability) => result.push_str(std::format!("{}\n", ability.build_string(suffix).into()).as_str())
+            None => result.push_str(
+                std::format!("### {} {}\nNot implemented. :(\n", ability_name, suffix).as_str(),
+            ),
+            Some(ability) => {
+                result.push_str(std::format!("{}\n", ability.build_string(suffix).into()).as_str())
+            }
         };
     }
 }
@@ -128,7 +142,9 @@ impl Pokemon {
             if issue == ApiIssueType::FoundNothing {
                 result.push_str("\nUnable to match any species to this particular pokemon when searching for TM Moves.");
             } else if issue == ApiIssueType::IsLegendary {
-                result.push_str("\nToo lazy to be bothered to get this to work for legendary pokemon, sorry!");
+                result.push_str(
+                    "\nToo lazy to be bothered to get this to work for legendary pokemon, sorry!",
+                );
             } else {
                 result.push_str("\n**Struggling to match an exact species to this particular pokemon when searching for TM Moves. Take the values here with a grain of salt!**\n");
                 self.append_all_learnable_moves(&mut result);
@@ -144,27 +160,69 @@ impl Pokemon {
         Pokemon::append_moves(result, ":cd:", "TM Moves", self.moves.by_machine.clone());
         Pokemon::append_moves(result, ":egg:", "Egg Moves", self.moves.by_egg.clone());
         Pokemon::append_moves(result, ":teacher:", "Tutor", self.moves.by_tutor.clone());
-        Pokemon::append_moves(result, ":question:", "Learned in Game through level up, but not here", self.moves.by_level_up.iter()
-            .filter(|x| self.moves.by_pokerole_rank.iter().all(|learn| learn.name.to_lowercase() != x.to_lowercase()))
-            .cloned()
-            .collect());
+        Pokemon::append_moves(
+            result,
+            ":question:",
+            "Learned in Game through level up, but not here",
+            self.moves
+                .by_level_up
+                .iter()
+                .filter(|x| {
+                    self.moves
+                        .by_pokerole_rank
+                        .iter()
+                        .all(|learn| learn.name.to_lowercase() != x.to_lowercase())
+                })
+                .cloned()
+                .collect(),
+        );
     }
 }
 
 impl Pokemon {
     pub(crate) fn build_move_string(&self) -> impl Into<String> + Sized {
         let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
-        self.filter_moves(&mut result, emoji::RANK_BRONZE, "Bronze", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Bronze);
-        self.filter_moves(&mut result, emoji::RANK_SILVER, "Silver", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Silver);
-        self.filter_moves(&mut result, emoji::RANK_GOLD, "Gold", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Gold);
-        self.filter_moves(&mut result, emoji::RANK_PLATINUM, "Platinum", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Platinum);
-        self.filter_moves(&mut result, emoji::RANK_DIAMOND, "Diamond", |x:&PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Diamond);
+        self.filter_moves(
+            &mut result,
+            emoji::RANK_BRONZE,
+            "Bronze",
+            |x: &PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Bronze,
+        );
+        self.filter_moves(
+            &mut result,
+            emoji::RANK_SILVER,
+            "Silver",
+            |x: &PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Silver,
+        );
+        self.filter_moves(
+            &mut result,
+            emoji::RANK_GOLD,
+            "Gold",
+            |x: &PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Gold,
+        );
+        self.filter_moves(
+            &mut result,
+            emoji::RANK_PLATINUM,
+            "Platinum",
+            |x: &PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Platinum,
+        );
+        self.filter_moves(
+            &mut result,
+            emoji::RANK_DIAMOND,
+            "Diamond",
+            |x: &PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Diamond,
+        );
 
         result
     }
     fn filter_moves<F>(&self, result: &mut String, emoji: &str, title: &str, filter: F)
-        where F: Fn(&PokemonMoveLearnedByRank) -> bool {
-        let moves = self.moves.by_pokerole_rank.iter()
+    where
+        F: Fn(&PokemonMoveLearnedByRank) -> bool,
+    {
+        let moves = self
+            .moves
+            .by_pokerole_rank
+            .iter()
             .filter(|x| filter(x))
             .map(|x| x.name.clone())
             .collect::<Vec<String>>();
@@ -196,10 +254,12 @@ pub enum ApiIssueType {
 }
 
 impl Pokemon {
-    fn try_find<'a>(name: &str, api: &'a HashMap<String, PokemonApiData>)
-        -> (Option<ApiIssueType>, Option<&'a PokemonApiData>) {
+    fn try_find<'a>(
+        name: &str,
+        api: &'a HashMap<String, PokemonApiData>,
+    ) -> (Option<ApiIssueType>, Option<&'a PokemonApiData>) {
         if let Some(value) = api.get(name) {
-            return (None, Some(value))
+            return (None, Some(value));
         }
         let fixed_name = name
             .replace('\'', "’") // Fixes Farfetch'd and Sirfetch'd
@@ -209,9 +269,10 @@ impl Pokemon {
             .replace("Mime Jr", "Mime Jr.")
             .replace("Ho-oh", "Ho-Oh");
         if let Some(value) = api.get(&fixed_name) {
-            return (None, Some(value))
+            return (None, Some(value));
         }
-        let options: Vec<String> = api.keys()
+        let options: Vec<String> = api
+            .keys()
             .filter(|x| x.contains(fixed_name.split(' '.to_owned()).collect::<Vec<&str>>()[0]))
             .cloned()
             .collect();
@@ -228,7 +289,11 @@ impl Pokemon {
         if fixed_name.contains("Form)") {
             // What we want is between "<name> (" and " Form)". Bet we can search the keys for that and find a unique match.
             let form = fixed_name.split('(').collect::<Vec<&str>>()[1].replace(" Form)", "");
-            let form_options: Vec<String> = options.iter().filter(|x| x.contains(&form) && !x.contains("Gigantamax")).map(|x| x.to_owned()).collect();
+            let form_options: Vec<String> = options
+                .iter()
+                .filter(|x| x.contains(&form) && !x.contains("Gigantamax"))
+                .map(|x| x.to_owned())
+                .collect();
 
             if form_options.len() == 1 {
                 return (None, api.get(form_options.first().unwrap()));
@@ -240,9 +305,11 @@ impl Pokemon {
         (Some(ApiIssueType::Form), api.get(options.first().unwrap()))
     }
 
-
-    fn get_api_entry<'a>(name: &str, api: &'a HashMap<String, PokemonApiData>, regional_variant: &Option<RegionalVariant>)
-        -> (Option<ApiIssueType>, Option<&'a PokemonApiData>) {
+    fn get_api_entry<'a>(
+        name: &str,
+        api: &'a HashMap<String, PokemonApiData>,
+        regional_variant: &Option<RegionalVariant>,
+    ) -> (Option<ApiIssueType>, Option<&'a PokemonApiData>) {
         match regional_variant {
             None => Pokemon::try_find(name, api),
             Some(variant) => {
@@ -250,39 +317,84 @@ impl Pokemon {
                 // Or search for the respective form by using the <pokemon name> and form_id.
                 // pokemon.csv maps pokemon-id to pokedex #, that way we could figure out how many forms a specific mon has and what they are called
                 match variant {
-                    RegionalVariant::Alola => Pokemon::try_find(&(String::from("Alolan ") + name.split(" (Alolan Form)").collect::<Vec<&str>>()[0]), api),
-                    RegionalVariant::Galar => Pokemon::try_find(&(String::from("Galarian ") + name.split(" (Galarian Form)").collect::<Vec<&str>>()[0]), api),
-                    RegionalVariant::Hisui => Pokemon::try_find(&(String::from("Hisuian ") + name.split(" (Hisuian Form)").collect::<Vec<&str>>()[0]), api),
-                    RegionalVariant::Paldea => Pokemon::try_find(&(String::from("Paldean ") + name.split(" (Paldean Form)").collect::<Vec<&str>>()[0]), api)
+                    RegionalVariant::Alola => Pokemon::try_find(
+                        &(String::from("Alolan ")
+                            + name.split(" (Alolan Form)").collect::<Vec<&str>>()[0]),
+                        api,
+                    ),
+                    RegionalVariant::Galar => Pokemon::try_find(
+                        &(String::from("Galarian ")
+                            + name.split(" (Galarian Form)").collect::<Vec<&str>>()[0]),
+                        api,
+                    ),
+                    RegionalVariant::Hisui => Pokemon::try_find(
+                        &(String::from("Hisuian ")
+                            + name.split(" (Hisuian Form)").collect::<Vec<&str>>()[0]),
+                        api,
+                    ),
+                    RegionalVariant::Paldea => Pokemon::try_find(
+                        &(String::from("Paldean ")
+                            + name.split(" (Paldean Form)").collect::<Vec<&str>>()[0]),
+                        api,
+                    ),
                 }
             }
         }
     }
 
-    pub(in crate::game_data) fn new(raw: &RawPokerolePokemon, api: &HashMap<String, PokemonApiData>) -> Self {
-        let regional_variant= Pokemon::parse_variant(&raw.dex_id);
+    pub(in crate::game_data) fn new(
+        raw: &RawPokerolePokemon,
+        api: &HashMap<String, PokemonApiData>,
+    ) -> Self {
+        let regional_variant = Pokemon::parse_variant(&raw.dex_id);
 
         let (api_issue, api_option) = match raw.legendary {
             false => Pokemon::get_api_entry(&raw.name, api, &regional_variant),
-            true => (Some(ApiIssueType::IsLegendary), None)
+            true => (Some(ApiIssueType::IsLegendary), None),
         };
 
         let moves;
         if let Some(api_data) = api_option {
             moves = LearnablePokemonMoves::create_from(
-                raw.moves.iter().map(PokemonMoveLearnedByRank::new).collect(),
-                api_data.learnable_moves.level_up.iter().map(|x| x.move_name.to_owned()).collect(),
-                api_data.learnable_moves.machine.iter().map(|x| x.move_name.to_owned()).collect(),
-                api_data.learnable_moves.tutor.iter().map(|x| x.move_name.to_owned()).collect(),
-                api_data.learnable_moves.egg.iter().map(|x| x.move_name.to_owned()).collect()
+                raw.moves
+                    .iter()
+                    .map(PokemonMoveLearnedByRank::new)
+                    .collect(),
+                api_data
+                    .learnable_moves
+                    .level_up
+                    .iter()
+                    .map(|x| x.move_name.to_owned())
+                    .collect(),
+                api_data
+                    .learnable_moves
+                    .machine
+                    .iter()
+                    .map(|x| x.move_name.to_owned())
+                    .collect(),
+                api_data
+                    .learnable_moves
+                    .tutor
+                    .iter()
+                    .map(|x| x.move_name.to_owned())
+                    .collect(),
+                api_data
+                    .learnable_moves
+                    .egg
+                    .iter()
+                    .map(|x| x.move_name.to_owned())
+                    .collect(),
             );
         } else {
             moves = LearnablePokemonMoves::create_from(
-                raw.moves.iter().map(PokemonMoveLearnedByRank::new).collect(),
+                raw.moves
+                    .iter()
+                    .map(PokemonMoveLearnedByRank::new)
+                    .collect(),
                 vec![],
                 vec![],
                 vec![],
-                vec![]
+                vec![],
             );
         }
 
@@ -312,7 +424,7 @@ impl Pokemon {
             event_abilities: Pokemon::parse_ability(raw.event_abilities.clone()),
             height: raw.height.clone(),
             weight: raw.weight.clone(),
-            moves
+            moves,
         }
     }
 
@@ -320,36 +432,79 @@ impl Pokemon {
         let mut result = Vec::new();
 
         for x in &moves.bronze {
-            result.push(PokemonMoveLearnedByRank {rank: MysteryDungeonRank::Bronze, name: x.clone()})
+            result.push(PokemonMoveLearnedByRank {
+                rank: MysteryDungeonRank::Bronze,
+                name: x.clone(),
+            })
         }
         for x in &moves.silver {
-            result.push(PokemonMoveLearnedByRank {rank: MysteryDungeonRank::Silver, name: x.clone()})
+            result.push(PokemonMoveLearnedByRank {
+                rank: MysteryDungeonRank::Silver,
+                name: x.clone(),
+            })
         }
         for x in &moves.gold {
-            result.push(PokemonMoveLearnedByRank {rank: MysteryDungeonRank::Gold, name: x.clone()})
+            result.push(PokemonMoveLearnedByRank {
+                rank: MysteryDungeonRank::Gold,
+                name: x.clone(),
+            })
         }
         for x in &moves.platinum {
-            result.push(PokemonMoveLearnedByRank {rank: MysteryDungeonRank::Platinum, name: x.clone()})
+            result.push(PokemonMoveLearnedByRank {
+                rank: MysteryDungeonRank::Platinum,
+                name: x.clone(),
+            })
         }
         for x in &moves.diamond {
-            result.push(PokemonMoveLearnedByRank {rank: MysteryDungeonRank::Diamond, name: x.clone()})
+            result.push(PokemonMoveLearnedByRank {
+                rank: MysteryDungeonRank::Diamond,
+                name: x.clone(),
+            })
         }
 
         result
     }
 
-    pub(in crate::game_data) fn from_custom_data(raw: &CustomPokemon, api: &HashMap<String, PokemonApiData>) -> Self {
+    pub(in crate::game_data) fn from_custom_data(
+        raw: &CustomPokemon,
+        api: &HashMap<String, PokemonApiData>,
+    ) -> Self {
         let regional_variant = raw.variant;
 
         let (api_issue, api_option) = Pokemon::get_api_entry(&raw.name, api, &regional_variant);
-        let api_data = api_option.unwrap_or_else(|| panic!("API Data should ALWAYS be found for custom mons. {}", raw.name));
+        let api_data = api_option.unwrap_or_else(|| {
+            panic!(
+                "API Data should ALWAYS be found for custom mons. {}",
+                raw.name
+            )
+        });
 
         let moves = LearnablePokemonMoves::create_from(
             Pokemon::moves_from_custom(&raw.moves),
-            api_data.learnable_moves.level_up.iter().map(|x| x.move_name.to_owned()).collect(),
-            api_data.learnable_moves.machine.iter().map(|x| x.move_name.to_owned()).collect(),
-            api_data.learnable_moves.tutor.iter().map(|x| x.move_name.to_owned()).collect(),
-            api_data.learnable_moves.egg.iter().map(|x| x.move_name.to_owned()).collect()
+            api_data
+                .learnable_moves
+                .level_up
+                .iter()
+                .map(|x| x.move_name.to_owned())
+                .collect(),
+            api_data
+                .learnable_moves
+                .machine
+                .iter()
+                .map(|x| x.move_name.to_owned())
+                .collect(),
+            api_data
+                .learnable_moves
+                .tutor
+                .iter()
+                .map(|x| x.move_name.to_owned())
+                .collect(),
+            api_data
+                .learnable_moves
+                .egg
+                .iter()
+                .map(|x| x.move_name.to_owned())
+                .collect(),
         );
 
         Pokemon {
@@ -373,7 +528,7 @@ impl Pokemon {
             event_abilities: api_data.abilities.event.clone(),
             height: api_data.height.clone(),
             weight: api_data.weight.clone(),
-            moves
+            moves,
         }
     }
 
@@ -412,9 +567,7 @@ impl Pokemon {
 
     pub fn build_stats_string(&self) -> String {
         let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
-        result.push_str(&std::format!("{}   |   {}\n",
-                                      self.height,
-                                      self.weight));
+        result.push_str(&std::format!("{}   |   {}\n", self.height, self.weight));
         result.push_str("**Type**: ");
         result.push_str(std::format!("{}", self.type1).as_str());
         if let Some(type2) = self.type2 {
@@ -456,7 +609,7 @@ pub struct PokemonStat {
 
 impl PokemonStat {
     fn new(min: u8, max: u8) -> Self {
-        PokemonStat {min, max}
+        PokemonStat { min, max }
     }
 
     fn from_str(raw: &str) -> Self {
@@ -473,7 +626,7 @@ impl PokemonStat {
         for _ in 0..self.min {
             result.push('⬤');
         }
-        for _ in 0..self.max-self.min {
+        for _ in 0..self.max - self.min {
             result.push('⭘');
         }
 
@@ -488,14 +641,14 @@ pub struct Height {
     pub feet: f32,
 }
 
-impl fmt::Display for Height{
+impl fmt::Display for Height {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{:.2}m / {:.2}ft", self.meters, self.feet)
     }
 }
 
 impl Height {
-    pub fn scale(&self, percentage: u8) -> Height{
+    pub fn scale(&self, percentage: u8) -> Height {
         Height {
             meters: self.meters * (percentage as f32 * 0.01),
             feet: self.feet * (percentage as f32 * 0.01),
@@ -510,15 +663,15 @@ pub struct Weight {
     pub pounds: f32,
 }
 
-impl fmt::Display for Weight{
+impl fmt::Display for Weight {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{:.1}kg / {:.1}lbs", self.kilograms, self.pounds)
     }
 }
 
 impl Weight {
-    pub fn scale(&self, percentage: u8) -> Weight{
-        let factor =  (percentage as f32 * 0.01).powi(2);
+    pub fn scale(&self, percentage: u8) -> Weight {
+        let factor = (percentage as f32 * 0.01).powi(2);
 
         Weight {
             kilograms: self.kilograms * factor,
@@ -537,12 +690,13 @@ pub struct LearnablePokemonMoves {
 }
 
 impl LearnablePokemonMoves {
-    pub fn create_from(by_pokerole_rank: Vec<PokemonMoveLearnedByRank>,
-                       by_level_up: Vec<String>,
-                       by_machine: Vec<String>,
-                       by_tutor: Vec<String>,
-                       by_egg: Vec<String>) -> Self {
-
+    pub fn create_from(
+        by_pokerole_rank: Vec<PokemonMoveLearnedByRank>,
+        by_level_up: Vec<String>,
+        by_machine: Vec<String>,
+        by_tutor: Vec<String>,
+        by_egg: Vec<String>,
+    ) -> Self {
         let mut result = LearnablePokemonMoves {
             by_pokerole_rank,
             by_level_up,
@@ -564,7 +718,7 @@ impl LearnablePokemonMoves {
 #[derive(Debug)]
 pub struct PokemonMoveLearnedByRank {
     pub rank: MysteryDungeonRank,
-    pub name: String
+    pub name: String,
 }
 
 impl PokemonMoveLearnedByRank {
@@ -579,6 +733,9 @@ impl PokemonMoveLearnedByRank {
             PokeRoleRank::Champion => MysteryDungeonRank::Diamond,
         };
 
-        PokemonMoveLearnedByRank {rank, name: raw.name.clone()}
+        PokemonMoveLearnedByRank {
+            rank,
+            name: raw.name.clone(),
+        }
     }
 }

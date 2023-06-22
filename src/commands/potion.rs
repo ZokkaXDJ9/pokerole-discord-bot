@@ -1,5 +1,5 @@
-use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_potion;
+use crate::commands::{Context, Error};
 
 /// List potion effects and crafting recipes
 #[poise::command(slash_command)]
@@ -14,9 +14,13 @@ pub async fn potion(
         ctx.say(potion.build_string()).await?;
     } else {
         ctx.send(|b| {
-            b.content(std::format!("Unable to find a potion named **{}**, sorry!", name));
+            b.content(std::format!(
+                "Unable to find a potion named **{}**, sorry!",
+                name
+            ));
             b.ephemeral(true)
-        }).await?;
+        })
+        .await?;
     }
 
     Ok(())

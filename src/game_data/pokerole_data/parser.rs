@@ -1,10 +1,10 @@
 use crate::game_data::parser::helpers;
 
-use crate::game_data::pokerole_data::raw_pokemon::RawPokerolePokemon;
 use crate::game_data::pokerole_data::raw_ability::RawPokeroleAbility;
 use crate::game_data::pokerole_data::raw_item::RawPokeroleItem;
 use crate::game_data::pokerole_data::raw_move::RawPokeroleMove;
 use crate::game_data::pokerole_data::raw_nature::RawPokeroleNature;
+use crate::game_data::pokerole_data::raw_pokemon::RawPokerolePokemon;
 
 pub struct PokeroleParseResult {
     pub abilities: Vec<RawPokeroleAbility>,
@@ -15,8 +15,11 @@ pub struct PokeroleParseResult {
 }
 
 pub fn parse(repo_path: &str) -> PokeroleParseResult {
-    let mut items: Vec<RawPokeroleItem> = helpers::parse_directory(repo_path.to_owned() + "Version20/Items");
-    items.extend(helpers::parse_directory(repo_path.to_owned() + "Homebrew/Items"));
+    let mut items: Vec<RawPokeroleItem> =
+        helpers::parse_directory(repo_path.to_owned() + "Version20/Items");
+    items.extend(helpers::parse_directory(
+        repo_path.to_owned() + "Homebrew/Items",
+    ));
 
     PokeroleParseResult {
         abilities: helpers::parse_directory(repo_path.to_owned() + "Version20/Abilities"),

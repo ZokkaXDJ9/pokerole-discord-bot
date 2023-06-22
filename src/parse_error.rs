@@ -21,5 +21,9 @@ impl fmt::Display for ParseError {
 
 impl std::error::Error for ParseError {}
 impl Default for ParseError {
-    fn default() -> Self { ParseError {message: String::from("Invalid input data!")} }
+    fn default() -> Self {
+        ParseError {
+            message: String::from("Invalid input data!"),
+        }
+    }
 }

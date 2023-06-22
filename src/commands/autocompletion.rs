@@ -1,7 +1,11 @@
-use std::cmp::Ordering;
 use crate::commands::Context;
+use std::cmp::Ordering;
 
-fn filter_and_sort<'a>(partial: &str, commands: impl Iterator<Item = &'a String>, minimum_query_length : usize) -> Vec<String> {
+fn filter_and_sort<'a>(
+    partial: &str,
+    commands: impl Iterator<Item = &'a String>,
+    minimum_query_length: usize,
+) -> Vec<String> {
     if partial.len() < minimum_query_length {
         return Vec::default();
     }
@@ -29,74 +33,70 @@ fn filter_and_sort<'a>(partial: &str, commands: impl Iterator<Item = &'a String>
     result
 }
 
-pub async fn autocomplete_move<'a>(
-    ctx: Context<'a>,
-    partial: &'a str,
-) -> Vec<String> {
+pub async fn autocomplete_move<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
     filter_and_sort(partial, ctx.data().game.move_names.iter(), 2)
 }
 
-pub async fn autocomplete_ability<'a>(
-    ctx: Context<'a>,
-    partial: &'a str,
-) -> Vec<String> {
+pub async fn autocomplete_ability<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
     filter_and_sort(partial, ctx.data().game.ability_names.iter(), 2)
 }
 
-pub async fn autocomplete_pokemon<'a>(
-    ctx: Context<'a>,
-    partial: &'a str,
-) -> Vec<String> {
+pub async fn autocomplete_pokemon<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
     filter_and_sort(partial, ctx.data().game.pokemon_names.iter(), 2)
 }
 
-pub async fn autocomplete_item<'a>(
-    ctx: Context<'a>,
-    partial: &'a str,
-) -> Vec<String> { filter_and_sort(partial, ctx.data().game.item_names.iter(), 2) }
+pub async fn autocomplete_item<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
+    filter_and_sort(partial, ctx.data().game.item_names.iter(), 2)
+}
 
-pub async fn autocomplete_weather<'a>(
-    ctx: Context<'a>,
-    partial: &'a str,
-) -> Vec<String> { filter_and_sort(partial, ctx.data().game.weather_names.iter(), 0) }
+pub async fn autocomplete_weather<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
+    filter_and_sort(partial, ctx.data().game.weather_names.iter(), 0)
+}
 
-pub async fn autocomplete_status_effect<'a>(
-    ctx: Context<'a>,
-    partial: &'a str,
-) -> Vec<String> { filter_and_sort(partial, ctx.data().game.status_effects_names.iter(), 0) }
+pub async fn autocomplete_status_effect<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
+    filter_and_sort(partial, ctx.data().game.status_effects_names.iter(), 0)
+}
 
-pub async fn autocomplete_rule<'a>(
-    ctx: Context<'a>,
-    partial: &'a str,
-) -> Vec<String> { filter_and_sort(partial, ctx.data().game.rule_names.iter(), 0) }
+pub async fn autocomplete_rule<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
+    filter_and_sort(partial, ctx.data().game.rule_names.iter(), 0)
+}
 
-pub async fn autocomplete_nature<'a>(
-    ctx: Context<'a>,
-    partial: &'a str,
-) -> Vec<String> { filter_and_sort(partial, ctx.data().game.nature_names.iter(), 0) }
+pub async fn autocomplete_nature<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
+    filter_and_sort(partial, ctx.data().game.nature_names.iter(), 0)
+}
 
-pub async fn autocomplete_potion<'a>(
-    ctx: Context<'a>,
-    partial: &'a str,
-) -> Vec<String> { filter_and_sort(partial, ctx.data().game.potion_names.iter(), 0) }
+pub async fn autocomplete_potion<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
+    filter_and_sort(partial, ctx.data().game.potion_names.iter(), 0)
+}
 
-pub async fn autocomplete_character_name<'a>(
-    ctx: Context<'a>,
-    partial: &'a str,
-) -> Vec<String> {
-    filter_and_sort(partial, ctx.data().cache.get_characters().await
-        .iter()
-        .filter(|x| x.guild_id == ctx.guild_id().expect("Command should be guild_only!").0)
-        .map(|x| x.get_autocomplete_name()), 0)
+pub async fn autocomplete_character_name<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
+    filter_and_sort(
+        partial,
+        ctx.data()
+            .cache
+            .get_characters()
+            .await
+            .iter()
+            .filter(|x| x.guild_id == ctx.guild_id().expect("Command should be guild_only!").0)
+            .map(|x| x.get_autocomplete_name()),
+        0,
+    )
 }
 
 pub async fn autocomplete_owned_character_name<'a>(
     ctx: Context<'a>,
     partial: &'a str,
 ) -> Vec<String> {
-    filter_and_sort(partial, ctx.data().cache.get_characters().await
-        .iter()
-        .filter(|x| x.user_id == ctx.author().id.0)
-        .filter(|x| x.guild_id == ctx.guild_id().expect("Command should be guild_only!").0)
-        .map(|x| x.get_autocomplete_name()), 0)
+    filter_and_sort(
+        partial,
+        ctx.data()
+            .cache
+            .get_characters()
+            .await
+            .iter()
+            .filter(|x| x.user_id == ctx.author().id.0)
+            .filter(|x| x.guild_id == ctx.guild_id().expect("Command should be guild_only!").0)
+            .map(|x| x.get_autocomplete_name()),
+        0,
+    )
 }

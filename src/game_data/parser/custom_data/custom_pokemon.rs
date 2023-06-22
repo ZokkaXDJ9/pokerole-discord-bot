@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use crate::enums::RegionalVariant;
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct CustomPokemon {

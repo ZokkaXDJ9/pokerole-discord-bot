@@ -2,9 +2,7 @@ use crate::commands::{Context, Error};
 
 /// Blah blah blah
 #[poise::command(slash_command)]
-pub async fn about(
-    ctx: Context<'_>,
-) -> Result<(), Error> {
+pub async fn about(ctx: Context<'_>) -> Result<(), Error> {
     // TODO: Might be funny to add an actual version string here once we use proper tags and git actions and such :>
     ctx.say("\
 ```k4rpOS v0x3b```

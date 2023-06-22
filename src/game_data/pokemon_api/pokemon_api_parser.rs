@@ -1,12 +1,12 @@
-use std::collections::{HashMap};
-use log::error;
-use strum::IntoEnumIterator;
 use crate::csv_utils::load_csv;
-use crate::game_data::pokemon::{Height, Weight};
-use crate::game_data::type_efficiency::TypeEfficiency;
 use crate::enums::{PokemonGeneration, PokemonType};
+use crate::game_data::pokemon::{Height, Weight};
 use crate::game_data::pokemon_api::api_types::*;
 use crate::game_data::pokemon_api::PokemonApiId;
+use crate::game_data::type_efficiency::TypeEfficiency;
+use log::error;
+use std::collections::HashMap;
+use strum::IntoEnumIterator;
 
 #[derive(Debug)]
 pub struct ApiMoveEntry {
@@ -34,7 +34,7 @@ pub struct PokemonApiData {
     pub type2: Option<PokemonType>,
     pub abilities: ApiPokemonAbilities,
     pub learnable_moves: ApiPokemonLearnableMoves,
-    pub pokedex_entries: Vec<PokedexEntry>
+    pub pokedex_entries: Vec<PokedexEntry>,
 }
 
 impl ApiPokemonLearnableMoves {
@@ -44,7 +44,7 @@ impl ApiPokemonLearnableMoves {
             "egg" => self.egg.iter().any(|x| x.move_name == name),
             "tutor" => self.tutor.iter().any(|x| x.move_name == name),
             "machine" => self.machine.iter().any(|x| x.move_name == name),
-            _ => false
+            _ => false,
         }
     }
 }
@@ -59,7 +59,7 @@ impl PokedexEntry {
     pub fn new(version: String, text: String) -> Self {
         PokedexEntry {
             version,
-            text: text.replace('\n', " ")
+            text: text.replace('\n', " "),
         }
     }
 }
@@ -86,7 +86,7 @@ fn type_id_to_pokemon_type(id: TypeId) -> PokemonType {
         18 => PokemonType::Fairy,
         10001 => PokemonType::Normal, // Unknown but ... what pokemon has unknown type?! D:
         10002 => PokemonType::Shadow,
-        _ => panic!("Weird type id: {}", id.0)
+        _ => panic!("Weird type id: {}", id.0),
     }
 }
 
@@ -101,7 +101,7 @@ fn generation_id_to_generation(id: &GenerationId) -> PokemonGeneration {
         7 => PokemonGeneration::Seven,
         8 => PokemonGeneration::Eight,
         9 => PokemonGeneration::Nine,
-        _ => panic!("Weird generation id: {}", id.0)
+        _ => panic!("Weird generation id: {}", id.0),
     }
 }
 
@@ -144,7 +144,7 @@ pub struct ApiPokemonAbilities {
     pub ability1: String,
     pub ability2: Option<String>,
     pub hidden: Option<String>,
-    pub event: Option<String>
+    pub event: Option<String>,
 }
 
 impl ApiPokemonAbilities {
@@ -159,29 +159,48 @@ impl ApiPokemonAbilities {
 }
 
 pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
-    let version_groups: Vec<ApiVersionGroups> = load_csv(path.clone() + "data/v2/csv/version_groups.csv");
-    let ability_names: Vec<ApiAbilityName> = load_csv(path.clone() + "data/v2/csv/ability_names.csv");
+    let version_groups: Vec<ApiVersionGroups> =
+        load_csv(path.clone() + "data/v2/csv/version_groups.csv");
+    let ability_names: Vec<ApiAbilityName> =
+        load_csv(path.clone() + "data/v2/csv/ability_names.csv");
     let pokemon: Vec<ApiPokemon> = load_csv(path.clone() + "data/v2/csv/pokemon.csv");
-    let pokemon_abilities: Vec<ApiPokemonAbility> = load_csv(path.clone() + "data/v2/csv/pokemon_abilities.csv");
-    let pokemon_types: Vec<ApiPokemonTypes> = load_csv(path.clone() + "data/v2/csv/pokemon_types.csv");
-    let pokemon_moves: Vec<ApiPokemonMoves> = load_csv(path.clone() + "data/v2/csv/pokemon_moves.csv");
-    let pokemon_move_methods: Vec<ApiPokemonMoveMethods> = load_csv(path.clone() + "data/v2/csv/pokemon_move_methods.csv");
-    let pokemon_species: Vec<ApiPokemonSpecies> = load_csv(path.clone() + "data/v2/csv/pokemon_species.csv");
-    let pokemon_species_names: Vec<ApiPokemonSpeciesNames> = load_csv(path.clone() + "data/v2/csv/pokemon_species_names.csv");
-    let pokemon_species_flavor_text: Vec<ApiPokemonSpeciesFlavorText> = load_csv(path.clone() + "data/v2/csv/pokemon_species_flavor_text.csv");
-    let pokemon_forms: Vec<ApiPokemonForm> = load_csv(path.clone() + "data/v2/csv/pokemon_forms.csv");
-    let pokemon_form_types: Vec<ApiPokemonFormTypes> = load_csv(path.clone() + "data/v2/csv/pokemon_form_types.csv");
-    let pokemon_form_names: Vec<ApiPokemonFormNames> = load_csv(path.clone() + "data/v2/csv/pokemon_form_names.csv");
+    let pokemon_abilities: Vec<ApiPokemonAbility> =
+        load_csv(path.clone() + "data/v2/csv/pokemon_abilities.csv");
+    let pokemon_types: Vec<ApiPokemonTypes> =
+        load_csv(path.clone() + "data/v2/csv/pokemon_types.csv");
+    let pokemon_moves: Vec<ApiPokemonMoves> =
+        load_csv(path.clone() + "data/v2/csv/pokemon_moves.csv");
+    let pokemon_move_methods: Vec<ApiPokemonMoveMethods> =
+        load_csv(path.clone() + "data/v2/csv/pokemon_move_methods.csv");
+    let pokemon_species: Vec<ApiPokemonSpecies> =
+        load_csv(path.clone() + "data/v2/csv/pokemon_species.csv");
+    let pokemon_species_names: Vec<ApiPokemonSpeciesNames> =
+        load_csv(path.clone() + "data/v2/csv/pokemon_species_names.csv");
+    let pokemon_species_flavor_text: Vec<ApiPokemonSpeciesFlavorText> =
+        load_csv(path.clone() + "data/v2/csv/pokemon_species_flavor_text.csv");
+    let pokemon_forms: Vec<ApiPokemonForm> =
+        load_csv(path.clone() + "data/v2/csv/pokemon_forms.csv");
+    let pokemon_form_types: Vec<ApiPokemonFormTypes> =
+        load_csv(path.clone() + "data/v2/csv/pokemon_form_types.csv");
+    let pokemon_form_names: Vec<ApiPokemonFormNames> =
+        load_csv(path.clone() + "data/v2/csv/pokemon_form_names.csv");
     let move_names: Vec<ApiMoveNames> = load_csv(path.clone() + "data/v2/csv/move_names.csv");
     let version_names: Vec<ApiVersionNames> = load_csv(path + "data/v2/csv/version_names.csv");
 
     let ability_id_to_name = map_ability_id_to_names(ability_names);
     let version_id_to_name = map_version_id_to_name(version_names);
-    let species_id_to_flavor_texts = map_species_id_to_flavor_texts(pokemon_species_flavor_text, version_id_to_name);
+    let species_id_to_flavor_texts =
+        map_species_id_to_flavor_texts(pokemon_species_flavor_text, version_id_to_name);
     let form_id_to_pokemon_id = map_form_id_to_pokemon_id(pokemon_forms);
-    let mut pokemon_id_to_abilities = map_pokemon_id_to_abilities(pokemon_abilities, ability_id_to_name);
-    let (pokemon_id_to_pokemon_type1, pokemon_id_to_pokemon_type2) = map_pokemon_id_to_types(pokemon_types, pokemon_form_types, &form_id_to_pokemon_id);
-    let pokemon_id_to_name = map_pokemon_id_to_name(pokemon_species_names, pokemon_form_names, form_id_to_pokemon_id);
+    let mut pokemon_id_to_abilities =
+        map_pokemon_id_to_abilities(pokemon_abilities, ability_id_to_name);
+    let (pokemon_id_to_pokemon_type1, pokemon_id_to_pokemon_type2) =
+        map_pokemon_id_to_types(pokemon_types, pokemon_form_types, &form_id_to_pokemon_id);
+    let pokemon_id_to_name = map_pokemon_id_to_name(
+        pokemon_species_names,
+        pokemon_form_names,
+        form_id_to_pokemon_id,
+    );
     let species_id_to_species = map_species_id_to_species(pokemon_species);
     let move_id_to_name = map_move_id_to_name(move_names);
     let move_learn_method_id_to_name = map_move_learn_method_id_to_name(pokemon_move_methods);
@@ -190,30 +209,50 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     let mut result: HashMap<String, PokemonApiData> = HashMap::default();
     for x in pokemon {
         let name = pokemon_id_to_name.get(&x.id).unwrap_or(&x.identifier);
-        let species = species_id_to_species.get(&x.species_id)
-            .unwrap_or_else(|| panic!("Species should always be available, but was not for {}", name));
-
-        let abilities = pokemon_id_to_abilities.remove(&x.id)
-            .unwrap_or_else(|| panic!("Pokemon should always have abilities, but none found for {}", name));
-
-        result.insert(name.clone(),  PokemonApiData {
-            pokemon_id: PokemonApiId(x.id.0),
-            pokemon_name: name.clone(),
-            generation: generation_id_to_generation(&species.generation_id),
-            has_gender_differences: species.has_gender_differences > 0,
-            height: Height {meters: x.height as f32 / 10.0, feet: x.height as f32 / 10.0 * 3.28084 },
-            weight: Weight {kilograms: x.weight as f32 / 10.0, pounds: x.weight as f32 / 10.0 * 2.20462 },
-            type1: pokemon_id_to_pokemon_type1.get(&x.id).expect("").to_owned(),
-            type2: pokemon_id_to_pokemon_type2.get(&x.id).copied(),
-            abilities,
-            pokedex_entries: species_id_to_flavor_texts.get(&species.id).cloned().unwrap_or_default(),
-            learnable_moves: ApiPokemonLearnableMoves {
-                level_up: Vec::default(),
-                machine: Vec::default(),
-                tutor: Vec::default(),
-                egg: Vec::default(),
-            },
+        let species = species_id_to_species.get(&x.species_id).unwrap_or_else(|| {
+            panic!(
+                "Species should always be available, but was not for {}",
+                name
+            )
         });
+
+        let abilities = pokemon_id_to_abilities.remove(&x.id).unwrap_or_else(|| {
+            panic!(
+                "Pokemon should always have abilities, but none found for {}",
+                name
+            )
+        });
+
+        result.insert(
+            name.clone(),
+            PokemonApiData {
+                pokemon_id: PokemonApiId(x.id.0),
+                pokemon_name: name.clone(),
+                generation: generation_id_to_generation(&species.generation_id),
+                has_gender_differences: species.has_gender_differences > 0,
+                height: Height {
+                    meters: x.height as f32 / 10.0,
+                    feet: x.height as f32 / 10.0 * 3.28084,
+                },
+                weight: Weight {
+                    kilograms: x.weight as f32 / 10.0,
+                    pounds: x.weight as f32 / 10.0 * 2.20462,
+                },
+                type1: pokemon_id_to_pokemon_type1.get(&x.id).expect("").to_owned(),
+                type2: pokemon_id_to_pokemon_type2.get(&x.id).copied(),
+                abilities,
+                pokedex_entries: species_id_to_flavor_texts
+                    .get(&species.id)
+                    .cloned()
+                    .unwrap_or_default(),
+                learnable_moves: ApiPokemonLearnableMoves {
+                    level_up: Vec::default(),
+                    machine: Vec::default(),
+                    tutor: Vec::default(),
+                    egg: Vec::default(),
+                },
+            },
+        );
     }
 
     let mut missing_pokemon_ids = Vec::new();
@@ -230,14 +269,19 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
             let move_name = move_name_option.unwrap().clone();
 
             let pokemon_entry = &mut result.get_mut(pokemon_name).unwrap().learnable_moves;
-            let learn_method = move_learn_method_id_to_name.get(&pokemon_move.pokemon_move_method_id).unwrap().clone();
+            let learn_method = move_learn_method_id_to_name
+                .get(&pokemon_move.pokemon_move_method_id)
+                .unwrap()
+                .clone();
             if pokemon_entry.has_move(move_name.clone(), &learn_method) {
                 continue;
             }
 
             let new_move_entry = ApiMoveEntry {
                 move_name: move_name.clone(),
-                generation: *version_group_id_to_generation.get(&pokemon_move.version_group_id).expect("All generation ids should be set"),
+                generation: *version_group_id_to_generation
+                    .get(&pokemon_move.version_group_id)
+                    .expect("All generation ids should be set"),
             };
 
             match learn_method.as_str() {
@@ -257,7 +301,6 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
         if !(10250..=10271).contains(&x.0) {
             log::warn!("Missing pokemon data for pokemon_id {}", x.0)
         }
-
     }
     for x in missing_move_ids {
         log::warn!("Missing move data for move_id {}", x.0)
@@ -266,7 +309,9 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     result
 }
 
-fn map_version_group_id_to_generation(version_groups: Vec<ApiVersionGroups>) -> HashMap<u8, PokemonGeneration> {
+fn map_version_group_id_to_generation(
+    version_groups: Vec<ApiVersionGroups>,
+) -> HashMap<u8, PokemonGeneration> {
     let mut version_group_id_to_generation: HashMap<u8, PokemonGeneration> = HashMap::default();
     for x in version_groups {
         version_group_id_to_generation.insert(x.id, generation_id_to_generation(&x.generation_id));
@@ -274,7 +319,9 @@ fn map_version_group_id_to_generation(version_groups: Vec<ApiVersionGroups>) -> 
     version_group_id_to_generation
 }
 
-fn map_move_learn_method_id_to_name(pokemon_move_methods: Vec<ApiPokemonMoveMethods>) -> HashMap<u8, String> {
+fn map_move_learn_method_id_to_name(
+    pokemon_move_methods: Vec<ApiPokemonMoveMethods>,
+) -> HashMap<u8, String> {
     let mut move_learn_method_id_to_name: HashMap<u8, String> = HashMap::default();
     for x in pokemon_move_methods {
         move_learn_method_id_to_name.insert(x.id, x.identifier);
@@ -294,15 +341,22 @@ fn map_move_id_to_name(move_names: Vec<ApiMoveNames>) -> HashMap<MoveId, String>
     move_id_to_name
 }
 
-fn map_species_id_to_species(pokemon_species: Vec<ApiPokemonSpecies>) -> HashMap<PokemonSpeciesId, ApiPokemonSpecies> {
-    let mut species_id_to_species: HashMap<PokemonSpeciesId, ApiPokemonSpecies> = HashMap::default();
+fn map_species_id_to_species(
+    pokemon_species: Vec<ApiPokemonSpecies>,
+) -> HashMap<PokemonSpeciesId, ApiPokemonSpecies> {
+    let mut species_id_to_species: HashMap<PokemonSpeciesId, ApiPokemonSpecies> =
+        HashMap::default();
     for x in pokemon_species {
         species_id_to_species.insert(x.id, x);
     }
     species_id_to_species
 }
 
-fn map_pokemon_id_to_name(pokemon_species_names: Vec<ApiPokemonSpeciesNames>, pokemon_form_names: Vec<ApiPokemonFormNames>, form_id_to_pokemon_id: HashMap<PokemonFormId, PokemonApiId>) -> HashMap<PokemonApiId, String> {
+fn map_pokemon_id_to_name(
+    pokemon_species_names: Vec<ApiPokemonSpeciesNames>,
+    pokemon_form_names: Vec<ApiPokemonFormNames>,
+    form_id_to_pokemon_id: HashMap<PokemonFormId, PokemonApiId>,
+) -> HashMap<PokemonApiId, String> {
     let mut pokemon_id_to_name: HashMap<PokemonApiId, String> = HashMap::default();
     for x in pokemon_species_names {
         if x.local_language_id != ENGLISH_LANGUAGE_ID {
@@ -321,14 +375,24 @@ fn map_pokemon_id_to_name(pokemon_species_names: Vec<ApiPokemonSpeciesNames>, po
             if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
                 pokemon_id_to_name.insert(PokemonApiId(pokemon_id.0), name);
             } else {
-                error!("Unable to map pokemon form id {} to a pokemon id!", x.pokemon_form_id.0);
+                error!(
+                    "Unable to map pokemon form id {} to a pokemon id!",
+                    x.pokemon_form_id.0
+                );
             }
         }
     }
     pokemon_id_to_name
 }
 
-fn map_pokemon_id_to_types(pokemon_types: Vec<ApiPokemonTypes>, pokemon_form_types: Vec<ApiPokemonFormTypes>, form_id_to_pokemon_id: &HashMap<PokemonFormId, PokemonApiId>) -> (HashMap<PokemonApiId, PokemonType>, HashMap<PokemonApiId, PokemonType>) {
+fn map_pokemon_id_to_types(
+    pokemon_types: Vec<ApiPokemonTypes>,
+    pokemon_form_types: Vec<ApiPokemonFormTypes>,
+    form_id_to_pokemon_id: &HashMap<PokemonFormId, PokemonApiId>,
+) -> (
+    HashMap<PokemonApiId, PokemonType>,
+    HashMap<PokemonApiId, PokemonType>,
+) {
     let mut pokemon_id_to_pokemon_type1: HashMap<PokemonApiId, PokemonType> = HashMap::default();
     let mut pokemon_id_to_pokemon_type2: HashMap<PokemonApiId, PokemonType> = HashMap::default();
     for x in pokemon_types {
@@ -341,31 +405,65 @@ fn map_pokemon_id_to_types(pokemon_types: Vec<ApiPokemonTypes>, pokemon_form_typ
     for x in pokemon_form_types {
         if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
             if x.slot == 1 {
-                pokemon_id_to_pokemon_type1.insert(PokemonApiId(pokemon_id.0), type_id_to_pokemon_type(x.type_id));
+                pokemon_id_to_pokemon_type1.insert(
+                    PokemonApiId(pokemon_id.0),
+                    type_id_to_pokemon_type(x.type_id),
+                );
             } else {
-                pokemon_id_to_pokemon_type2.insert(PokemonApiId(pokemon_id.0), type_id_to_pokemon_type(x.type_id));
+                pokemon_id_to_pokemon_type2.insert(
+                    PokemonApiId(pokemon_id.0),
+                    type_id_to_pokemon_type(x.type_id),
+                );
             }
         } else {
-            error!("Unable to map pokemon form id {} to a pokemon id!", x.pokemon_form_id.0);
+            error!(
+                "Unable to map pokemon form id {} to a pokemon id!",
+                x.pokemon_form_id.0
+            );
         }
     }
     (pokemon_id_to_pokemon_type1, pokemon_id_to_pokemon_type2)
 }
 
-fn map_pokemon_id_to_abilities(pokemon_abilities: Vec<ApiPokemonAbility>, ability_id_to_name: HashMap<AbilityId, String>) -> HashMap<PokemonApiId, ApiPokemonAbilities> {
+fn map_pokemon_id_to_abilities(
+    pokemon_abilities: Vec<ApiPokemonAbility>,
+    ability_id_to_name: HashMap<AbilityId, String>,
+) -> HashMap<PokemonApiId, ApiPokemonAbilities> {
     let mut result: HashMap<PokemonApiId, ApiPokemonAbilities> = HashMap::default();
     for x in pokemon_abilities {
         match x.slot {
             1 => {
-                result.insert(x.pokemon_id, ApiPokemonAbilities::new(ability_id_to_name.get(&x.ability_id).expect("Ability should be set!").clone()));
+                result.insert(
+                    x.pokemon_id,
+                    ApiPokemonAbilities::new(
+                        ability_id_to_name
+                            .get(&x.ability_id)
+                            .expect("Ability should be set!")
+                            .clone(),
+                    ),
+                );
             }
             2 => {
-                let abilities = result.get_mut(&x.pokemon_id).expect("Ability 1 should already have been set!");
-                abilities.ability2 = Some(ability_id_to_name.get(&x.ability_id).expect("Ability should be set!").clone());
+                let abilities = result
+                    .get_mut(&x.pokemon_id)
+                    .expect("Ability 1 should already have been set!");
+                abilities.ability2 = Some(
+                    ability_id_to_name
+                        .get(&x.ability_id)
+                        .expect("Ability should be set!")
+                        .clone(),
+                );
             }
             3 => {
-                let abilities = result.get_mut(&x.pokemon_id).expect("Ability 1 should already have been set!");
-                abilities.hidden = Some(ability_id_to_name.get(&x.ability_id).expect("Ability should be set!").clone());
+                let abilities = result
+                    .get_mut(&x.pokemon_id)
+                    .expect("Ability 1 should already have been set!");
+                abilities.hidden = Some(
+                    ability_id_to_name
+                        .get(&x.ability_id)
+                        .expect("Ability should be set!")
+                        .clone(),
+                );
             }
             _ => {}
         };
@@ -373,7 +471,9 @@ fn map_pokemon_id_to_abilities(pokemon_abilities: Vec<ApiPokemonAbility>, abilit
     result
 }
 
-fn map_form_id_to_pokemon_id(pokemon_forms: Vec<ApiPokemonForm>) -> HashMap<PokemonFormId, PokemonApiId> {
+fn map_form_id_to_pokemon_id(
+    pokemon_forms: Vec<ApiPokemonForm>,
+) -> HashMap<PokemonFormId, PokemonApiId> {
     let mut form_id_to_pokemon_id: HashMap<PokemonFormId, PokemonApiId> = HashMap::default();
     for x in pokemon_forms {
         form_id_to_pokemon_id.insert(x.id, x.pokemon_id);
@@ -381,18 +481,30 @@ fn map_form_id_to_pokemon_id(pokemon_forms: Vec<ApiPokemonForm>) -> HashMap<Poke
     form_id_to_pokemon_id
 }
 
-fn map_species_id_to_flavor_texts(pokemon_species_flavor_text: Vec<ApiPokemonSpeciesFlavorText>, version_id_to_name: HashMap<VersionId, String>) -> HashMap<PokemonSpeciesId, Vec<PokedexEntry>> {
-    let mut species_id_to_flavor_texts: HashMap<PokemonSpeciesId, Vec<PokedexEntry>> = HashMap::default();
+fn map_species_id_to_flavor_texts(
+    pokemon_species_flavor_text: Vec<ApiPokemonSpeciesFlavorText>,
+    version_id_to_name: HashMap<VersionId, String>,
+) -> HashMap<PokemonSpeciesId, Vec<PokedexEntry>> {
+    let mut species_id_to_flavor_texts: HashMap<PokemonSpeciesId, Vec<PokedexEntry>> =
+        HashMap::default();
     for x in pokemon_species_flavor_text {
         if x.language_id != ENGLISH_LANGUAGE_ID {
             continue;
         }
 
-        let version_name = version_id_to_name.get(&x.version_id)
-            .unwrap_or_else(|| panic!("Version Name should always be available, but was not for {}", x.version_id.0))
+        let version_name = version_id_to_name
+            .get(&x.version_id)
+            .unwrap_or_else(|| {
+                panic!(
+                    "Version Name should always be available, but was not for {}",
+                    x.version_id.0
+                )
+            })
             .clone();
 
-        species_id_to_flavor_texts.entry(x.species_id).or_default()
+        species_id_to_flavor_texts
+            .entry(x.species_id)
+            .or_default()
             .push(PokedexEntry::new(version_name, x.flavor_text));
     }
     species_id_to_flavor_texts

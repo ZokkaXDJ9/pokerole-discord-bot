@@ -1,33 +1,33 @@
-use poise::{Command, ReplyHandle};
-use crate::Error;
 use crate::data::Data;
+use crate::Error;
+use poise::{Command, ReplyHandle};
 
 type Context<'a> = poise::Context<'a, Data, Error>;
 
 mod autocompletion;
 
-pub mod r#move;
-pub mod weather;
-pub mod status;
-pub mod rule;
-pub mod item;
-pub mod stats;
-pub mod learns;
-pub mod roll;
 pub mod ability;
-pub mod nature;
-pub mod timestamp;
 pub mod about;
-pub mod metronome;
+pub mod calculate_hp_damage_modifier;
+mod create_role_reaction_post;
 pub mod efficiency;
-pub mod select_random;
-pub mod poll;
-pub mod scale;
 pub mod emoji;
 pub mod encounter;
-pub mod calculate_hp_damage_modifier;
+pub mod item;
+pub mod learns;
+pub mod metronome;
+pub mod r#move;
+pub mod nature;
+pub mod poll;
 pub mod potion;
-mod create_role_reaction_post;
+pub mod roll;
+pub mod rule;
+pub mod scale;
+pub mod select_random;
+pub mod stats;
+pub mod status;
+pub mod timestamp;
+pub mod weather;
 
 mod characters;
 mod say;
@@ -61,7 +61,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         setting_time_offset::setting_time_offset(),
         say::say(),
         update_user_names::update_user_names(),
-        about::about()
+        about::about(),
     ];
 
     for x in characters::get_all_commands() {
@@ -76,24 +76,26 @@ pub async fn send_error<'a>(ctx: &Context<'a>, content: &str) -> Result<(), Erro
     Ok(())
 }
 
-pub async fn send_ephemeral_reply<'a>(ctx: &Context<'a>, content: &str) -> Result<ReplyHandle<'a>, serenity::Error> {
-    ctx.send(|b| b
-        .content(content)
-        .ephemeral(true)
-    ).await
+pub async fn send_ephemeral_reply<'a>(
+    ctx: &Context<'a>,
+    content: &str,
+) -> Result<ReplyHandle<'a>, serenity::Error> {
+    ctx.send(|b| b.content(content).ephemeral(true)).await
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn parse_variadic_args<T>(arg1: T,
-                          arg2: Option<T>,
-                          arg3: Option<T>,
-                          arg4: Option<T>,
-                          arg5: Option<T>,
-                          arg6: Option<T>,
-                          arg7: Option<T>,
-                          arg8: Option<T>,
-                          arg9: Option<T>) -> Vec<T> {
-    let mut result = vec!(arg1);
+pub fn parse_variadic_args<T>(
+    arg1: T,
+    arg2: Option<T>,
+    arg3: Option<T>,
+    arg4: Option<T>,
+    arg5: Option<T>,
+    arg6: Option<T>,
+    arg7: Option<T>,
+    arg8: Option<T>,
+    arg9: Option<T>,
+) -> Vec<T> {
+    let mut result = vec![arg1];
     add_if_some(&mut result, arg2);
     add_if_some(&mut result, arg3);
     add_if_some(&mut result, arg4);

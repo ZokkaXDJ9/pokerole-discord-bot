@@ -10,7 +10,13 @@ pub struct Potion {
 
 impl Potion {
     pub(crate) fn build_string(&self) -> impl Into<String> + Sized {
-        std::format!("### {}\n*{}*\n{}\n**Recipes**:\n{}", &self.name, &self.description, &self.effect, &self.recipes)
+        std::format!(
+            "### {}\n*{}*\n{}\n**Recipes**:\n{}",
+            &self.name,
+            &self.description,
+            &self.effect,
+            &self.recipes
+        )
     }
 }
 

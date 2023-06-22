@@ -1,5 +1,5 @@
-use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_item;
+use crate::commands::{Context, Error};
 
 /// Display item description
 #[poise::command(slash_command)]
@@ -14,9 +14,13 @@ pub async fn item(
         ctx.say(item.build_string()).await?;
     } else {
         ctx.send(|b| {
-            b.content(std::format!("Unable to find an item named **{}**, sorry!", name));
+            b.content(std::format!(
+                "Unable to find an item named **{}**, sorry!",
+                name
+            ));
             b.ephemeral(true)
-        }).await?;
+        })
+        .await?;
     }
 
     Ok(())

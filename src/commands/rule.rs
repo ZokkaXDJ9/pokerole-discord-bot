@@ -1,5 +1,5 @@
-use crate::commands::{Context, Error};
 use crate::commands::autocompletion::autocomplete_rule;
+use crate::commands::{Context, Error};
 
 /// Display rule
 #[poise::command(slash_command)]
@@ -14,9 +14,13 @@ pub async fn rule(
         ctx.say(rule.build_string()).await?;
     } else {
         ctx.send(|b| {
-            b.content(std::format!("Unable to find a rule named **{}**, sorry!", name));
+            b.content(std::format!(
+                "Unable to find a rule named **{}**, sorry!",
+                name
+            ));
             b.ephemeral(true)
-        }).await?;
+        })
+        .await?;
     }
 
     Ok(())

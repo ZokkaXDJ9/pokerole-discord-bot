@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use crate::csv_utils;
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct RawPokeWeather {
@@ -24,17 +24,13 @@ pub struct RawPokeroleDiscordPyCsvData {
 
 pub fn parse(path_to_repo: &str) -> RawPokeroleDiscordPyCsvData {
     RawPokeroleDiscordPyCsvData {
-        weather: csv_utils::load_csv_with_custom_headers(path_to_repo.to_owned() + "weather.csv", vec![
-            "name",
-            "description",
-            "effect"
-        ]),
-        status_effects: csv_utils::load_csv_with_custom_headers(path_to_repo.to_owned() + "status.csv", vec![
-            "name",
-            "description",
-            "resist",
-            "effect",
-            "duration",
-        ]),
+        weather: csv_utils::load_csv_with_custom_headers(
+            path_to_repo.to_owned() + "weather.csv",
+            vec!["name", "description", "effect"],
+        ),
+        status_effects: csv_utils::load_csv_with_custom_headers(
+            path_to_repo.to_owned() + "status.csv",
+            vec!["name", "description", "resist", "effect", "duration"],
+        ),
     }
 }

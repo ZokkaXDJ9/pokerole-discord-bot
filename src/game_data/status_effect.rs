@@ -16,7 +16,7 @@ impl StatusEffect {
             description: raw.description,
             resist: raw.resist,
             effect: raw.effect,
-            duration: raw.duration
+            duration: raw.duration,
         }
     }
 
@@ -26,16 +26,18 @@ impl StatusEffect {
             description: raw.description.clone(),
             resist: raw.resist.clone(),
             effect: raw.effect.clone(),
-            duration: raw.duration.clone()
+            duration: raw.duration.clone(),
         }
     }
 
     pub(crate) fn build_string(&self) -> String {
-        std::format!("### {}\n*{}*\n- {}\n- {}\n- {}",
-                     &self.name,
-                     &self.description,
-                     &self.resist,
-                     &self.effect,
-                     &self.duration)
+        std::format!(
+            "### {}\n*{}*\n- {}\n- {}\n- {}",
+            &self.name,
+            &self.description,
+            &self.resist,
+            &self.effect,
+            &self.duration
+        )
     }
 }

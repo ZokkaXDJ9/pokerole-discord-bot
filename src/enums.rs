@@ -1,8 +1,8 @@
-use std::fmt;
-use std::fmt::{Formatter};
-use serde::Deserialize;
-use strum_macros::{EnumIter, EnumString};
 use crate::emoji;
+use serde::Deserialize;
+use std::fmt;
+use std::fmt::Formatter;
+use strum_macros::{EnumIter, EnumString};
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq, EnumString, Hash, EnumIter)]
 pub enum PokemonType {
@@ -52,7 +52,6 @@ impl fmt::Display for PokemonType {
         })
     }
 }
-
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
 pub enum MoveType {
@@ -127,7 +126,7 @@ impl MoveType {
                 PokemonType::Dragon => self == &MoveType::Dragon,
                 PokemonType::Dark => self == &MoveType::Dark,
                 PokemonType::Fairy => self == &MoveType::Fairy,
-                PokemonType::Shadow => false
+                PokemonType::Shadow => false,
             }
         } else {
             false
@@ -139,7 +138,8 @@ impl MoveType {
 pub enum MoveCategory {
     Physical,
     Special,
-    #[serde(rename = "Physical/special")] /// Only used for struggle and tera blast
+    #[serde(rename = "Physical/special")]
+    /// Only used for struggle and tera blast
     PhysicalOrSpecial,
     Support,
 }
@@ -161,7 +161,7 @@ pub enum MysteryDungeonRank {
     Silver,
     Gold,
     Platinum,
-    Diamond
+    Diamond,
 }
 
 impl MysteryDungeonRank {
@@ -214,7 +214,7 @@ pub enum Stat {
     /// Struggle
     StrengthOrSpecial,
     /// Copycat
-    Copy
+    Copy,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -333,14 +333,14 @@ impl fmt::Display for CombatOrSocialStat {
 #[derive(Debug, Clone, Copy)]
 pub enum HappinessDamageModifier {
     Happiness,
-    MissingHappiness
+    MissingHappiness,
 }
 
 impl fmt::Display for HappinessDamageModifier {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
             HappinessDamageModifier::Happiness => "Happiness",
-            HappinessDamageModifier::MissingHappiness => "Missing Happiness"
+            HappinessDamageModifier::MissingHappiness => "Missing Happiness",
         })
     }
 }
@@ -355,5 +355,5 @@ pub enum PokemonGeneration {
     Six,
     Seven,
     Eight,
-    Nine
+    Nine,
 }
