@@ -26,6 +26,7 @@ pub struct PokemonApiData {
     pub pokemon_id: PokemonApiId,
     pub pokemon_name: String,
     pub generation: PokemonGeneration,
+    pub evolves_from: Option<PokemonApiId>,
     pub has_gender_differences: bool,
     pub height: Height,
     pub weight: Weight,
@@ -188,16 +189,18 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     let version_id_to_name = map_version_id_to_name(version_names);
     let species_id_to_flavor_texts =
         map_species_id_to_flavor_texts(pokemon_species_flavor_text, version_id_to_name);
-    let form_id_to_pokemon_id = map_form_id_to_pokemon_id(pokemon_forms);
+    let (form_id_to_pokemon_form, pokemon_id_to_form_ids) =
+        map_form_id_and_pokemon_id(pokemon_forms);
     let mut pokemon_id_to_abilities =
         map_pokemon_id_to_abilities(pokemon_abilities, ability_id_to_name);
     let (pokemon_id_to_pokemon_type1, pokemon_id_to_pokemon_type2) =
-        map_pokemon_id_to_types(pokemon_types, pokemon_form_types, &form_id_to_pokemon_id);
+        map_pokemon_id_to_types(pokemon_types, pokemon_form_types, &form_id_to_pokemon_form);
     let pokemon_id_to_name = map_pokemon_id_to_name(
         pokemon_species_names,
         pokemon_form_names,
-        form_id_to_pokemon_id,
+        &form_id_to_pokemon_form,
     );
+    let species_id_to_pokemon_ids = map_species_id_to_pokemon_ids(&pokemon);
     let species_id_to_species = map_species_id_to_species(pokemon_species);
     let move_id_to_name = map_move_id_to_name(move_names);
     // let move_learn_method_id_to_name = map_move_learn_method_id_to_name(pokemon_move_methods);
@@ -238,6 +241,14 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
                 pokemon_id: PokemonApiId(x.id.0),
                 pokemon_name: name.clone(),
                 generation: generation_id_to_generation(&species.generation_id),
+                evolves_from: get_evo_origin(
+                    &x.id,
+                    &x.species_id,
+                    &species_id_to_species,
+                    &species_id_to_pokemon_ids,
+                    &pokemon_id_to_form_ids,
+                    &form_id_to_pokemon_form,
+                ),
                 has_gender_differences: species.has_gender_differences > 0,
                 height: Height {
                     meters: x.height as f32 / 10.0,
@@ -260,6 +271,20 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     }
 
     result
+}
+
+fn map_species_id_to_pokemon_ids(
+    pokemon: &Vec<ApiPokemon>,
+) -> HashMap<PokemonSpeciesId, Vec<PokemonApiId>> {
+    let mut species_id_to_pokemon_ids: HashMap<PokemonSpeciesId, Vec<PokemonApiId>> =
+        HashMap::default();
+    for x in pokemon {
+        species_id_to_pokemon_ids
+            .entry(x.species_id)
+            .or_default()
+            .push(x.id);
+    }
+    species_id_to_pokemon_ids
 }
 
 fn get_learnable_moves(
@@ -304,6 +329,56 @@ fn get_learnable_moves(
     }
 
     result
+}
+
+fn get_evo_origin(
+    pokemon_id: &PokemonApiId,
+    species_id: &PokemonSpeciesId,
+    species_id_to_species: &HashMap<PokemonSpeciesId, ApiPokemonSpecies>,
+    species_id_to_pokemon_ids: &HashMap<PokemonSpeciesId, Vec<PokemonApiId>>,
+    pokemon_id_to_form_ids: &HashMap<PokemonApiId, Vec<PokemonFormId>>,
+    form_id_to_pokemon_form: &HashMap<PokemonFormId, ApiPokemonForm>,
+) -> Option<PokemonApiId> {
+    let species = species_id_to_species
+        .get(species_id)
+        .expect("Every mon should have a species!");
+
+    let evolves_from = species.evolves_from_species_id?;
+    let base_pokemon = species_id_to_pokemon_ids
+        .get(&evolves_from)
+        .expect("Every species should have at least one mon attached!");
+
+    if base_pokemon.len() == 1 {
+        return base_pokemon.first().cloned();
+    }
+
+    let evolved_forms = pokemon_id_to_form_ids
+        .get(pokemon_id)
+        .expect("Every mon should have at least one form");
+
+    for evolved_form_id in evolved_forms {
+        let evolved_form = form_id_to_pokemon_form
+            .get(evolved_form_id)
+            .expect("Every form id should have a form!");
+
+        for potential_base_pokemon_id in base_pokemon {
+            let base_pokemon_forms = pokemon_id_to_form_ids
+                .get(potential_base_pokemon_id)
+                .expect("Every mon should have at least one form");
+
+            for base_pokemon_form_id in base_pokemon_forms {
+                let base_pokemon_form = form_id_to_pokemon_form
+                    .get(base_pokemon_form_id)
+                    .expect("Every form id should have a form!");
+
+                if base_pokemon_form.form_identifier == evolved_form.form_identifier {
+                    return Some(*potential_base_pokemon_id);
+                }
+            }
+        }
+    }
+
+    Some(PokemonApiId(evolves_from.0))
 }
 
 fn map_pokemon_id_to_moves(
@@ -363,7 +438,7 @@ fn map_species_id_to_species(
 fn map_pokemon_id_to_name(
     pokemon_species_names: Vec<ApiPokemonSpeciesNames>,
     pokemon_form_names: Vec<ApiPokemonFormNames>,
-    form_id_to_pokemon_id: HashMap<PokemonFormId, PokemonApiId>,
+    form_id_to_pokemon_id: &HashMap<PokemonFormId, ApiPokemonForm>,
 ) -> HashMap<PokemonApiId, String> {
     let mut pokemon_id_to_name: HashMap<PokemonApiId, String> = HashMap::default();
     for x in pokemon_species_names {
@@ -380,8 +455,8 @@ fn map_pokemon_id_to_name(
         }
 
         if let Some(name) = x.pokemon_name {
-            if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
-                pokemon_id_to_name.insert(PokemonApiId(pokemon_id.0), name);
+            if let Some(form) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
+                pokemon_id_to_name.insert(form.pokemon_id, name);
             } else {
                 error!(
                     "Unable to map pokemon form id {} to a pokemon id!",
@@ -396,7 +471,7 @@ fn map_pokemon_id_to_name(
 fn map_pokemon_id_to_types(
     pokemon_types: Vec<ApiPokemonTypes>,
     pokemon_form_types: Vec<ApiPokemonFormTypes>,
-    form_id_to_pokemon_id: &HashMap<PokemonFormId, PokemonApiId>,
+    form_id_to_form: &HashMap<PokemonFormId, ApiPokemonForm>,
 ) -> (
     HashMap<PokemonApiId, PokemonType>,
     HashMap<PokemonApiId, PokemonType>,
@@ -411,17 +486,13 @@ fn map_pokemon_id_to_types(
         }
     }
     for x in pokemon_form_types {
-        if let Some(pokemon_id) = form_id_to_pokemon_id.get(&x.pokemon_form_id) {
+        if let Some(pokemon_form) = form_id_to_form.get(&x.pokemon_form_id) {
             if x.slot == 1 {
-                pokemon_id_to_pokemon_type1.insert(
-                    PokemonApiId(pokemon_id.0),
-                    type_id_to_pokemon_type(x.type_id),
-                );
+                pokemon_id_to_pokemon_type1
+                    .insert(pokemon_form.pokemon_id, type_id_to_pokemon_type(x.type_id));
             } else {
-                pokemon_id_to_pokemon_type2.insert(
-                    PokemonApiId(pokemon_id.0),
-                    type_id_to_pokemon_type(x.type_id),
-                );
+                pokemon_id_to_pokemon_type2
+                    .insert(pokemon_form.pokemon_id, type_id_to_pokemon_type(x.type_id));
             }
         } else {
             error!(
@@ -479,14 +550,22 @@ fn map_pokemon_id_to_abilities(
     result
 }
 
-fn map_form_id_to_pokemon_id(
+fn map_form_id_and_pokemon_id(
     pokemon_forms: Vec<ApiPokemonForm>,
-) -> HashMap<PokemonFormId, PokemonApiId> {
-    let mut form_id_to_pokemon_id: HashMap<PokemonFormId, PokemonApiId> = HashMap::default();
+) -> (
+    HashMap<PokemonFormId, ApiPokemonForm>,
+    HashMap<PokemonApiId, Vec<PokemonFormId>>,
+) {
+    let mut form_id_to_form: HashMap<PokemonFormId, ApiPokemonForm> = HashMap::default();
+    let mut pokemon_id_to_form_id: HashMap<PokemonApiId, Vec<PokemonFormId>> = HashMap::default();
     for x in pokemon_forms {
-        form_id_to_pokemon_id.insert(x.id, x.pokemon_id);
+        pokemon_id_to_form_id
+            .entry(x.pokemon_id)
+            .or_default()
+            .push(x.id); // Forms is a superset of Pokemon. Maybe we should make parsing based off of forms?
+        form_id_to_form.insert(x.id, x);
     }
-    form_id_to_pokemon_id
+    (form_id_to_form, pokemon_id_to_form_id)
 }
 
 fn map_species_id_to_flavor_texts(

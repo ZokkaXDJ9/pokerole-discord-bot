@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Eq, PartialEq, Hash, Copy, Clone)]
 pub struct PokemonSpeciesId(pub u16);
-#[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Deserialize, Eq, PartialEq, Hash, Copy, Clone)]
 pub struct PokemonFormId(pub u16);
 #[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
 pub struct AbilityId(pub u16);
