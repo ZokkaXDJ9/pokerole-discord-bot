@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::fmt::Formatter;
+use std::fmt::{Formatter};
 use std::str::FromStr;
 use std::sync::Arc;
 use log::{error, warn};
@@ -9,7 +9,7 @@ use crate::emoji;
 use crate::game_data::ability::Ability;
 use crate::game_data::enums::poke_role_rank::PokeRoleRank;
 use crate::game_data::parser::custom_data::custom_pokemon::{CustomPokemon, CustomPokemonMoves};
-use crate::game_data::pokemon_api::pokemon_api_parser::PokemonApiData;
+use crate::game_data::pokemon_api::pokemon_api_parser::{PokedexEntry, PokemonApiData};
 use crate::game_data::pokemon_api::PokemonApiId;
 use crate::game_data::pokerole_data::raw_pokemon::{RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon};
 use crate::enums::{MysteryDungeonRank, PokemonGeneration, PokemonType, RegionalVariant, Stat};
@@ -18,20 +18,26 @@ use crate::enums::{MysteryDungeonRank, PokemonGeneration, PokemonType, RegionalV
 pub struct PokemonSpeciesData {
     pub has_gender_differences: bool,
     pub generation: PokemonGeneration,
+    pub pokedex_entries: Vec<PokedexEntry>
 }
 
 impl PokemonSpeciesData {
     pub fn from_option(api_option: &Option<&PokemonApiData>) -> Self {
         match api_option {
             Some(x) => Self::from(x),
-            None => PokemonSpeciesData{has_gender_differences: false, generation: PokemonGeneration::Nine}
+            None => PokemonSpeciesData{
+                has_gender_differences: false,
+                generation: PokemonGeneration::Nine,
+                pokedex_entries: Vec::new(),
+            }
         }
     }
 
     pub fn from(api: &PokemonApiData) -> Self {
         PokemonSpeciesData{
             generation: api.generation,
-            has_gender_differences: api.has_gender_differences
+            has_gender_differences: api.has_gender_differences,
+            pokedex_entries: api.pokedex_entries.clone(),
         }
     }
 }
@@ -58,8 +64,21 @@ pub struct Pokemon {
     pub event_abilities: Option<String>,
     pub height: Height,
     pub weight: Weight,
-    pub dex_description: String,
     pub moves: LearnablePokemonMoves,
+}
+
+impl Pokemon {
+    pub(crate) fn build_pokedex_string(&self) -> String {
+        let mut result = std::format!("## {} Pokedex Entries\n", self.name);
+        for x in &self.species_data.pokedex_entries {
+            result.push_str("**");
+            result.push_str(&x.version);
+            result.push_str("**: ");
+            result.push_str(&x.text);
+            result.push('\n');
+        }
+        result
+    }
 }
 
 impl Pokemon {
@@ -293,7 +312,6 @@ impl Pokemon {
             event_abilities: Pokemon::parse_ability(raw.event_abilities.clone()),
             height: raw.height.clone(),
             weight: raw.weight.clone(),
-            dex_description: raw.dex_description.clone(),
             moves
         }
     }
@@ -355,7 +373,6 @@ impl Pokemon {
             event_abilities: api_data.ability_event.clone(),
             height: api_data.height.clone(),
             weight: api_data.weight.clone(),
-            dex_description: String::from("Dex coming soon"),// raw.dex_description.clone(),
             moves
         }
     }

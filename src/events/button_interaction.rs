@@ -32,6 +32,13 @@ pub async fn handle_button_interaction(context: &Context, framework: FrameworkCo
             let pokemon = framework.user_data.game.pokemon.get(args[0]).unwrap();
             interaction.message.reply(context, efficiency::get_type_resistances_string(pokemon, &framework.user_data.game.type_efficiency)).await?;
         },
+        "pokedex" => {
+            disable_button_on_original_message(context, interaction).await?;
+            let pokemon = framework.user_data.game.pokemon.get(args[0]).unwrap();
+            for response_part in helpers::split_long_messages(pokemon.build_pokedex_string()) {
+                interaction.message.reply(context, response_part).await?;
+            }
+        },
         "moves" => {
             disable_button_on_original_message(context, interaction).await?;
             let pokemon = framework.user_data.game.pokemon.get(args[0]).unwrap();

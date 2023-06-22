@@ -29,7 +29,7 @@ pub fn create_reply<'a, 'b>(b: &'a mut CreateReply<'b>, pokemon: &Pokemon) -> &'
     b.content(pokemon.build_move_string())
         .components(|b| {
             b.create_action_row(|b| {
-                b.add_button(helpers::create_button("Show All Learnable Moves", format!("learns-all_{}", pokemon.name.to_lowercase()).as_str()))
+                b.add_button(helpers::create_button("Show All Learnable Moves", format!("learns-all_{}", pokemon.name.to_lowercase()).as_str(), false))
             })
         })
 }

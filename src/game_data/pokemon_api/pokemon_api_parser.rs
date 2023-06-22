@@ -40,12 +40,6 @@ pub struct PokemonApiData {
     pub pokedex_entries: Vec<PokedexEntry>
 }
 
-#[derive(Debug, Clone)]
-pub struct PokedexEntry {
-    pub version: String,
-    pub text: String,
-}
-
 impl ApiPokemonLearnableMoves {
     fn has_move(&self, name: String, learn_method: &str) -> bool {
         match learn_method {
@@ -54,6 +48,21 @@ impl ApiPokemonLearnableMoves {
             "tutor" => self.tutor.iter().any(|x| x.move_name == name),
             "machine" => self.machine.iter().any(|x| x.move_name == name),
             _ => false
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PokedexEntry {
+    pub version: String,
+    pub text: String,
+}
+
+impl PokedexEntry {
+    pub fn new(version: String, text: String) -> Self {
+        PokedexEntry {
+            version,
+            text: text.replace('\n', " ")
         }
     }
 }
@@ -179,7 +188,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
             .clone();
 
         species_id_to_flavor_texts.entry(x.species_id).or_default()
-            .push(PokedexEntry {version: version_name, text: x.flavor_text});
+            .push(PokedexEntry::new(version_name, x.flavor_text));
     }
 
     let mut form_id_to_pokemon_id: HashMap<PokemonFormId, PokemonApiId> = HashMap::default();

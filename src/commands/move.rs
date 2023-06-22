@@ -33,7 +33,7 @@ async fn execute_metronome<'a>(ctx: Context<'a>, poke_move: &Move) -> Result<(),
         b.content(poke_move.build_string())
             .components(|b| {
                 b.create_action_row(|b| {
-                    b.add_button(helpers::create_button("Use Metronome", "metronome"))
+                    b.add_button(helpers::create_button("Use Metronome", "metronome", false))
                 })
             })
     }).await?;
