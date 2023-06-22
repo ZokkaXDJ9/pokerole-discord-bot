@@ -273,7 +273,7 @@ impl Pokemon {
         result.push_str(title);
         result.push_str("**\n");
         result.push_str(&text);
-        result.push('\n');
+        result.push_str("\n\n");
     }
 }
 
