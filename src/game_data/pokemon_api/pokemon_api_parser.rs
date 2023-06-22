@@ -300,16 +300,13 @@ fn get_learnable_moves(
 
     for x in moves {
         let move_name_option = move_id_to_name.get(&x.move_id);
-        let move_name;
-        match move_name_option {
+        let move_name = match move_name_option {
             None => {
                 warn!("Missing move name for move_id {}", x.move_id.0);
                 continue;
             }
-            Some(name) => {
-                move_name = name;
-            }
-        }
+            Some(name) => name,
+        };
 
         if result.has_move(move_name, &x.pokemon_move_method_id) {
             continue;
@@ -361,6 +358,10 @@ fn get_evo_origin(
             .get(evolved_form_id)
             .expect("Every form id should have a form!");
 
+        if evolved_form.is_default == 0 {
+            continue;
+        }
+
         for potential_base_pokemon_id in base_pokemon {
             let base_pokemon_forms = pokemon_id_to_form_ids
                 .get(potential_base_pokemon_id)
@@ -370,6 +371,10 @@ fn get_evo_origin(
                 let base_pokemon_form = form_id_to_pokemon_form
                     .get(base_pokemon_form_id)
                     .expect("Every form id should have a form!");
+
+                if base_pokemon_form.is_default == 0 {
+                    continue;
+                }
 
                 if base_pokemon_form.form_identifier == evolved_form.form_identifier {
                     return Some(*potential_base_pokemon_id);

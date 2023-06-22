@@ -294,11 +294,15 @@ impl Pokemon {
         }
         let fixed_name = name
             .replace('\'', "’") // Fixes Farfetch'd and Sirfetch'd
-            .replace("Flabebe", "Flabébé")
             .replace("Nidoran M", "Nidoran♂")
             .replace("Nidoran F", "Nidoran♀")
             .replace("Mime Jr", "Mime Jr.")
-            .replace("Ho-oh", "Ho-Oh");
+            .replace("Ho-oh", "Ho-Oh")
+            .replace("Flabebe", "Red Flabébé")
+            .replace("Floette", "Red Floette")
+            .replace("Florges", "Red Florges")
+            .replace("Pumpkaboo", "Average Pumpkaboo")
+            .replace("Gourgeist", "Average Gourgeist");
         if let Some(value) = api.get(&fixed_name) {
             return (None, Some(value));
         }
