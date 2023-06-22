@@ -13,6 +13,10 @@ pub struct MoveId(pub u16);
 pub struct TypeId(pub u16);
 #[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
 pub struct GenerationId(pub u8);
+#[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
+pub struct LanguageId(pub u8);
+#[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
+pub struct VersionId(pub u8);
 
 /// version_groups.csv
 #[derive(Debug, Deserialize)]
@@ -47,7 +51,7 @@ pub struct ApiPokemon {
 #[allow(dead_code)]
 pub struct ApiAbilityName {
     pub ability_id: AbilityId,
-    pub local_language_id: u8,
+    pub local_language_id: LanguageId,
     pub name: String,
 }
 
@@ -117,7 +121,7 @@ pub struct ApiPokemonSpecies {
 #[allow(dead_code)]
 pub struct ApiPokemonSpeciesNames {
     pub pokemon_species_id: PokemonSpeciesId,
-    pub local_language_id: u8,
+    pub local_language_id: LanguageId,
     pub name: String,
     pub genus: String,
 }
@@ -144,7 +148,7 @@ pub struct ApiPokemonForm {
 #[allow(dead_code)]
 pub struct ApiPokemonFormNames {
     pub pokemon_form_id: PokemonFormId,
-    pub local_language_id: u8,
+    pub local_language_id: LanguageId,
     pub form_name: String,
     pub pokemon_name: Option<String>
 }
@@ -175,7 +179,7 @@ pub struct ApiPokemonFormTypes {
 #[allow(dead_code)]
 pub struct ApiMoveNames {
     pub move_id: MoveId,
-    pub local_language_id: u8,
+    pub local_language_id: LanguageId,
     pub name: String
 }
 

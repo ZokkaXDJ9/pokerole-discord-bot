@@ -124,8 +124,9 @@ pub fn parse_type_efficacy(path: String) -> TypeEfficiency {
     TypeEfficiency::new(result)
 }
 
+const ENGLISH_LANGUAGE_ID: LanguageId = LanguageId(9);
+
 pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
-    let english_language_id:u8 = 9;
     let version_groups: Vec<ApiVersionGroups> = load_csv(path.clone() + "data/v2/csv/version_groups.csv");
     let ability_names: Vec<ApiAbilityName> = load_csv(path.clone() + "data/v2/csv/ability_names.csv");
     let pokemon: Vec<ApiPokemon> = load_csv(path.clone() + "data/v2/csv/pokemon.csv");
@@ -142,7 +143,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
 
     let mut ability_id_to_name: HashMap<AbilityId, String> = HashMap::default();
     for x in ability_names {
-        if x.local_language_id != english_language_id {
+        if x.local_language_id != ENGLISH_LANGUAGE_ID {
             continue;
         }
 
@@ -189,7 +190,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
 
     let mut pokemon_id_to_name: HashMap<PokemonApiId, String> = HashMap::default();
     for x in pokemon_species_names {
-        if x.local_language_id != english_language_id {
+        if x.local_language_id != ENGLISH_LANGUAGE_ID {
             continue;
         }
 
@@ -197,7 +198,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
         pokemon_id_to_name.insert(PokemonApiId(x.pokemon_species_id.0), x.name);
     }
     for x in pokemon_form_names {
-        if x.local_language_id != english_language_id {
+        if x.local_language_id != ENGLISH_LANGUAGE_ID {
             continue;
         }
 
@@ -217,7 +218,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
 
     let mut move_id_to_name: HashMap<MoveId, String> = HashMap::default();
     for x in move_names {
-        if x.local_language_id != english_language_id {
+        if x.local_language_id != ENGLISH_LANGUAGE_ID {
             continue;
         }
 
