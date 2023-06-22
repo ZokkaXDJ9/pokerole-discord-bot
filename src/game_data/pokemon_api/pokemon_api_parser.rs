@@ -4,14 +4,13 @@ use crate::game_data::pokemon::{Height, Weight};
 use crate::game_data::pokemon_api::api_types::*;
 use crate::game_data::pokemon_api::PokemonApiId;
 use crate::game_data::type_efficiency::TypeEfficiency;
-use log::error;
+use log::{error, warn};
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
 
 #[derive(Debug)]
 pub struct ApiMoveEntry {
     pub move_name: String,
-    pub generation: PokemonGeneration,
 }
 
 #[derive(Debug)]
@@ -38,12 +37,12 @@ pub struct PokemonApiData {
 }
 
 impl ApiPokemonLearnableMoves {
-    fn has_move(&self, name: String, learn_method: &str) -> bool {
-        match learn_method {
-            "level-up" => self.level_up.iter().any(|x| x.move_name == name),
-            "egg" => self.egg.iter().any(|x| x.move_name == name),
-            "tutor" => self.tutor.iter().any(|x| x.move_name == name),
-            "machine" => self.machine.iter().any(|x| x.move_name == name),
+    fn has_move(&self, name: &str, learn_method: &MoveLearnMethodId) -> bool {
+        match *learn_method {
+            LEVEL_UP => self.level_up.iter().any(|x| x.move_name == name),
+            EGG => self.egg.iter().any(|x| x.move_name == name),
+            TUTOR => self.tutor.iter().any(|x| x.move_name == name),
+            MACHINE => self.machine.iter().any(|x| x.move_name == name),
             _ => false,
         }
     }
@@ -159,8 +158,7 @@ impl ApiPokemonAbilities {
 }
 
 pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
-    let version_groups: Vec<ApiVersionGroups> =
-        load_csv(path.clone() + "data/v2/csv/version_groups.csv");
+    // let version_groups: Vec<ApiVersionGroups> = load_csv(path.clone() + "data/v2/csv/version_groups.csv");
     let ability_names: Vec<ApiAbilityName> =
         load_csv(path.clone() + "data/v2/csv/ability_names.csv");
     let pokemon: Vec<ApiPokemon> = load_csv(path.clone() + "data/v2/csv/pokemon.csv");
@@ -170,8 +168,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
         load_csv(path.clone() + "data/v2/csv/pokemon_types.csv");
     let pokemon_moves: Vec<ApiPokemonMoves> =
         load_csv(path.clone() + "data/v2/csv/pokemon_moves.csv");
-    let pokemon_move_methods: Vec<ApiPokemonMoveMethods> =
-        load_csv(path.clone() + "data/v2/csv/pokemon_move_methods.csv");
+    // let pokemon_move_methods: Vec<ApiPokemonMoveMethods> = load_csv(path.clone() + "data/v2/csv/pokemon_move_methods.csv");
     let pokemon_species: Vec<ApiPokemonSpecies> =
         load_csv(path.clone() + "data/v2/csv/pokemon_species.csv");
     let pokemon_species_names: Vec<ApiPokemonSpeciesNames> =
@@ -203,8 +200,9 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     );
     let species_id_to_species = map_species_id_to_species(pokemon_species);
     let move_id_to_name = map_move_id_to_name(move_names);
-    let move_learn_method_id_to_name = map_move_learn_method_id_to_name(pokemon_move_methods);
-    let version_group_id_to_generation = map_version_group_id_to_generation(version_groups);
+    // let move_learn_method_id_to_name = map_move_learn_method_id_to_name(pokemon_move_methods);
+    // let version_group_id_to_generation = map_version_group_id_to_generation(version_groups);
+    let mut pokemon_id_to_moves = map_pokemon_id_to_moves(pokemon_moves);
 
     let mut result: HashMap<String, PokemonApiData> = HashMap::default();
     for x in pokemon {
@@ -221,6 +219,17 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
                 "Pokemon should always have abilities, but none found for {}",
                 name
             )
+        });
+
+        let moves = pokemon_id_to_moves.remove(&x.id).unwrap_or_else(|| {
+            if !name.starts_with("Gigantamax") {
+                // Those just don't have moves right now. But we aren't using them anyway, so ye...
+                warn!(
+                    "Pokemon should always have moves, but none found for {}",
+                    name
+                );
+            }
+            Vec::new()
         });
 
         result.insert(
@@ -245,71 +254,70 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
                     .get(&species.id)
                     .cloned()
                     .unwrap_or_default(),
-                learnable_moves: ApiPokemonLearnableMoves {
-                    level_up: Vec::default(),
-                    machine: Vec::default(),
-                    tutor: Vec::default(),
-                    egg: Vec::default(),
-                },
+                learnable_moves: get_learnable_moves(moves, &move_id_to_name),
             },
         );
-    }
-
-    let mut missing_pokemon_ids = Vec::new();
-    let mut missing_move_ids = Vec::new();
-    for pokemon_move in pokemon_moves {
-        if let Some(pokemon_name) = pokemon_id_to_name.get(&pokemon_move.pokemon_id) {
-            let move_name_option = move_id_to_name.get(&pokemon_move.move_id);
-            if move_name_option.is_none() {
-                if !missing_move_ids.contains(&pokemon_move.move_id) {
-                    missing_move_ids.push(pokemon_move.move_id);
-                }
-                continue;
-            }
-            let move_name = move_name_option.unwrap().clone();
-
-            let pokemon_entry = &mut result.get_mut(pokemon_name).unwrap().learnable_moves;
-            let learn_method = move_learn_method_id_to_name
-                .get(&pokemon_move.pokemon_move_method_id)
-                .unwrap()
-                .clone();
-            if pokemon_entry.has_move(move_name.clone(), &learn_method) {
-                continue;
-            }
-
-            let new_move_entry = ApiMoveEntry {
-                move_name: move_name.clone(),
-                generation: *version_group_id_to_generation
-                    .get(&pokemon_move.version_group_id)
-                    .expect("All generation ids should be set"),
-            };
-
-            match learn_method.as_str() {
-                "level-up" => pokemon_entry.level_up.push(new_move_entry),
-                "egg" => pokemon_entry.egg.push(new_move_entry),
-                "tutor" => pokemon_entry.tutor.push(new_move_entry),
-                "machine" => pokemon_entry.machine.push(new_move_entry),
-                _ => {}
-            }
-        } else if !missing_pokemon_ids.contains(&pokemon_move.pokemon_id) {
-            missing_pokemon_ids.push(pokemon_move.pokemon_id);
-        }
-    }
-
-    for x in missing_pokemon_ids {
-        // 10250 - 10271 is Amigento, skip that one for now
-        if !(10250..=10271).contains(&x.0) {
-            log::warn!("Missing pokemon data for pokemon_id {}", x.0)
-        }
-    }
-    for x in missing_move_ids {
-        log::warn!("Missing move data for move_id {}", x.0)
     }
 
     result
 }
 
-fn map_version_group_id_to_generation(
+fn get_learnable_moves(
+    moves: Vec<ApiPokemonMoves>,
+    move_id_to_name: &HashMap<MoveId, String>,
+) -> ApiPokemonLearnableMoves {
+    let mut result = ApiPokemonLearnableMoves {
+        level_up: Vec::default(),
+        machine: Vec::default(),
+        tutor: Vec::default(),
+        egg: Vec::default(),
+    };
+
+    for x in moves {
+        let move_name_option = move_id_to_name.get(&x.move_id);
+        let move_name;
+        match move_name_option {
+            None => {
+                warn!("Missing move name for move_id {}", x.move_id.0);
+                continue;
+            }
+            Some(name) => {
+                move_name = name;
+            }
+        }
+
+        if result.has_move(move_name, &x.pokemon_move_method_id) {
+            continue;
+        }
+
+        let new_move_entry = ApiMoveEntry {
+            move_name: move_name.clone(),
+        };
+
+        match x.pokemon_move_method_id {
+            LEVEL_UP => result.level_up.push(new_move_entry),
+            EGG => result.egg.push(new_move_entry),
+            TUTOR => result.tutor.push(new_move_entry),
+            MACHINE => result.machine.push(new_move_entry),
+            _ => {}
+        }
+    }
+
+    result
+}
+
+fn map_pokemon_id_to_moves(
+    pokemon_moves: Vec<ApiPokemonMoves>,
+) -> HashMap<PokemonApiId, Vec<ApiPokemonMoves>> {
+    let mut result: HashMap<PokemonApiId, Vec<ApiPokemonMoves>> = HashMap::default();
+    for x in pokemon_moves {
+        result.entry(x.pokemon_id).or_default().push(x);
+    }
+
+    result
+}
+
+fn _map_version_group_id_to_generation(
     version_groups: Vec<ApiVersionGroups>,
 ) -> HashMap<u8, PokemonGeneration> {
     let mut version_group_id_to_generation: HashMap<u8, PokemonGeneration> = HashMap::default();
@@ -319,10 +327,10 @@ fn map_version_group_id_to_generation(
     version_group_id_to_generation
 }
 
-fn map_move_learn_method_id_to_name(
+fn _map_move_learn_method_id_to_name(
     pokemon_move_methods: Vec<ApiPokemonMoveMethods>,
-) -> HashMap<u8, String> {
-    let mut move_learn_method_id_to_name: HashMap<u8, String> = HashMap::default();
+) -> HashMap<MoveLearnMethodId, String> {
+    let mut move_learn_method_id_to_name: HashMap<MoveLearnMethodId, String> = HashMap::default();
     for x in pokemon_move_methods {
         move_learn_method_id_to_name.insert(x.id, x.identifier);
     }

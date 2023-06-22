@@ -18,6 +18,14 @@ pub struct LanguageId(pub u8);
 #[derive(Debug, Deserialize, Eq, PartialEq, Hash, Copy, Clone)]
 pub struct VersionId(pub u8);
 
+#[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
+pub struct MoveLearnMethodId(pub u8);
+
+pub const LEVEL_UP: MoveLearnMethodId = MoveLearnMethodId(1);
+pub const EGG: MoveLearnMethodId = MoveLearnMethodId(2);
+pub const TUTOR: MoveLearnMethodId = MoveLearnMethodId(3);
+pub const MACHINE: MoveLearnMethodId = MoveLearnMethodId(4);
+
 /// version_groups.csv
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
@@ -74,7 +82,7 @@ pub struct ApiPokemonMoves {
     pub pokemon_id: PokemonApiId,
     pub version_group_id: u8,
     pub move_id: MoveId,
-    pub pokemon_move_method_id: u8,
+    pub pokemon_move_method_id: MoveLearnMethodId,
     pub level: u8,
     pub order: Option<u8>,
 }
@@ -84,7 +92,7 @@ pub struct ApiPokemonMoves {
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct ApiPokemonMoveMethods {
-    pub id: u8,
+    pub id: MoveLearnMethodId,
     pub identifier: String,
 }
 
