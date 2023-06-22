@@ -37,6 +37,13 @@ pub struct PokemonApiData {
     pub ability_hidden: Option<String>,
     pub ability_event: Option<String>,
     pub learnable_moves: ApiPokemonLearnableMoves,
+    pub pokedex_entries: Vec<PokedexEntry>
+}
+
+#[derive(Debug, Clone)]
+pub struct PokedexEntry {
+    pub version: String,
+    pub text: String,
 }
 
 impl ApiPokemonLearnableMoves {
@@ -136,10 +143,12 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
     let pokemon_move_methods: Vec<ApiPokemonMoveMethods> = load_csv(path.clone() + "data/v2/csv/pokemon_move_methods.csv");
     let pokemon_species: Vec<ApiPokemonSpecies> = load_csv(path.clone() + "data/v2/csv/pokemon_species.csv");
     let pokemon_species_names: Vec<ApiPokemonSpeciesNames> = load_csv(path.clone() + "data/v2/csv/pokemon_species_names.csv");
+    let pokemon_species_flavor_text: Vec<ApiPokemonSpeciesFlavorText> = load_csv(path.clone() + "data/v2/csv/pokemon_species_flavor_text.csv");
     let pokemon_forms: Vec<ApiPokemonForm> = load_csv(path.clone() + "data/v2/csv/pokemon_forms.csv");
     let pokemon_form_types: Vec<ApiPokemonFormTypes> = load_csv(path.clone() + "data/v2/csv/pokemon_form_types.csv");
     let pokemon_form_names: Vec<ApiPokemonFormNames> = load_csv(path.clone() + "data/v2/csv/pokemon_form_names.csv");
-    let move_names: Vec<ApiMoveNames> = load_csv(path + "data/v2/csv/move_names.csv");
+    let move_names: Vec<ApiMoveNames> = load_csv(path.clone() + "data/v2/csv/move_names.csv");
+    let version_names: Vec<ApiVersionNames> = load_csv(path + "data/v2/csv/version_names.csv");
 
     let mut ability_id_to_name: HashMap<AbilityId, String> = HashMap::default();
     for x in ability_names {
@@ -148,6 +157,29 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
         }
 
         ability_id_to_name.insert(x.ability_id, x.name);
+    }
+
+    let mut version_id_to_name: HashMap<VersionId, String> = HashMap::default();
+    for x in version_names {
+        if x.local_language_id != ENGLISH_LANGUAGE_ID {
+            continue;
+        }
+
+        version_id_to_name.insert(x.version_id, x.name);
+    }
+
+    let mut species_id_to_flavor_texts: HashMap<PokemonSpeciesId, Vec<PokedexEntry>> = HashMap::default();
+    for x in pokemon_species_flavor_text {
+        if x.language_id != ENGLISH_LANGUAGE_ID {
+            continue;
+        }
+
+        let version_name = version_id_to_name.get(&x.version_id)
+            .unwrap_or_else(|| panic!("Version Name should always be available, but was not for {}", x.version_id.0))
+            .clone();
+
+        species_id_to_flavor_texts.entry(x.species_id).or_default()
+            .push(PokedexEntry {version: version_name, text: x.flavor_text});
     }
 
     let mut form_id_to_pokemon_id: HashMap<PokemonFormId, PokemonApiId> = HashMap::default();
@@ -254,6 +286,7 @@ pub fn parse_pokemon_api(path: String) -> HashMap<String, PokemonApiData> {
             ability2: pokemon_id_to_pokemon_ability2.get(&x.id).cloned(),
             ability_hidden: pokemon_id_to_pokemon_ability_hidden.get(&x.id).cloned(),
             ability_event: None,
+            pokedex_entries: species_id_to_flavor_texts.entry(species.id).or_default().clone(),
             learnable_moves: ApiPokemonLearnableMoves {
                 level_up: Vec::default(),
                 machine: Vec::default(),

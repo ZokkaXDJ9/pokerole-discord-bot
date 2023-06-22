@@ -15,7 +15,7 @@ pub struct TypeId(pub u16);
 pub struct GenerationId(pub u8);
 #[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
 pub struct LanguageId(pub u8);
-#[derive(Debug, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Deserialize, Eq, PartialEq, Hash, Copy, Clone)]
 pub struct VersionId(pub u8);
 
 /// version_groups.csv
@@ -163,6 +163,17 @@ pub struct ApiPokemonTypes {
     pub slot: u8,
 }
 
+/// pokemon_species_flavor_text.csv
+/// Contains Pokedex entries for pokemon
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+pub struct ApiPokemonSpeciesFlavorText {
+    pub species_id: PokemonSpeciesId,
+    pub version_id: VersionId,
+    pub language_id: LanguageId,
+    pub flavor_text: String,
+}
+
 /// pokemon_form_types.csv
 /// Contains type identifiers for pokemon
 #[derive(Debug, Deserialize)]
@@ -191,3 +202,13 @@ pub struct ApiTypeEfficacy {
     pub target_type_id: TypeId,
     pub damage_factor: u8
 }
+
+/// version_names.csv
+/// Tells us how pokemon versions are called by humans
+#[derive(Debug, Deserialize)]
+pub struct ApiVersionNames {
+    pub version_id: VersionId,
+    pub local_language_id: LanguageId,
+    pub name: String
+}
+
