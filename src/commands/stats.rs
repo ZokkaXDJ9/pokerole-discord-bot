@@ -4,15 +4,7 @@ use crate::helpers;
 use serenity::builder::CreateComponents;
 use std::default::Default;
 
-/// Display Pokemon stats
-#[poise::command(slash_command)]
-pub async fn stats(
-    ctx: Context<'_>,
-    #[description = "Which pokemon?"]
-    #[rename = "pokemon"]
-    #[autocomplete = "autocomplete_pokemon"]
-    name: String,
-) -> Result<(), Error> {
+async fn print_poke_stats(ctx: Context<'_>, name: String) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().game.pokemon.get(&name.to_lowercase()) {
         ctx.send(|b| {
             b.content(pokemon.build_stats_string());
@@ -33,6 +25,30 @@ pub async fn stats(
     }
 
     Ok(())
+}
+
+/// Display Pokemon stats. Same as /stats.
+#[poise::command(slash_command)]
+pub async fn pokemon(
+    ctx: Context<'_>,
+    #[description = "Which pokemon?"]
+    #[rename = "pokemon"]
+    #[autocomplete = "autocomplete_pokemon"]
+    name: String,
+) -> Result<(), Error> {
+    print_poke_stats(ctx, name).await
+}
+
+/// Display Pokemon stats. Same as /pokemon
+#[poise::command(slash_command)]
+pub async fn stats(
+    ctx: Context<'_>,
+    #[description = "Which pokemon?"]
+    #[rename = "pokemon"]
+    #[autocomplete = "autocomplete_pokemon"]
+    name: String,
+) -> Result<(), Error> {
+    print_poke_stats(ctx, name).await
 }
 
 fn create_buttons<'a>(

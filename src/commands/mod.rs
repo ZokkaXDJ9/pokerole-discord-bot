@@ -42,6 +42,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         ability::ability(),
         item::item(),
         stats::stats(),
+        stats::pokemon(),
         status::status(),
         rule::rule(),
         learns::learns(),
