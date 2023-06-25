@@ -134,7 +134,7 @@ Just follow the character creation guide and apply your two level ups afterwards
                 name: String::from("Character Slots"),
                 flavor: Some(String::from("Sometimes you just need a friend! Sometimes that friend has to be yourself!")),
                 text: String::from("\
-You get one new character slot ever 5 levels (cumulative across all your characters!).
+You get one new character slot every 5 levels (cumulative across all your characters!).
 Using those or creating multiple characters is completely optional, of course.
 Also, if you want more or need one earlier, you may request that from our admin team! We'll vote internally on a case-by-case basis to determine if it would work out."),
                 example: None
