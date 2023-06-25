@@ -16,6 +16,9 @@ mod initialize_character_post;
 mod initialize_guild;
 mod reward_experience;
 mod reward_money;
+mod upgrade_backpack;
+
+const DEFAULT_BACKPACK_SLOTS: i64 = 6;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     vec![
@@ -58,7 +61,7 @@ pub async fn build_character_string<'a>(
     character_id: i64,
 ) -> Option<(String, i64, i64)> {
     let entry = sqlx::query!(
-        "SELECT name, experience, money, completed_quest_count, stat_message_id, stat_channel_id \
+        "SELECT name, experience, money, completed_quest_count, stat_message_id, stat_channel_id, backpack_upgrade_count \
                 FROM character WHERE id = ? \
                 ORDER BY rowid \
                 LIMIT 1",
@@ -80,6 +83,7 @@ pub async fn build_character_string<'a>(
 {} {}
 **Level**: {} `({} / 100)`
 Completed Quests: {}
+Backpack Slots: {}
 ",
                     rank.emoji_string(),
                     entry.name,
@@ -87,7 +91,8 @@ Completed Quests: {}
                     emoji::POKE_COIN,
                     level,
                     experience,
-                    entry.completed_quest_count
+                    entry.completed_quest_count,
+                    entry.backpack_upgrade_count + DEFAULT_BACKPACK_SLOTS,
                 ),
                 entry.stat_channel_id,
                 entry.stat_message_id,
@@ -100,6 +105,7 @@ Completed Quests: {}
 pub enum ActionType {
     Initialization,
     Reward,
+    BackpackUpgrade,
     TradeOutgoing,
     TradeIncoming,
     Undo,
@@ -110,6 +116,7 @@ impl fmt::Display for ActionType {
         f.write_str(match self {
             ActionType::Initialization => "🌟 [Init]",
             ActionType::Reward => "✨ [Reward]",
+            ActionType::BackpackUpgrade => "🎒 [Upgrade]",
             ActionType::TradeOutgoing => "➡️ [Trade]",
             ActionType::TradeIncoming => "⬅️ [Trade]",
             ActionType::Undo => "↩️ [Undo]",
