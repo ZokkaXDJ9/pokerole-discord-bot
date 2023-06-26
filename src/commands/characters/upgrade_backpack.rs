@@ -44,13 +44,15 @@ pub async fn upgrade_backpack(
     if let Ok(giver_record) = giver_record {
         let required_money = BASE_PRICE + MONEY_PER_LEVEL * giver_record.backpack_upgrade_count;
 
+        let target_slots = DEFAULT_BACKPACK_SLOTS + giver_record.backpack_upgrade_count + 1;
+
         if giver_record.money < required_money {
             return send_error(
                 &ctx,
                 format!(
                     "**Unable to upgrade {}'s backpack.**\n*Upgrading to {} slots would require {} {}.*",
                     character.name,
-                    DEFAULT_BACKPACK_SLOTS + giver_record.backpack_upgrade_count + 1,
+                    target_slots,
                     required_money,
                     emoji::POKE_COIN
                 )
@@ -61,7 +63,7 @@ pub async fn upgrade_backpack(
 
         let result = ctx.say(format!("**Upgrading {}'s backpack to {} slots will require {} {}.**\n*React with {} if you wish to proceed. Any other reaction will cancel this, and any reactions made by other users will be ignored.*",
                                      character.name,
-                                     giver_record.backpack_upgrade_count + DEFAULT_BACKPACK_SLOTS,
+                                     target_slots,
                                      required_money,
                                      emoji::POKE_COIN,
                                      emoji::UNICODE_CHECKMARK_BUTTON,
@@ -106,7 +108,7 @@ pub async fn upgrade_backpack(
 
                     if query_result.is_ok() && query_result.unwrap().rows_affected() == 1 {
                         characters::log_action(
-                            &ActionType::TradeOutgoing,
+                            &ActionType::Payment,
                             &ctx,
                             format!(
                                 "Removed {} {} from {}",

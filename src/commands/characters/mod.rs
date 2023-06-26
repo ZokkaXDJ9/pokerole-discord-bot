@@ -106,6 +106,7 @@ Backpack Slots: {}
 pub enum ActionType {
     Initialization,
     Reward,
+    Payment,
     BackpackUpgrade,
     TradeOutgoing,
     TradeIncoming,
@@ -118,6 +119,7 @@ impl fmt::Display for ActionType {
             ActionType::Initialization => "🌟 [Init]",
             ActionType::Reward => "✨ [Reward]",
             ActionType::BackpackUpgrade => "🎒 [Upgrade]",
+            ActionType::Payment => "💰 [Payment]",
             ActionType::TradeOutgoing => "➡️ [Trade]",
             ActionType::TradeIncoming => "⬅️ [Trade]",
             ActionType::Undo => "↩️ [Undo]",
