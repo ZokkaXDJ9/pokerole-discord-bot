@@ -29,6 +29,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         initialize_guild::initialize_guild(),
         reward_experience::reward_experience(),
         reward_money::reward_money(),
+        upgrade_backpack::upgrade_backpack(),
     ]
 }
 
