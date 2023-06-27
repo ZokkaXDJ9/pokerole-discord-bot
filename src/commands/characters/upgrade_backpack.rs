@@ -37,15 +37,12 @@ pub async fn upgrade_backpack(
         character.id
     )
     .fetch_one(&ctx.data().database)
-    .await;
+    .await?;
 
-    if let Ok(character_record) = character_record {
-        let required_money = BASE_PRICE + MONEY_PER_LEVEL * character_record.backpack_upgrade_count;
-
-        let target_slots = DEFAULT_BACKPACK_SLOTS + character_record.backpack_upgrade_count + 1;
-
-        if character_record.money < required_money {
-            return send_error(
+    let required_money = BASE_PRICE + MONEY_PER_LEVEL * character_record.backpack_upgrade_count;
+    let target_slots = DEFAULT_BACKPACK_SLOTS + character_record.backpack_upgrade_count + 1;
+    if character_record.money < required_money {
+        return send_error(
                 &ctx,
                 format!(
                     "**Unable to upgrade {}'s backpack.**\n*Upgrading to {} slots would require {} {}. Right now, {} only owns {} {}.*",
@@ -60,53 +57,53 @@ pub async fn upgrade_backpack(
                 .as_str(),
             )
             .await;
-        }
+    }
 
-        let original_message = format!(
-            "**Upgrading {}'s backpack to {} slots will require {} {}.**",
-            character.name,
-            target_slots,
-            required_money,
-            emoji::POKE_COIN,
-        );
+    let original_message = format!(
+        "**Upgrading {}'s backpack to {} slots will require {} {}.**",
+        character.name,
+        target_slots,
+        required_money,
+        emoji::POKE_COIN,
+    );
 
-        let reply = ctx
-            .send(|reply| {
-                reply
-                    .content(original_message.clone())
-                    .components(|components| {
-                        components.create_action_row(|action_row| {
-                            action_row
-                                .add_button(helpers::create_styled_button(
-                                    "Let's do it!",
-                                    CONFIRM,
-                                    false,
-                                    ButtonStyle::Success,
-                                ))
-                                .add_button(helpers::create_styled_button(
-                                    "Nope!",
-                                    ABORT,
-                                    false,
-                                    ButtonStyle::Danger,
-                                ))
-                        })
+    let reply = ctx
+        .send(|reply| {
+            reply
+                .content(original_message.clone())
+                .components(|components| {
+                    components.create_action_row(|action_row| {
+                        action_row
+                            .add_button(helpers::create_styled_button(
+                                "Let's do it!",
+                                CONFIRM,
+                                false,
+                                ButtonStyle::Success,
+                            ))
+                            .add_button(helpers::create_styled_button(
+                                "Nope!",
+                                ABORT,
+                                false,
+                                ButtonStyle::Danger,
+                            ))
                     })
-            })
-            .await?;
-        let message = reply.message().await?;
+                })
+        })
+        .await?;
+    let message = reply.message().await?;
 
-        let interaction = message
-            .await_component_interaction(ctx)
-            .author_id(ctx.author().id)
-            .timeout(Duration::from_secs(30))
-            .await;
+    let interaction = message
+        .await_component_interaction(ctx)
+        .author_id(ctx.author().id)
+        .timeout(Duration::from_secs(30))
+        .await;
 
-        if let Some(interaction) = interaction {
-            if interaction.data.custom_id == CONFIRM {
-                let updated_money = character_record.money - required_money;
-                let updated_backpack_upgrade_count = character_record.backpack_upgrade_count + 1;
+    if let Some(interaction) = interaction {
+        if interaction.data.custom_id == CONFIRM {
+            let updated_money = character_record.money - required_money;
+            let updated_backpack_upgrade_count = character_record.backpack_upgrade_count + 1;
 
-                let query_result = sqlx::query!(
+            let query_result = sqlx::query!(
                         "UPDATE character SET money = ?, backpack_upgrade_count = ? WHERE id = ? AND money = ? and backpack_upgrade_count = ?",
                         updated_money,
                         updated_backpack_upgrade_count,
@@ -117,40 +114,37 @@ pub async fn upgrade_backpack(
                     .execute(&ctx.data().database)
                     .await;
 
-                if query_result.is_ok() && query_result.unwrap().rows_affected() == 1 {
-                    characters::log_action(
-                        &ActionType::Payment,
-                        &ctx,
-                        format!(
-                            "Removed {} {} from {}",
-                            required_money,
-                            emoji::POKE_COIN,
-                            character.name,
-                        )
-                        .as_str(),
+            if query_result.is_ok() && query_result.unwrap().rows_affected() == 1 {
+                characters::log_action(
+                    &ActionType::Payment,
+                    &ctx,
+                    format!(
+                        "Removed {} {} from {}",
+                        required_money,
+                        emoji::POKE_COIN,
+                        character.name,
                     )
-                    .await?;
-                    characters::log_action(
-                        &ActionType::BackpackUpgrade,
-                        &ctx,
-                        format!("Increased {}'s backpack size by 1", character.name).as_str(),
-                    )
-                    .await?;
+                    .as_str(),
+                )
+                .await?;
+                characters::log_action(
+                    &ActionType::BackpackUpgrade,
+                    &ctx,
+                    format!("Increased {}'s backpack size by 1", character.name).as_str(),
+                )
+                .await?;
 
-                    respond_to_success(ctx, reply, original_message).await?;
-                    return characters::update_character_post(&ctx, character.id).await;
-                }
-            } else {
-                return respond_to_cancellation(ctx, reply, original_message).await;
+                respond_to_success(ctx, reply, original_message).await?;
+                return characters::update_character_post(&ctx, character.id).await;
             }
-
-            return respond_to_unexpected_behaviour(ctx, reply, original_message).await;
+        } else {
+            return respond_to_cancellation(ctx, reply, original_message).await;
         }
 
-        return respond_to_timeout(ctx, reply, original_message).await;
+        return respond_to_unexpected_behaviour(ctx, reply, original_message).await;
     }
 
-    Ok(())
+    respond_to_timeout(ctx, reply, original_message).await
 }
 
 async fn respond_to_success<'a>(
