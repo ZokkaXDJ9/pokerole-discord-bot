@@ -165,7 +165,12 @@ pub fn parse_query(query: &str) -> Result<ParsedRollQuery, Error> {
 
     let split: Vec<&str> = remaining_query.split('d').collect();
     if split.len() != 2 {
-        return Err(Box::new(ParseError::new("Unable to parse query.")));
+        let amount = match u8::from_str(&remaining_query) {
+            Ok(value) => Some(value),
+            Err(_) => return Err(Box::new(ParseError::new("Unable to parse query."))),
+        };
+
+        return Ok(ParsedRollQuery::new(amount, Some(6), flat_addition));
     }
 
     let amount = match u8::from_str(split[0]) {
