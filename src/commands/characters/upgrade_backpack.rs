@@ -162,7 +162,7 @@ pub async fn upgrade_backpack(
             }
 
             result
-                .edit(ctx, |f| f
+                .edit(ctx, |reply| reply
                     .content(message.content.to_owned() + "\n\n**Something went wrong.**\n*This should only happen if you're actively trying to game the system... and if that's the case, thanks for trying, but... please stop? xD*")
                     .components(|components| components))
                 .await?;
@@ -170,11 +170,13 @@ pub async fn upgrade_backpack(
         }
 
         result
-            .edit(ctx, |f| {
-                f.content(
-                    message.content.to_owned()
-                        + "\n\n**Request timed out. Use the command again if needed.**",
-                )
+            .edit(ctx, |reply| {
+                reply
+                    .content(
+                        message.content.to_owned()
+                            + "\n\n**Request timed out. Use the command again if needed.**",
+                    )
+                    .components(|components| components)
             })
             .await?;
     }
