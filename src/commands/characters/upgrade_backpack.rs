@@ -4,6 +4,7 @@ use crate::commands::characters::{
 };
 use crate::commands::{characters, send_error, Context, Error};
 use crate::{emoji, helpers};
+use poise::ReplyHandle;
 use serenity::model::prelude::component::ButtonStyle;
 use std::time::Duration;
 
@@ -12,13 +13,9 @@ const ABORT: &str = "upgrade_backpack_abort";
 const BASE_PRICE: i64 = 500;
 const MONEY_PER_LEVEL: i64 = 500;
 
-/// Upgrade your backpack! Requires a confirmation, so no worries about accidentally using this.
+/// See what it takes to upgrade your backpack!
 #[allow(clippy::too_many_arguments)]
-#[poise::command(
-    slash_command,
-    guild_only,
-    default_member_permissions = "ADMINISTRATOR"
-)]
+#[poise::command(slash_command, guild_only)]
 pub async fn upgrade_backpack(
     ctx: Context<'_>,
     #[description = "Which character?"]
@@ -65,7 +62,7 @@ pub async fn upgrade_backpack(
             .await;
         }
 
-        let message = format!(
+        let original_message = format!(
             "**Upgrading {}'s backpack to {} slots will require {} {}.**",
             character.name,
             target_slots,
@@ -73,33 +70,35 @@ pub async fn upgrade_backpack(
             emoji::POKE_COIN,
         );
 
-        let result = ctx
+        let reply = ctx
             .send(|reply| {
-                reply.content(message).components(|components| {
-                    components.create_action_row(|action_row| {
-                        action_row
-                            .add_button(helpers::create_styled_button(
-                                "Let's do it!",
-                                CONFIRM,
-                                false,
-                                ButtonStyle::Success,
-                            ))
-                            .add_button(helpers::create_styled_button(
-                                "Nope!",
-                                ABORT,
-                                false,
-                                ButtonStyle::Danger,
-                            ))
+                reply
+                    .content(original_message.clone())
+                    .components(|components| {
+                        components.create_action_row(|action_row| {
+                            action_row
+                                .add_button(helpers::create_styled_button(
+                                    "Let's do it!",
+                                    CONFIRM,
+                                    false,
+                                    ButtonStyle::Success,
+                                ))
+                                .add_button(helpers::create_styled_button(
+                                    "Nope!",
+                                    ABORT,
+                                    false,
+                                    ButtonStyle::Danger,
+                                ))
+                        })
                     })
-                })
             })
             .await?;
-        let message = result.message().await?;
+        let message = reply.message().await?;
 
         let interaction = message
             .await_component_interaction(ctx)
             .author_id(ctx.author().id)
-            .timeout(Duration::from_secs(69))
+            .timeout(Duration::from_secs(30))
             .await;
 
         if let Some(interaction) = interaction {
@@ -138,48 +137,79 @@ pub async fn upgrade_backpack(
                     )
                     .await?;
 
-                    result
-                        .edit(ctx, |reply| {
-                            reply
-                                .content(message.content.to_owned() + "\n\n**Upgrade successful!**")
-                                .components(|components| components)
-                        })
-                        .await?;
-
-                    characters::update_character_post(&ctx, character.id).await?;
-                    return Ok(());
+                    respond_to_success(ctx, reply, original_message).await?;
+                    return characters::update_character_post(&ctx, character.id).await;
                 }
             } else {
-                result
-                    .edit(ctx, |reply| {
-                        reply
-                            .content(message.content.to_owned() + "\n\n**Request was cancelled.**")
-                            .components(|components| components)
-                    })
-                    .await?;
-
-                return Ok(());
+                return respond_to_cancellation(ctx, reply, original_message).await;
             }
 
-            result
-                .edit(ctx, |reply| reply
-                    .content(message.content.to_owned() + "\n\n**Something went wrong.**\n*This should only happen if you're actively trying to game the system... and if that's the case, thanks for trying, but... please stop? xD*")
-                    .components(|components| components))
-                .await?;
-            return Ok(());
+            return respond_to_unexpected_behaviour(ctx, reply, original_message).await;
         }
 
-        result
-            .edit(ctx, |reply| {
-                reply
-                    .content(
-                        message.content.to_owned()
-                            + "\n\n**Request timed out. Use the command again if needed.**",
-                    )
-                    .components(|components| components)
-            })
-            .await?;
+        return respond_to_timeout(ctx, reply, original_message).await;
     }
 
+    Ok(())
+}
+
+async fn respond_to_success<'a>(
+    ctx: Context<'a>,
+    reply: ReplyHandle<'a>,
+    original_message: String,
+) -> Result<(), Error> {
+    reply
+        .edit(ctx, |reply| {
+            reply
+                .content(original_message + "\n\n**Upgrade successful!**")
+                .components(|components| components)
+        })
+        .await?;
+    Ok(())
+}
+
+async fn respond_to_cancellation<'a>(
+    ctx: Context<'a>,
+    reply: ReplyHandle<'a>,
+    original_message: String,
+) -> Result<(), Error> {
+    reply
+        .edit(ctx, |reply| {
+            reply
+                .content(original_message + "\n\n**Request was cancelled.**")
+                .components(|components| components)
+        })
+        .await?;
+    Ok(())
+}
+
+async fn respond_to_unexpected_behaviour<'a>(
+    ctx: Context<'a>,
+    reply: ReplyHandle<'a>,
+    original_message: String,
+) -> Result<(), Error> {
+    reply
+        .edit(ctx, |reply| reply
+            .content(original_message + "\n\n**Something went wrong.**\n*This should only happen if you're actively trying to game the system... and if that's the case, thanks for trying, but... please stop? xD*")
+            .components(|components| components))
+        .await?;
+    Ok(())
+}
+
+async fn respond_to_timeout<'a>(
+    ctx: Context<'a>,
+    reply: ReplyHandle<'a>,
+    original_message: String,
+) -> Result<(), Error> {
+    reply
+        .edit(ctx, |reply| {
+            reply
+                .content(
+                    original_message
+                        + "\n\n**Request timed out. Use the command again if needed.**",
+                )
+                .components(|components| components)
+        })
+        .await?;
     Ok(())
 }
