@@ -1,6 +1,17 @@
 use serenity::builder::CreateButton;
 use serenity::model::application::component::ButtonStyle;
 
+pub fn create_styled_button(
+    label: &str,
+    custom_id: &str,
+    is_disabled: bool,
+    style: ButtonStyle,
+) -> CreateButton {
+    let mut button = create_button(label, custom_id, is_disabled);
+    button.style(style);
+    button
+}
+
 pub fn create_button(label: &str, custom_id: &str, is_disabled: bool) -> CreateButton {
     let mut button = CreateButton::default();
     button.label(label);

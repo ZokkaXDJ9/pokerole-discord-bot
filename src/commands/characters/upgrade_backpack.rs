@@ -3,11 +3,12 @@ use crate::commands::characters::{
     parse_user_input_to_character, ActionType, DEFAULT_BACKPACK_SLOTS,
 };
 use crate::commands::{characters, send_error, Context, Error};
-use crate::emoji;
-use serenity::collector::ReactionAction;
-use serenity::model::channel::ReactionType;
+use crate::{emoji, helpers};
+use serenity::model::prelude::component::ButtonStyle;
 use std::time::Duration;
 
+const CONFIRM: &str = "upgrade_backpack_proceed";
+const ABORT: &str = "upgrade_backpack_abort";
 const BASE_PRICE: i64 = 500;
 const MONEY_PER_LEVEL: i64 = 500;
 
@@ -34,26 +35,29 @@ pub async fn upgrade_backpack(
         .await;
     }
     let character = character_option.unwrap();
-    let giver_record = sqlx::query!(
+    let character_record = sqlx::query!(
         "SELECT money, backpack_upgrade_count FROM character WHERE id = ?",
         character.id
     )
     .fetch_one(&ctx.data().database)
     .await;
 
-    if let Ok(giver_record) = giver_record {
-        let required_money = BASE_PRICE + MONEY_PER_LEVEL * giver_record.backpack_upgrade_count;
+    if let Ok(character_record) = character_record {
+        let required_money = BASE_PRICE + MONEY_PER_LEVEL * character_record.backpack_upgrade_count;
 
-        let target_slots = DEFAULT_BACKPACK_SLOTS + giver_record.backpack_upgrade_count + 1;
+        let target_slots = DEFAULT_BACKPACK_SLOTS + character_record.backpack_upgrade_count + 1;
 
-        if giver_record.money < required_money {
+        if character_record.money < required_money {
             return send_error(
                 &ctx,
                 format!(
-                    "**Unable to upgrade {}'s backpack.**\n*Upgrading to {} slots would require {} {}.*",
+                    "**Unable to upgrade {}'s backpack.**\n*Upgrading to {} slots would require {} {}. Right now, {} only owns {} {}.*",
                     character.name,
                     target_slots,
                     required_money,
+                    emoji::POKE_COIN,
+                    character.name,
+                    character_record.money,
                     emoji::POKE_COIN
                 )
                 .as_str(),
@@ -61,95 +65,106 @@ pub async fn upgrade_backpack(
             .await;
         }
 
-        let result = ctx.say(format!("**Upgrading {}'s backpack to {} slots will require {} {}.**\n*React with {} if you wish to proceed. Any other reaction will cancel this, and any reactions made by other users will be ignored.*",
-                                     character.name,
-                                     target_slots,
-                                     required_money,
-                                     emoji::POKE_COIN,
-                                     emoji::UNICODE_CHECKMARK_BUTTON,
-        ).as_str()).await?;
+        let message = format!(
+            "**Upgrading {}'s backpack to {} slots will require {} {}.**",
+            character.name,
+            target_slots,
+            required_money,
+            emoji::POKE_COIN,
+        );
+
+        let result = ctx
+            .send(|reply| {
+                reply.content(message).components(|components| {
+                    components.create_action_row(|action_row| {
+                        action_row
+                            .add_button(helpers::create_styled_button(
+                                "Let's do it!",
+                                CONFIRM,
+                                false,
+                                ButtonStyle::Success,
+                            ))
+                            .add_button(helpers::create_styled_button(
+                                "Nope!",
+                                ABORT,
+                                false,
+                                ButtonStyle::Danger,
+                            ))
+                    })
+                })
+            })
+            .await?;
         let message = result.message().await?;
 
-        message
-            .react(
-                ctx,
-                ReactionType::Unicode(emoji::UNICODE_CHECKMARK_BUTTON.to_string()),
-            )
-            .await?;
-        message
-            .react(
-                ctx,
-                ReactionType::Unicode(emoji::UNICODE_CROSS_MARK_BUTTON.to_string()),
-            )
-            .await?;
-
         let interaction = message
-            .await_reaction(ctx)
+            .await_component_interaction(ctx)
             .author_id(ctx.author().id)
             .timeout(Duration::from_secs(69))
             .await;
 
         if let Some(interaction) = interaction {
-            if let ReactionAction::Added(reaction) = interaction.as_ref() {
-                if reaction.emoji.unicode_eq(emoji::UNICODE_CHECKMARK_BUTTON) {
-                    let updated_money = giver_record.money - required_money;
-                    let updated_backpack_upgrade_count = giver_record.backpack_upgrade_count + 1;
+            if interaction.data.custom_id == CONFIRM {
+                let updated_money = character_record.money - required_money;
+                let updated_backpack_upgrade_count = character_record.backpack_upgrade_count + 1;
 
-                    let query_result = sqlx::query!(
+                let query_result = sqlx::query!(
                         "UPDATE character SET money = ?, backpack_upgrade_count = ? WHERE id = ? AND money = ? and backpack_upgrade_count = ?",
                         updated_money,
                         updated_backpack_upgrade_count,
                         character.id,
-                        giver_record.money,
-                        giver_record.backpack_upgrade_count,
+                        character_record.money,
+                        character_record.backpack_upgrade_count,
                     )
                     .execute(&ctx.data().database)
                     .await;
 
-                    if query_result.is_ok() && query_result.unwrap().rows_affected() == 1 {
-                        characters::log_action(
-                            &ActionType::Payment,
-                            &ctx,
-                            format!(
-                                "Removed {} {} from {}",
-                                required_money,
-                                emoji::POKE_COIN,
-                                character.name,
-                            )
-                            .as_str(),
+                if query_result.is_ok() && query_result.unwrap().rows_affected() == 1 {
+                    characters::log_action(
+                        &ActionType::Payment,
+                        &ctx,
+                        format!(
+                            "Removed {} {} from {}",
+                            required_money,
+                            emoji::POKE_COIN,
+                            character.name,
                         )
-                        .await?;
-                        characters::log_action(
-                            &ActionType::BackpackUpgrade,
-                            &ctx,
-                            format!("Increased {}'s backpack size by 1", character.name).as_str(),
-                        )
-                        .await?;
+                        .as_str(),
+                    )
+                    .await?;
+                    characters::log_action(
+                        &ActionType::BackpackUpgrade,
+                        &ctx,
+                        format!("Increased {}'s backpack size by 1", character.name).as_str(),
+                    )
+                    .await?;
 
-                        result
-                            .edit(ctx, |f| {
-                                f.content(
-                                    message.content.to_owned() + "\n\n**Upgrade successful!**",
-                                )
-                            })
-                            .await?;
-
-                        characters::update_character_post(&ctx, character.id).await?;
-                        return Ok(());
-                    }
-                } else {
                     result
-                        .edit(ctx, |f| {
-                            f.content(message.content.to_owned() + "\n\n**Request was cancelled.**")
+                        .edit(ctx, |reply| {
+                            reply
+                                .content(message.content.to_owned() + "\n\n**Upgrade successful!**")
+                                .components(|components| components)
                         })
                         .await?;
 
+                    characters::update_character_post(&ctx, character.id).await?;
                     return Ok(());
                 }
+            } else {
+                result
+                    .edit(ctx, |reply| {
+                        reply
+                            .content(message.content.to_owned() + "\n\n**Request was cancelled.**")
+                            .components(|components| components)
+                    })
+                    .await?;
+
+                return Ok(());
             }
 
             result
-                .edit(ctx, |f| f.content(message.content.to_owned() + "\n\n**Something went wrong.**\n*This should only happen if you're actively trying to game the system... and if that's the case, thanks for trying, but... please stop? xD*"))
+                .edit(ctx, |f| f
+                    .content(message.content.to_owned() + "\n\n**Something went wrong.**\n*This should only happen if you're actively trying to game the system... and if that's the case, thanks for trying, but... please stop? xD*")
+                    .components(|components| components))
                 .await?;
             return Ok(());
         }
