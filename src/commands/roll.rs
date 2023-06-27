@@ -1,4 +1,5 @@
 use crate::commands::{Context, Error};
+use crate::helpers;
 use crate::parse_error::ParseError;
 use rand::Rng;
 use std::str::FromStr;
@@ -12,7 +13,7 @@ pub async fn r(
     ctx: Context<'_>,
     #[description = "1d6+5 will roll 1d6 and add 5."] query: String,
 ) -> Result<(), Error> {
-    execute_query(&ctx, query).await
+    execute_query(&ctx, &query).await
 }
 
 /// Roll dice by entering die amount, sides and flat addition manually.
@@ -32,13 +33,108 @@ pub async fn roll(
     #[max = 100_u8]
     flat_addition: Option<u8>,
 ) -> Result<(), Error> {
-    execute_parsed(&ctx, dice, sides, flat_addition).await
+    execute_parsed(&ctx, ParsedRollQuery::new(dice, sides, flat_addition)).await
 }
 
-pub async fn execute_query<'a>(ctx: &Context<'a>, query: String) -> Result<(), Error> {
+pub struct ParsedRollQuery {
+    amount: u8,
+    sides: u8,
+    flat_addition: u8,
+}
+
+impl ParsedRollQuery {
+    pub fn new(dice: Option<u8>, sides: Option<u8>, flat_addition: Option<u8>) -> Self {
+        ParsedRollQuery {
+            amount: dice.unwrap_or(1).clamp(0, 100),
+            sides: sides.unwrap_or(6).clamp(0, 100),
+            flat_addition: flat_addition.unwrap_or(0),
+        }
+    }
+
+    fn as_button_callback_query_string(&self) -> String {
+        format!(
+            "roll-dice_{}d{}+{}",
+            self.amount, self.sides, self.flat_addition
+        )
+    }
+
+    pub fn execute(&self) -> String {
+        let mut results = Vec::new();
+        let mut total: u32 = self.flat_addition as u32;
+        let mut six_count: u32 = 0;
+        let mut successes: u32 = 0;
+        {
+            // TODO: this is ugly :>
+            let mut rng = rand::thread_rng();
+            for _ in 0..self.amount {
+                let value = rng.gen_range(1..self.sides + 1);
+                total += value as u32;
+                if value > 3 {
+                    successes += 1;
+                    if value == 6 {
+                        six_count += 1;
+                    }
+                }
+                results.push(value);
+            }
+        }
+
+        let result_list = results
+            .iter()
+            .map(|x| {
+                if self.sides == CRIT {
+                    if x == &CRIT {
+                        return format!("**__{}__**", x);
+                    } else if x > &FAIL_THRESHOLD {
+                        return format!("**{}**", x);
+                    }
+                }
+
+                x.to_string()
+            })
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        let mut text = format!("{}d{}", self.amount, self.sides);
+
+        if self.flat_addition > 0 {
+            text.push_str(&format!(
+                "+{} — {}+{} = {}",
+                self.flat_addition, result_list, self.flat_addition, total
+            ));
+        } else {
+            text.push_str(&format!(" — {}", result_list));
+            let success_string: &str;
+            if successes == 0 {
+                success_string = "Successes...";
+            } else if successes >= 6 {
+                success_string = "Successes!!";
+            } else if successes >= 3 {
+                success_string = "Successes!";
+            } else if successes == 1 {
+                success_string = "Success.";
+            } else {
+                success_string = "Successes.";
+            }
+
+            let crit_string = if six_count >= 3 { " **(CRIT)**" } else { "" };
+
+            if self.amount == CRIT {
+                text.push_str(&format!(
+                    "\n**{}** {}{}",
+                    successes, success_string, crit_string
+                ));
+            }
+        }
+
+        text
+    }
+}
+
+pub fn parse_query(query: &str) -> Result<ParsedRollQuery, Error> {
     let flat_addition: Option<u8>;
 
-    let mut remaining_query = query;
+    let mut remaining_query = query.to_string();
     if remaining_query.contains('+') {
         let split: Vec<&str> = remaining_query.split('+').collect();
         if remaining_query.starts_with('+') {
@@ -82,92 +178,33 @@ pub async fn execute_query<'a>(ctx: &Context<'a>, query: String) -> Result<(), E
         Err(_) => return Err(Box::new(ParseError::new("Unable to parse query."))),
     };
 
-    execute_parsed(ctx, amount, sides, flat_addition).await
+    Ok(ParsedRollQuery::new(amount, sides, flat_addition))
 }
 
-async fn execute_parsed<'a>(
-    ctx: &Context<'a>,
-    dice: Option<u8>,
-    sides: Option<u8>,
-    flat_addition: Option<u8>,
-) -> Result<(), Error> {
-    let result = process_roll(dice, sides, flat_addition);
-    ctx.say(result).await?;
-    Ok(())
+pub async fn execute_query<'a>(ctx: &Context<'a>, query: &str) -> Result<(), Error> {
+    let parsed_query = match parse_query(query) {
+        Ok(value) => value,
+        Err(e) => return Err(e),
+    };
+
+    execute_parsed(ctx, parsed_query).await
 }
 
-fn process_roll(amount: Option<u8>, sides: Option<u8>, flat_addition: Option<u8>) -> String {
-    let dice_amount = amount.unwrap_or(1).clamp(0, 100);
-    let sides_amount = sides.unwrap_or(6).clamp(0, 100);
-    let flat_addition_amount = flat_addition.unwrap_or(0);
-
-    let mut results = Vec::new();
-    let mut total: u32 = flat_addition_amount as u32;
-    let mut six_count: u32 = 0;
-    let mut successes: u32 = 0;
-    {
-        // TODO: this is ugly :>
-        let mut rng = rand::thread_rng();
-        for _ in 0..dice_amount {
-            let value = rng.gen_range(1..sides_amount + 1);
-            total += value as u32;
-            if value > 3 {
-                successes += 1;
-                if value == 6 {
-                    six_count += 1;
-                }
-            }
-            results.push(value);
-        }
-    }
-
-    let result_list = results
-        .iter()
-        .map(|x| {
-            if sides_amount == CRIT {
-                if x == &CRIT {
-                    return format!("**__{}__**", x);
-                } else if x > &FAIL_THRESHOLD {
-                    return format!("**{}**", x);
-                }
-            }
-
-            x.to_string()
+async fn execute_parsed<'a>(ctx: &Context<'a>, query: ParsedRollQuery) -> Result<(), Error> {
+    ctx.defer().await?;
+    let result = query.execute();
+    let query_string = query.as_button_callback_query_string();
+    ctx.send(|reply| {
+        reply.content(result).components(|component| {
+            component.create_action_row(|action_row| {
+                action_row.add_button(helpers::create_button(
+                    "Roll again!",
+                    query_string.as_str(),
+                    false,
+                ))
+            })
         })
-        .collect::<Vec<String>>()
-        .join(", ");
-
-    let mut text = format!("{}d{}", dice_amount, sides_amount);
-
-    if flat_addition_amount > 0 {
-        text.push_str(&format!(
-            "+{} — {}+{} = {}",
-            flat_addition_amount, result_list, flat_addition_amount, total
-        ));
-    } else {
-        text.push_str(&format!(" — {}", result_list));
-        let success_string: &str;
-        if successes == 0 {
-            success_string = "Successes...";
-        } else if successes >= 6 {
-            success_string = "Successes!!";
-        } else if successes >= 3 {
-            success_string = "Successes!";
-        } else if successes == 1 {
-            success_string = "Success.";
-        } else {
-            success_string = "Successes.";
-        }
-
-        let crit_string = if six_count >= 3 { " **(CRIT)**" } else { "" };
-
-        if sides_amount == CRIT {
-            text.push_str(&format!(
-                "\n**{}** {}{}",
-                successes, success_string, crit_string
-            ));
-        }
-    }
-
-    text
+    })
+    .await?;
+    Ok(())
 }

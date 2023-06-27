@@ -85,6 +85,16 @@ pub async fn handle_button_interaction(
                 )
                 .await?;
         }
+        "roll-dice" => {
+            let message = commands::roll::parse_query(args[0])
+                .expect("This should always be a valid query in buttons!")
+                .execute();
+            interaction
+                .create_interaction_response(context, |f| {
+                    f.interaction_response_data(|f| f.content(message))
+                })
+                .await?;
+        }
         &_ => {}
     }
 
