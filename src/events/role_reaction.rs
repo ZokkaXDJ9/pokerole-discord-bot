@@ -1,7 +1,8 @@
 use crate::events::FrameworkContext;
-use crate::Error;
+use crate::{emoji, Error};
 use serenity::client::Context;
 use serenity::model::channel::{Reaction, ReactionType};
+use serenity::model::prelude::interaction::InteractionType;
 
 // TODO: Move this into a database.
 const ALLOWED_MESSAGE_IDS: [u64; 3] = [
@@ -15,9 +16,9 @@ pub async fn handle_reaction_add(
     _framework: FrameworkContext<'_>,
     reaction: &Reaction,
 ) -> Result<(), Error> {
+    let emoji_name = get_emoji_name(&reaction.emoji);
     if ALLOWED_MESSAGE_IDS.contains(&reaction.message_id.0) {
-        let bla = get_emoji_name(&reaction.emoji);
-        let role_id = emoji_to_role_id(bla.as_str());
+        let role_id = emoji_to_role_id(emoji_name.as_str());
         ctx.http
             .add_member_role(
                 reaction.guild_id.unwrap().0,
@@ -26,6 +27,28 @@ pub async fn handle_reaction_add(
                 Some("Clicked the button to add the role."),
             )
             .await?;
+
+        return Ok(());
+    }
+
+    match emoji_name.as_str() {
+        emoji::UNICODE_CROSS_MARK | emoji::UNICODE_CROSS_MARK_BUTTON => {
+            if let Some(user_id) = reaction.user_id {
+                let message = reaction.message(ctx).await?;
+                if message.author.bot && ctx.cache.current_user_id() == message.author.id {
+                    if let Some(interaction) = message.interaction {
+                        if interaction.kind == InteractionType::ApplicationCommand
+                            && interaction.user.id == user_id
+                        {
+                            ctx.http
+                                .delete_message(reaction.channel_id.0, reaction.message_id.0)
+                                .await?;
+                        }
+                    }
+                }
+            }
+        }
+        _ => {}
     }
 
     Ok(())

@@ -15,3 +15,6 @@ pub const UNICODE_SIX: &str = "6️⃣";
 pub const UNICODE_SEVEN: &str = "7️⃣";
 pub const UNICODE_EIGHT: &str = "8️⃣";
 pub const UNICODE_NINE: &str = "9️⃣";
+
+pub const UNICODE_CROSS_MARK_BUTTON: &str = "❎";
+pub const UNICODE_CROSS_MARK: &str = "❌";
