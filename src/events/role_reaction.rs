@@ -33,24 +33,27 @@ pub async fn handle_reaction_add(
 
     match emoji_name.as_str() {
         emoji::UNICODE_CROSS_MARK | emoji::UNICODE_CROSS_MARK_BUTTON => {
-            if let Some(user_id) = reaction.user_id {
-                let message = reaction.message(ctx).await?;
-                if message.author.bot && ctx.cache.current_user_id() == message.author.id {
-                    if let Some(interaction) = message.interaction {
-                        if interaction.kind == InteractionType::ApplicationCommand
-                            && interaction.user.id == user_id
-                        {
-                            ctx.http
-                                .delete_message(reaction.channel_id.0, reaction.message_id.0)
-                                .await?;
-                        }
-                    }
+            delete_bot_message(ctx, reaction).await
+        }
+        _ => Ok(()),
+    }
+}
+
+async fn delete_bot_message(ctx: &Context, reaction: &Reaction) -> Result<(), Error> {
+    if let Some(user_id) = reaction.user_id {
+        let message = reaction.message(ctx).await?;
+        if message.author.bot && ctx.cache.current_user_id() == message.author.id {
+            if let Some(interaction) = message.interaction {
+                if interaction.kind == InteractionType::ApplicationCommand
+                    && interaction.user.id == user_id
+                {
+                    ctx.http
+                        .delete_message(reaction.channel_id.0, reaction.message_id.0)
+                        .await?;
                 }
             }
         }
-        _ => {}
     }
-
     Ok(())
 }
 
