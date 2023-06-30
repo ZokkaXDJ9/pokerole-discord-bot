@@ -322,7 +322,7 @@ pub fn validate_user_input<'a>(text: &str) -> Result<(), &'a str> {
     }
 
     // TODO: Move that thing into some static context
-    let regex = Regex::new("^[a-zA-Z0-9]*$").unwrap();
+    let regex = Regex::new("^[a-zA-Z0-9\\s]*$").unwrap();
     if regex.is_match(text) {
         Ok(())
     } else {
