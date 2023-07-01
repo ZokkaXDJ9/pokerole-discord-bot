@@ -211,10 +211,12 @@ pub enum Stat {
     Vitality,
     Special,
     Insight,
-    /// Struggle
+    /// Used for Struggle
     StrengthOrSpecial,
-    /// Copycat
+    /// Used for Copycat
     Copy,
+    /// Used for Fixed Damage moves
+    Rank,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -253,6 +255,7 @@ impl fmt::Display for Stat {
             Stat::Insight => "Insight",
             Stat::StrengthOrSpecial => "Strength / Special",
             Stat::Copy => "Copy",
+            Stat::Rank => "Rank",
         })
     }
 }

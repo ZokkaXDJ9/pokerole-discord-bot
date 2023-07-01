@@ -242,6 +242,7 @@ impl EncounterMon {
                     self.special
                 }
             }
+            Stat::Rank => self.rank.die_count(),
         }
     }
 
