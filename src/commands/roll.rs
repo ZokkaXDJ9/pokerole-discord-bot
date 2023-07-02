@@ -119,12 +119,10 @@ impl ParsedRollQuery {
 
             let crit_string = if six_count >= 3 { " **(CRIT)**" } else { "" };
 
-            if self.amount == CRIT {
-                text.push_str(&format!(
-                    "\n**{}** {}{}",
-                    successes, success_string, crit_string
-                ));
-            }
+            text.push_str(&format!(
+                "\n**{}** {}{}",
+                successes, success_string, crit_string
+            ));
         }
 
         text
