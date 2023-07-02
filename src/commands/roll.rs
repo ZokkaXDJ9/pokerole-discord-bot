@@ -104,25 +104,27 @@ impl ParsedRollQuery {
             ));
         } else {
             text.push_str(&format!(" — {}", result_list));
-            let success_string: &str;
-            if successes == 0 {
-                success_string = "Successes...";
-            } else if successes >= 6 {
-                success_string = "Successes!!";
-            } else if successes >= 3 {
-                success_string = "Successes!";
-            } else if successes == 1 {
-                success_string = "Success.";
-            } else {
-                success_string = "Successes.";
+            if self.sides == 6 {
+                let success_string: &str;
+                if successes == 0 {
+                    success_string = "Successes...";
+                } else if successes >= 6 {
+                    success_string = "Successes!!";
+                } else if successes >= 3 {
+                    success_string = "Successes!";
+                } else if successes == 1 {
+                    success_string = "Success.";
+                } else {
+                    success_string = "Successes.";
+                }
+
+                let crit_string = if six_count >= 3 { " **(CRIT)**" } else { "" };
+
+                text.push_str(&format!(
+                    "\n**{}** {}{}",
+                    successes, success_string, crit_string
+                ));
             }
-
-            let crit_string = if six_count >= 3 { " **(CRIT)**" } else { "" };
-
-            text.push_str(&format!(
-                "\n**{}** {}{}",
-                successes, success_string, crit_string
-            ));
         }
 
         text
