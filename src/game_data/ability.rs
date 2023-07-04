@@ -11,7 +11,7 @@ pub struct Ability {
 }
 
 impl Ability {
-    pub(in crate::game_data) fn new(raw: &RawPokeroleAbility) -> Self {
+    pub(in crate::game_data) fn from_pokerole(raw: &RawPokeroleAbility) -> Self {
         Ability {
             name: raw.name.clone(),
             description: raw.description.clone(),

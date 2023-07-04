@@ -37,7 +37,7 @@ fn replace_effect_string(raw: &str) -> Option<String> {
 }
 
 impl Move {
-    pub(in crate::game_data) fn new(raw: &RawPokeroleMove) -> Self {
+    pub(in crate::game_data) fn from_pokerole(raw: &RawPokeroleMove) -> Self {
         Move {
             name: raw.name.clone(),
             typing: raw.r#type,

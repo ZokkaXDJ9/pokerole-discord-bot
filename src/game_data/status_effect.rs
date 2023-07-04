@@ -10,7 +10,7 @@ pub struct StatusEffect {
 }
 
 impl StatusEffect {
-    pub(in crate::game_data) fn new(raw: RawPokeStatus) -> Self {
+    pub(in crate::game_data) fn from_pokerole(raw: RawPokeStatus) -> Self {
         StatusEffect {
             name: raw.name,
             description: raw.description,

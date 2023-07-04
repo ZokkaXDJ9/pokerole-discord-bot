@@ -19,7 +19,7 @@ impl Nature {
 }
 
 impl Nature {
-    pub(in crate::game_data) fn new(raw: &RawPokeroleNature) -> Self {
+    pub(in crate::game_data) fn from_pokerole(raw: &RawPokeroleNature) -> Self {
         Nature {
             name: raw.name.clone(),
             keywords: raw.keywords.clone(),

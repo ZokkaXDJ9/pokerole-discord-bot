@@ -25,7 +25,7 @@ impl Item {
 }
 
 impl Item {
-    pub(in crate::game_data) fn new(raw: RawPokeroleItem) -> Self {
+    pub(in crate::game_data) fn from_pokerole(raw: RawPokeroleItem) -> Self {
         Item {
             name: raw.name,
             price: Item::parse_price(raw.pmd_price, raw.trainer_price),

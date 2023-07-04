@@ -76,7 +76,7 @@ fn parse_items(
     let mut item_hash_map = HashMap::default();
     for x in pokerole_data.items {
         item_names.push(x.name.clone());
-        item_hash_map.insert(x.name.to_lowercase(), Item::new(x));
+        item_hash_map.insert(x.name.to_lowercase(), Item::from_pokerole(x));
     }
 
     for x in &custom_data.items {
@@ -116,7 +116,7 @@ fn parse_status_effects(
     let mut status_hash_map = HashMap::default();
     for x in pokerole_csv_data.status_effects {
         status_names.push(x.name.clone());
-        status_hash_map.insert(x.name.to_lowercase(), StatusEffect::new(x));
+        status_hash_map.insert(x.name.to_lowercase(), StatusEffect::from_pokerole(x));
     }
 
     for x in &custom_data.status_effects {
@@ -199,7 +199,7 @@ fn parse_moves(
     let mut move_hash_map = HashMap::default();
     for x in &pokerole_data.moves {
         move_names.push(x.name.clone());
-        move_hash_map.insert(x.name.to_lowercase(), Move::new(x));
+        move_hash_map.insert(x.name.to_lowercase(), Move::from_pokerole(x));
     }
 
     for x in &custom_data.moves {
@@ -223,7 +223,7 @@ fn parse_weather(
     let mut weather_hash_map = HashMap::default();
     for x in &pokerole_csv_data.weather {
         weather_names.push(x.name.clone());
-        weather_hash_map.insert(x.name.to_lowercase(), Weather::new(x));
+        weather_hash_map.insert(x.name.to_lowercase(), Weather::from_pokerole(x));
     }
 
     for x in &custom_data.weather {
@@ -247,7 +247,7 @@ fn parse_abilities(
     let mut ability_hash_map = HashMap::default();
     for x in &pokerole_data.abilities {
         ability_names.push(x.name.clone());
-        ability_hash_map.insert(x.name.to_lowercase(), Ability::new(x));
+        ability_hash_map.insert(x.name.to_lowercase(), Ability::from_pokerole(x));
     }
 
     for x in &custom_data.abilities {
@@ -268,7 +268,7 @@ fn parse_natures(pokerole_data: &PokeroleParseResult) -> (Vec<String>, HashMap<S
     let mut nature_hash_map = HashMap::default();
     for x in &pokerole_data.natures {
         nature_names.push(x.name.clone());
-        nature_hash_map.insert(x.name.to_lowercase(), Nature::new(x));
+        nature_hash_map.insert(x.name.to_lowercase(), Nature::from_pokerole(x));
     }
     (nature_names, nature_hash_map)
 }

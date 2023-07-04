@@ -9,7 +9,7 @@ pub struct Weather {
 }
 
 impl Weather {
-    pub(in crate::game_data) fn new(raw: &RawPokeWeather) -> Self {
+    pub(in crate::game_data) fn from_pokerole(raw: &RawPokeWeather) -> Self {
         Weather {
             name: raw.name.clone(),
             description: raw.description.clone(),
