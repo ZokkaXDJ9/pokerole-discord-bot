@@ -4,6 +4,7 @@ use crate::game_data::parser::custom_data::custom_move::CustomMove;
 use crate::game_data::parser::custom_data::custom_pokemon::CustomPokemon;
 use crate::game_data::parser::custom_data::custom_potion::CustomPotion;
 use crate::game_data::parser::custom_data::custom_status_effect::CustomStatusEffect;
+use crate::game_data::parser::custom_data::custom_weather::CustomWeather;
 use crate::game_data::parser::helpers;
 
 pub struct CustomDataParseResult {
@@ -13,6 +14,7 @@ pub struct CustomDataParseResult {
     pub items: Vec<CustomItem>,
     pub status_effects: Vec<CustomStatusEffect>,
     pub potions: Vec<CustomPotion>,
+    pub weather: Vec<CustomWeather>,
 }
 
 pub fn parse(custom_data_path: &str) -> CustomDataParseResult {
@@ -23,5 +25,6 @@ pub fn parse(custom_data_path: &str) -> CustomDataParseResult {
         items: helpers::parse_directory(custom_data_path.to_owned() + "Items"),
         status_effects: helpers::parse_directory(custom_data_path.to_owned() + "StatusEffects"),
         potions: helpers::parse_directory(custom_data_path.to_owned() + "Potions"),
+        weather: helpers::parse_directory(custom_data_path.to_owned() + "Weather"),
     }
 }
