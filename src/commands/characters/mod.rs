@@ -52,8 +52,8 @@ pub async fn update_character_post<'a>(ctx: &Context<'a>, id: i64) {
                 Err(e) => {
                     let _ = ctx
                         .say(format!(
-                            "Failed to update the character post for {}. The stat change has been tracked, but whilst updating the message the following issue occurred: {}.\n\
-                            In case the thread was archived, you can probably fix this by opening the forum post and then adding and removing one poke from the character in order to trigger another update.",
+                            "**Failed to update the character message for {}!**.\nThe change has been tracked, but whilst updating the message the following issue occurred: **{}**.\n\
+                            In case this says 'Thread was archived', you can probably fix this by opening the forum post and then adding and removing one poke from the character in order to trigger another update.",
                             result.name,
                             e
                         ))
