@@ -39,19 +39,29 @@ You can copy the command string either by just pressing the up key inside the te
     ).await
 }
 
-pub async fn update_character_post<'a>(ctx: &Context<'a>, id: i64) -> Result<(), Error> {
+pub async fn update_character_post<'a>(ctx: &Context<'a>, id: i64) {
     if let Some(result) = build_character_string(ctx, id).await {
         let message = ctx
             .serenity_context()
             .http
-            .get_message(result.1 as u64, result.2 as u64)
+            .get_message(result.stat_channel_id as u64, result.stat_message_id as u64)
             .await;
         if let Ok(mut message) = message {
-            message.edit(ctx, |f| f.content(result.0)).await?;
+            match message.edit(ctx, |f| f.content(&result.message)).await {
+                Ok(_) => {}
+                Err(e) => {
+                    let _ = ctx
+                        .say(format!(
+                            "Failed to update the character post for {}. The stat change has been tracked, but whilst updating the message the following issue occurred: {}.\n\
+                            In case the thread was archived, you can probably fix this by opening the forum post and then adding and removing one poke from the character in order to trigger another update.",
+                            result.name,
+                            e
+                        ))
+                        .await;
+                }
+            }
         }
     }
-
-    Ok(())
 }
 
 async fn count_completed_quests<'a>(ctx: &Context<'a>, character_id: i64) -> i32 {
@@ -72,11 +82,18 @@ async fn count_completed_quests<'a>(ctx: &Context<'a>, character_id: i64) -> i32
     }
 }
 
+pub struct BuildCharacterStringResult {
+    message: String,
+    name: String,
+    stat_channel_id: i64,
+    stat_message_id: i64,
+}
+
 // TODO: we really should just change this to a query_as thingy...
 pub async fn build_character_string<'a>(
     ctx: &Context<'a>,
     character_id: i64,
-) -> Option<(String, i64, i64)> {
+) -> Option<BuildCharacterStringResult> {
     let entry = sqlx::query!(
         "SELECT name, experience, money, stat_message_id, stat_channel_id, backpack_upgrade_count \
                 FROM character WHERE id = ? \
@@ -95,8 +112,8 @@ pub async fn build_character_string<'a>(
             let experience = entry.experience % 100;
             let rank = MysteryDungeonRank::from_level(level as u8);
 
-            Some((
-                format!(
+            Some(BuildCharacterStringResult {
+                message: format!(
                     "\
 ## {} {}
 {} {}
@@ -113,9 +130,10 @@ Backpack Slots: {}
                     completed_quest_count,
                     entry.backpack_upgrade_count + DEFAULT_BACKPACK_SLOTS,
                 ),
-                entry.stat_channel_id,
-                entry.stat_message_id,
-            ))
+                name: entry.name,
+                stat_channel_id: entry.stat_channel_id,
+                stat_message_id: entry.stat_message_id,
+            })
         }
         Err(_) => None,
     }
@@ -254,7 +272,7 @@ pub async fn change_character_stat_after_validation<'a>(
                 return send_stale_data_error(ctx).await
             }
 
-            update_character_post(ctx, record.id).await?;
+            update_character_post(ctx, record.id).await;
             let action = if database_column == "money" {
                 emoji::POKE_COIN
             } else {

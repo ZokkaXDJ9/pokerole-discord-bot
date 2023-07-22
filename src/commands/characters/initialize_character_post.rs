@@ -31,7 +31,7 @@ async fn post_character_post<'a>(
     if let Ok(record) = record {
         if record.rows_affected() == 1 {
             send_ephemeral_reply(ctx, "Post has been created!").await?;
-            update_character_post(ctx, character.id).await?;
+            update_character_post(ctx, character.id).await;
             ctx.data()
                 .cache
                 .update_character_names(&ctx.data().database)

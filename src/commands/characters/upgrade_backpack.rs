@@ -133,7 +133,8 @@ pub async fn upgrade_backpack(
                 .await?;
 
                 respond_to_success(ctx, reply, original_message).await?;
-                return characters::update_character_post(&ctx, character.id).await;
+                characters::update_character_post(&ctx, character.id).await;
+                return Ok(());
             }
         } else {
             return respond_to_cancellation(ctx, reply, original_message).await;

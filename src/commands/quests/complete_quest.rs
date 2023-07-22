@@ -71,7 +71,7 @@ pub async fn complete_quest(
     .await?;
 
     for x in characters {
-        update_character_post(&ctx, x.id).await?;
+        update_character_post(&ctx, x.id).await;
     }
 
     Ok(())

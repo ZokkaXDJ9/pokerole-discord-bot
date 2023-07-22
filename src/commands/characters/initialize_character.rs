@@ -55,7 +55,7 @@ pub async fn initialize_character(
 
     if let Ok(record) = record {
         send_ephemeral_reply(&ctx, "Character has been successfully created!").await?;
-        update_character_post(&ctx, record.id).await?;
+        update_character_post(&ctx, record.id).await;
         log_action(
             &ActionType::Initialization,
             &ctx,
