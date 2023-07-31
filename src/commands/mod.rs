@@ -1,5 +1,6 @@
 use crate::cache::CharacterCacheItem;
 use crate::data::Data;
+use crate::parse_error::ParseError;
 use crate::Error;
 use poise::{Command, ReplyHandle};
 
@@ -117,6 +118,20 @@ pub fn parse_variadic_args<T>(
 fn add_if_some<T>(vec: &mut Vec<T>, option: Option<T>) {
     if let Some(x) = option {
         vec.push(x);
+    }
+}
+
+pub async fn find_character(
+    ctx: &Context<'_>,
+    guild_id: u64,
+    character_name: &str,
+) -> Result<CharacterCacheItem, ParseError> {
+    match parse_user_input_to_character(ctx, guild_id, character_name).await {
+        Some(character) => Ok(character),
+        None => Err(ParseError::new(&format!(
+            "Unable to find a character named {}",
+            character_name
+        ))),
     }
 }
 

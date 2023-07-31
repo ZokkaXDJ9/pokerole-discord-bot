@@ -1,9 +1,7 @@
 use crate::cache::CharacterCacheItem;
 use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::characters::update_character_post;
-use crate::commands::{
-    parse_user_input_to_character, send_ephemeral_reply, send_error, Context, Error,
-};
+use crate::commands::{find_character, send_ephemeral_reply, send_error, Context, Error};
 
 async fn post_character_post<'a>(
     ctx: &Context<'a>,
@@ -59,11 +57,7 @@ pub async fn initialize_character_post(
     name: String,
 ) -> Result<(), Error> {
     let guild_id = ctx.guild_id().expect("Command is guild_only").0;
-    let character_option = parse_user_input_to_character(&ctx, guild_id, &name).await;
+    let character = find_character(&ctx, guild_id, &name).await?;
 
-    if let Some(character) = character_option {
-        post_character_post(&ctx, character).await
-    } else {
-        send_error(&ctx, &format!("Unable to find a character named {}.", name)).await
-    }
+    post_character_post(&ctx, character).await
 }

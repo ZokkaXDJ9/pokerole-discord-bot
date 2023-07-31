@@ -2,7 +2,7 @@ use crate::cache::CharacterCacheItem;
 use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::autocompletion::autocomplete_owned_character_name;
 use crate::commands::characters::{change_character_stat_after_validation, ActionType};
-use crate::commands::{parse_user_input_to_character, send_error, Context, Error};
+use crate::commands::{find_character, send_error, Context, Error};
 use crate::emoji;
 
 async fn transfer_money_between_characters<'a>(
@@ -112,24 +112,8 @@ pub async fn give_money(
 ) -> Result<(), Error> {
     // TODO: Button to undo the transaction which lasts for a minute or so.
     let guild_id = ctx.guild_id().expect("Command is guild_only").0;
-    let giver_option = parse_user_input_to_character(&ctx, guild_id, &giver).await;
-    if giver_option.is_none() {
-        return send_error(&ctx, &format!("Unable to find a character named {}", giver)).await;
-    }
-    let receiver_option = parse_user_input_to_character(&ctx, guild_id, &receiver).await;
-    if receiver_option.is_none() {
-        return send_error(
-            &ctx,
-            &format!("Unable to find a character named {}", receiver),
-        )
-        .await;
-    }
+    let giver = find_character(&ctx, guild_id, &giver).await?;
+    let receiver = find_character(&ctx, guild_id, &receiver).await?;
 
-    transfer_money_between_characters(
-        &ctx,
-        giver_option.unwrap(),
-        receiver_option.unwrap(),
-        amount as i64,
-    )
-    .await
+    transfer_money_between_characters(&ctx, giver, receiver, amount as i64).await
 }

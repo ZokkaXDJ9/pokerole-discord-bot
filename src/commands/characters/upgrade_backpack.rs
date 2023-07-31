@@ -1,6 +1,6 @@
 use crate::commands::autocompletion::autocomplete_owned_character_name;
 use crate::commands::characters::{ActionType, DEFAULT_BACKPACK_SLOTS};
-use crate::commands::{characters, parse_user_input_to_character, send_error, Context, Error};
+use crate::commands::{characters, find_character, send_error, Context, Error};
 use crate::{emoji, helpers};
 use poise::ReplyHandle;
 use serenity::model::prelude::component::ButtonStyle;
@@ -21,15 +21,7 @@ pub async fn upgrade_backpack(
     character: String,
 ) -> Result<(), Error> {
     let guild_id = ctx.guild_id().expect("Command is guild_only").0;
-    let character_option = parse_user_input_to_character(&ctx, guild_id, &character).await;
-    if character_option.is_none() {
-        return send_error(
-            &ctx,
-            &format!("Unable to find a character named {}", character),
-        )
-        .await;
-    }
-    let character = character_option.unwrap();
+    let character = find_character(&ctx, guild_id, &character).await?;
     let character_record = sqlx::query!(
         "SELECT money, backpack_upgrade_count FROM character WHERE id = ?",
         character.id
