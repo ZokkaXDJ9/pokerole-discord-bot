@@ -72,11 +72,8 @@ async fn count_completed_quests<'a>(ctx: &Context<'a>, character_id: i64) -> i32
     .fetch_optional(&ctx.data().database)
     .await;
 
-    if let Ok(result) = result {
-        match result {
-            Some(record) => record.count,
-            None => 0,
-        }
+    if let Ok(Some(record)) = result {
+        record.count
     } else {
         0
     }
@@ -104,7 +101,7 @@ pub async fn build_character_string<'a>(
     .fetch_one(&ctx.data().database)
     .await;
 
-    let completed_quest_count = count_completed_quests(&ctx, character_id).await;
+    let completed_quest_count = count_completed_quests(ctx, character_id).await;
 
     match entry {
         Ok(entry) => {
@@ -310,7 +307,7 @@ pub fn validate_user_input<'a>(text: &str) -> Result<(), &'a str> {
     }
 }
 
-pub fn build_character_list(characters: &Vec<CharacterCacheItem>) -> String {
+pub fn build_character_list(characters: &[CharacterCacheItem]) -> String {
     characters
         .iter()
         .map(|x| x.name.as_str())
