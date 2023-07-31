@@ -16,9 +16,9 @@ futures = { version = "0.3.28", default-features = false }
 log = "0.4.18"
 env_logger = "0.10.0"
 rand = { version = "0.8.5", features = ["alloc"] }
-strum = "0.24.1"
-strum_macros = "0.24.3"
+strum = "0.25.0"
+strum_macros = "0.25.1"
 chrono = "0.4.26"
-sqlx = { version = "0.6.3", features = ["runtime-tokio-rustls", "sqlite", "chrono"] }
+sqlx = { version = "0.7.1", features = ["runtime-tokio-rustls", "sqlite", "chrono"] }
 regex = "1.8.4"
 more-asserts = "0.3.1"
