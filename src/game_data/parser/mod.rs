@@ -34,7 +34,7 @@ pub async fn initialize_data() -> GameData {
     let pokerole_csv_data = pokerole_discord_py_csv_parser::parse(&csv_data_path);
     let custom_data = custom_data::parser::parse(&custom_data_path);
 
-    let (rule_names, rule_hash_map) = parse_rules();
+    let (rule_names, rule_hash_map) = parse_rules(&custom_data);
     let (move_names, move_hash_map) = parse_moves(&pokerole_data, &custom_data);
     let (nature_names, nature_hash_map) = parse_natures(&pokerole_data);
     let (ability_names, ability_hash_map) = parse_abilities(&pokerole_data, &custom_data);
@@ -273,12 +273,12 @@ fn parse_natures(pokerole_data: &PokeroleParseResult) -> (Vec<String>, HashMap<S
     (nature_names, nature_hash_map)
 }
 
-fn parse_rules() -> (Vec<String>, HashMap<String, Rule>) {
+fn parse_rules(custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, Rule>) {
     let mut rule_names = Vec::default();
     let mut rule_hash_map = HashMap::default();
-    for x in Rule::get_hardcoded_rules() {
+    for x in &custom_data.rules {
         rule_names.push(x.name.clone());
-        rule_hash_map.insert(x.name.to_lowercase(), x);
+        rule_hash_map.insert(x.name.to_lowercase(), x.clone());
     }
     (rule_names, rule_hash_map)
 }
