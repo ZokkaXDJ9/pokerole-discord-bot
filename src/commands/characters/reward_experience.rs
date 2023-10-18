@@ -2,7 +2,7 @@ use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::characters::{build_character_list, change_character_stat, ActionType};
 use crate::commands::{parse_variadic_args, send_error, Context, Error};
 
-/// Reward players with cash.
+/// Reward players with experience points.
 #[allow(clippy::too_many_arguments)]
 #[poise::command(
     slash_command,
