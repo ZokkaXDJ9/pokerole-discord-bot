@@ -78,10 +78,10 @@ pub mod create_mock {
         data.cache.update_character_names(&data.database).await;
     }
 
-    pub async fn shop(db: &Pool<Sqlite>, guild_id: i64, shop_id: i64, name: &String) {
+    pub async fn wallet(db: &Pool<Sqlite>, guild_id: i64, wallet_id: i64, name: &String) {
         let timestamp = Utc::now().timestamp();
-        let _ = sqlx::query!("INSERT INTO shop (id, name, guild_id, bot_message_channel_id, bot_message_id, creation_timestamp, money) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id", 
-            shop_id,
+        let _ = sqlx::query!("INSERT INTO wallet (id, name, guild_id, bot_message_channel_id, bot_message_id, creation_timestamp, money) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id", 
+            wallet_id,
             name,
             guild_id,
             0,

@@ -1,74 +1,74 @@
-use crate::cache::{CharacterCacheItem, ShopCacheItem};
-use crate::commands::autocompletion::{autocomplete_character_name, autocomplete_shop_name};
+use crate::cache::{CharacterCacheItem, WalletCacheItem};
+use crate::commands::autocompletion::{autocomplete_character_name, autocomplete_wallet_name};
 use crate::commands::characters::{log_action, validate_user_input, ActionType};
 use crate::commands::{
-    ensure_guild_exists, find_character, find_shop, send_ephemeral_reply, send_error, Context,
+    ensure_guild_exists, find_character, find_wallet, send_ephemeral_reply, send_error, Context,
     Error,
 };
 use crate::data::Data;
 
-/// Adds an existing character as owner for an existing shop.
+/// Adds an existing character as owner for an existing wallet.
 #[poise::command(
     slash_command,
     guild_only,
     default_member_permissions = "ADMINISTRATOR"
 )]
-pub async fn add_shop_owner(
+pub async fn add_wallet_owner(
     ctx: Context<'_>,
-    #[description = "What's the shop's name?"]
-    #[autocomplete = "autocomplete_shop_name"]
-    shop_name: String,
+    #[description = "What's the wallet's name?"]
+    #[autocomplete = "autocomplete_wallet_name"]
+    wallet_name: String,
     #[autocomplete = "autocomplete_character_name"]
     #[description = "Which character should be added as owner?"]
     character_name: String,
 ) -> Result<(), Error> {
-    if let Err(e) = validate_user_input(shop_name.as_str()) {
+    if let Err(e) = validate_user_input(wallet_name.as_str()) {
         return send_error(&ctx, e).await;
     }
 
     let guild_id = ctx.guild_id().expect("Command is guild_only").0;
     ensure_guild_exists(&ctx, guild_id as i64).await;
 
-    add_shop_owner_impl(ctx.data(), &shop_name, &character_name, guild_id).await?;
+    add_wallet_owner_impl(ctx.data(), &wallet_name, &character_name, guild_id).await?;
 
     send_ephemeral_reply(
         &ctx,
         format!(
             "Successfully added {} as owner for {}",
-            character_name, shop_name
+            character_name, wallet_name
         )
         .as_str(),
     )
     .await?;
     log_action(
-        &ActionType::ShopChange,
+        &ActionType::WalletChange,
         &ctx,
-        &format!("Added {} as owner for {}", character_name, shop_name,),
+        &format!("Added {} as owner for {}", character_name, wallet_name,),
     )
     .await?;
     Ok(())
 }
 
-async fn add_shop_owner_impl(
+async fn add_wallet_owner_impl(
     data: &Data,
-    shop_name: &str,
+    wallet_name: &str,
     character_name: &str,
     guild_id: u64,
 ) -> Result<(), Error> {
     let character = find_character(data, guild_id, character_name).await?;
-    let shop = find_shop(data, guild_id, shop_name).await?;
-    add_shop_owner_to_db(shop, character, data).await?;
+    let wallet = find_wallet(data, guild_id, wallet_name).await?;
+    add_wallet_owner_to_db(wallet, character, data).await?;
     Ok(())
 }
 
-async fn add_shop_owner_to_db(
-    shop: ShopCacheItem,
+async fn add_wallet_owner_to_db(
+    wallet: WalletCacheItem,
     character: CharacterCacheItem,
     data: &Data,
 ) -> Result<(), String> {
     let result = sqlx::query!(
-        "INSERT INTO shop_owner (shop_id, character_id) VALUES (?, ?)",
-        shop.id,
+        "INSERT INTO wallet_owner (wallet_id, character_id) VALUES (?, ?)",
+        wallet.id,
         character.id,
     )
     .execute(&data.database)
@@ -88,23 +88,24 @@ async fn add_shop_owner_to_db(
 
 #[cfg(test)]
 mod tests {
-    use crate::commands::shops::add_shop_owner::add_shop_owner_impl;
+    use crate::commands::wallets::add_wallet_owner::add_wallet_owner_impl;
     use crate::{database_helpers, Error};
     use sqlx::{Pool, Sqlite};
 
     #[sqlx::test]
-    async fn adding_shop_owner_should_work(db: Pool<Sqlite>) -> Result<(), Error> {
+    async fn adding_wallet_owner_should_work(db: Pool<Sqlite>) -> Result<(), Error> {
         let data = database_helpers::create_mock::data(db).await;
-        let shop_name = String::from("Test Shop");
+        let wallet_name = String::from("Test Wallet");
         let character_name = String::from("Test Character");
         let guild_id = 100;
         let user_id = 200;
-        let shop_id = 300;
+        let wallet_id = 300;
         let character_id = 400;
 
         database_helpers::create_mock::guild(&data.database, guild_id).await;
         database_helpers::create_mock::user(&data.database, user_id).await;
-        database_helpers::create_mock::shop(&data.database, guild_id, shop_id, &shop_name).await;
+        database_helpers::create_mock::wallet(&data.database, guild_id, wallet_id, &wallet_name)
+            .await;
         database_helpers::create_mock::character(
             &data,
             guild_id,
@@ -114,32 +115,33 @@ mod tests {
         )
         .await;
 
-        add_shop_owner_impl(&data, &shop_name, &character_name, guild_id as u64).await?;
+        add_wallet_owner_impl(&data, &wallet_name, &character_name, guild_id as u64).await?;
 
-        let shop_owners = sqlx::query!("SELECT shop_id, character_id FROM shop_owner")
+        let wallet_owners = sqlx::query!("SELECT wallet_id, character_id FROM wallet_owner")
             .fetch_all(&data.database)
             .await?;
 
-        let shop_owner = shop_owners.first().unwrap();
-        assert_eq!(character_id, shop_owner.character_id);
-        assert_eq!(shop_id, shop_owner.shop_id);
+        let wallet_owner = wallet_owners.first().unwrap();
+        assert_eq!(character_id, wallet_owner.character_id);
+        assert_eq!(wallet_id, wallet_owner.wallet_id);
 
         Ok(())
     }
 
     #[sqlx::test]
-    async fn add_shop_owner_called_twice_should_fail(db: Pool<Sqlite>) -> Result<(), Error> {
+    async fn add_wallet_owner_called_twice_should_fail(db: Pool<Sqlite>) -> Result<(), Error> {
         let data = database_helpers::create_mock::data(db).await;
-        let shop_name = String::from("Test Shop");
+        let wallet_name = String::from("Test Wallet");
         let character_name = String::from("Test Character");
         let guild_id = 100;
         let user_id = 200;
-        let shop_id = 300;
+        let wallet_id = 300;
         let character_id = 400;
 
         database_helpers::create_mock::guild(&data.database, guild_id).await;
         database_helpers::create_mock::user(&data.database, user_id).await;
-        database_helpers::create_mock::shop(&data.database, guild_id, shop_id, &shop_name).await;
+        database_helpers::create_mock::wallet(&data.database, guild_id, wallet_id, &wallet_name)
+            .await;
         database_helpers::create_mock::character(
             &data,
             guild_id,
@@ -149,8 +151,9 @@ mod tests {
         )
         .await;
 
-        add_shop_owner_impl(&data, &shop_name, &character_name, guild_id as u64).await?;
-        let result = add_shop_owner_impl(&data, &shop_name, &character_name, guild_id as u64).await;
+        add_wallet_owner_impl(&data, &wallet_name, &character_name, guild_id as u64).await?;
+        let result =
+            add_wallet_owner_impl(&data, &wallet_name, &character_name, guild_id as u64).await;
 
         assert!(result.is_err());
 

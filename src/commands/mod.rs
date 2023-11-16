@@ -1,4 +1,4 @@
-use crate::cache::{CharacterCacheItem, ShopCacheItem};
+use crate::cache::{CharacterCacheItem, WalletCacheItem};
 use crate::data::Data;
 use crate::errors::{ParseError, ValidationError};
 use crate::Error;
@@ -39,8 +39,8 @@ mod characters;
 mod quests;
 mod say;
 mod setting_time_offset;
-mod shops;
 mod update_user_names;
+mod wallets;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     let mut result = vec![
@@ -76,7 +76,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     for x in characters::get_all_commands() {
         result.push(x);
     }
-    for x in shops::get_all_commands() {
+    for x in wallets::get_all_commands() {
         result.push(x);
     }
     for x in quests::get_all_commands() {
@@ -199,27 +199,27 @@ async fn parse_character_names<'a>(
     Ok(result)
 }
 
-pub async fn find_shop(
+pub async fn find_wallet(
     data: &Data,
     guild_id: u64,
-    shop_name: &str,
-) -> Result<ShopCacheItem, ParseError> {
-    match parse_user_input_to_shop(data, guild_id as i64, shop_name).await {
+    wallet_name: &str,
+) -> Result<WalletCacheItem, ParseError> {
+    match parse_user_input_to_wallet(data, guild_id as i64, wallet_name).await {
         Some(character) => Ok(character),
         None => Err(ParseError::new(&format!(
-            "Unable to find a shop named {}",
-            shop_name
+            "Unable to find a wallet named {}",
+            wallet_name
         ))),
     }
 }
 
-pub async fn parse_user_input_to_shop<'a>(
+pub async fn parse_user_input_to_wallet<'a>(
     data: &Data,
     guild_id: i64,
     text: &str,
-) -> Option<ShopCacheItem> {
+) -> Option<WalletCacheItem> {
     let entries = sqlx::query!(
-        "SELECT name, id FROM shop WHERE shop.guild_id = ?",
+        "SELECT name, id FROM wallet WHERE wallet.guild_id = ?",
         guild_id
     )
     .fetch_all(&data.database)
@@ -227,10 +227,10 @@ pub async fn parse_user_input_to_shop<'a>(
 
     if let Ok(entries) = entries {
         let lowercase_input = text.to_lowercase();
-        let name_matches: Vec<ShopCacheItem> = entries
+        let name_matches: Vec<WalletCacheItem> = entries
             .iter()
             .filter(|x| x.name.to_lowercase() == lowercase_input)
-            .map(|x| ShopCacheItem {
+            .map(|x| WalletCacheItem {
                 id: x.id,
                 name: x.name.clone(),
                 guild_id: guild_id as u64,
@@ -301,18 +301,18 @@ pub async fn ensure_character_has_money(
     ensure_money_record_has_money(&character.name, amount, verb, character_record)
 }
 
-pub async fn ensure_shop_has_money(
+pub async fn ensure_wallet_has_money(
     data: &Data,
-    shop: &ShopCacheItem,
+    wallet: &WalletCacheItem,
     amount: i64,
     verb: &str,
 ) -> Result<(), ValidationError> {
-    let record = sqlx::query_as("SELECT money FROM shop WHERE id = ?")
-        .bind(shop.id)
+    let record = sqlx::query_as("SELECT money FROM wallet WHERE id = ?")
+        .bind(wallet.id)
         .fetch_one(&data.database)
         .await;
 
-    ensure_money_record_has_money(&shop.name, amount, verb, record)
+    ensure_money_record_has_money(&wallet.name, amount, verb, record)
 }
 
 fn ensure_money_record_has_money(
@@ -368,11 +368,11 @@ pub fn is_user_admin_or_gm(user_member: Cow<'_, Member>) -> bool {
         .any(|r| r.0 == ADMIN_ROLE_ID || r.0 == GM_ROLE_ID || r.0 == TRIAL_GM_ROLE_ID)
 }
 
-pub async fn ensure_user_owns_shop_or_is_gm(
+pub async fn ensure_user_owns_wallet_or_is_gm(
     data: &Data,
     user_id: i64,
     user_member: Cow<'_, Member>,
-    shop: &ShopCacheItem,
+    wallet: &WalletCacheItem,
 ) -> Result<(), ValidationError> {
     if is_user_admin_or_gm(user_member) {
         return Ok(());
@@ -380,9 +380,9 @@ pub async fn ensure_user_owns_shop_or_is_gm(
 
     let owners = sqlx::query!(
         "SELECT * FROM character WHERE user_id = ? and id in (\
-                SELECT character_id FROM shop_owner WHERE shop_id = ?)",
+                SELECT character_id FROM wallet_owner WHERE wallet_id = ?)",
         user_id,
-        shop.id
+        wallet.id
     )
     .fetch_all(&data.database)
     .await;
@@ -390,7 +390,7 @@ pub async fn ensure_user_owns_shop_or_is_gm(
     if let Ok(owners) = owners {
         if owners.is_empty() {
             Err(ValidationError::new(
-                "Only shop owners, GMs and Admins can withdraw money from shop wallets.",
+                "Only wallet owners, GMs and Admins can withdraw money from wallet wallets.",
             ))
         } else {
             Ok(())

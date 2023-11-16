@@ -1,17 +1,19 @@
-use crate::cache::{CharacterCacheItem, ShopCacheItem};
-use crate::commands::autocompletion::{autocomplete_owned_character_name, autocomplete_shop_name};
+use crate::cache::{CharacterCacheItem, WalletCacheItem};
+use crate::commands::autocompletion::{
+    autocomplete_owned_character_name, autocomplete_wallet_name,
+};
 use crate::commands::characters::{change_character_stat_after_validation, ActionType};
-use crate::commands::shops::change_shop_stat_after_validation;
+use crate::commands::wallets::change_wallet_stat_after_validation;
 use crate::commands::{
-    ensure_character_has_money, ensure_user_owns_character, find_character, find_shop, Context,
+    ensure_character_has_money, ensure_user_owns_character, find_character, find_wallet, Context,
     Error,
 };
 use crate::emoji;
 
-async fn transfer_money_from_character_to_shop<'a>(
+async fn transfer_money_from_character_to_wallet<'a>(
     ctx: &Context<'a>,
     character: CharacterCacheItem,
-    shop: ShopCacheItem,
+    wallet: WalletCacheItem,
     amount: i64,
 ) -> Result<(), Error> {
     ensure_user_owns_character(ctx.author(), &character)?;
@@ -24,20 +26,25 @@ async fn transfer_money_from_character_to_shop<'a>(
         "money",
         &character,
         -amount,
-        &ActionType::ShopPayment,
+        &ActionType::WalletPayment,
     )
     .await
     {
-        if let Ok(_) =
-            change_shop_stat_after_validation(ctx, "money", &shop, amount, &ActionType::ShopPayment)
-                .await
+        if let Ok(_) = change_wallet_stat_after_validation(
+            ctx,
+            "money",
+            &wallet,
+            amount,
+            &ActionType::WalletPayment,
+        )
+        .await
         {
             ctx.say(format!(
                 "***{}** paid {} {} to **{}***!",
                 character.name,
                 amount,
                 emoji::POKE_COIN,
-                shop.name
+                wallet.name
             ))
             .await?;
         } else {
@@ -56,7 +63,7 @@ async fn transfer_money_from_character_to_shop<'a>(
     Ok(())
 }
 
-/// Pay money to a shop.
+/// Pay money to a wallet.
 #[poise::command(slash_command, guild_only)]
 pub async fn pay(
     ctx: Context<'_>,
@@ -64,14 +71,14 @@ pub async fn pay(
     #[autocomplete = "autocomplete_owned_character_name"]
     character: String,
     #[min = 1_u32] amount: u32,
-    #[description = "What's the shop's name?"]
-    #[autocomplete = "autocomplete_shop_name"]
-    shop: String,
+    #[description = "What's the wallet's name?"]
+    #[autocomplete = "autocomplete_wallet_name"]
+    wallet: String,
 ) -> Result<(), Error> {
     // TODO: Button to undo the transaction which lasts for a minute or so.
     let guild_id = ctx.guild_id().expect("Command is guild_only").0;
     let character = find_character(ctx.data(), guild_id, &character).await?;
-    let shop = find_shop(ctx.data(), guild_id, &shop).await?;
+    let wallet = find_wallet(ctx.data(), guild_id, &wallet).await?;
 
-    transfer_money_from_character_to_shop(&ctx, character, shop, amount as i64).await
+    transfer_money_from_character_to_wallet(&ctx, character, wallet, amount as i64).await
 }

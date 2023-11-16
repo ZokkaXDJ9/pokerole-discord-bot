@@ -1,26 +1,26 @@
-use crate::cache::ShopCacheItem;
+use crate::cache::WalletCacheItem;
 use crate::commands::characters::{log_action, ActionType, EntityWithNameAndNumericValue};
 use crate::commands::{send_error, BuildUpdatedStatMessageStringResult, Context};
 use crate::data::Data;
 use crate::{emoji, Error};
 use poise::Command;
 
-mod add_shop_owner;
-mod initialize_shop;
+mod add_wallet_owner;
+mod initialize_wallet;
 mod pay;
 mod withdraw;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     vec![
-        initialize_shop::initialize_shop(),
-        add_shop_owner::add_shop_owner(),
+        initialize_wallet::initialize_wallet(),
+        add_wallet_owner::add_wallet_owner(),
         pay::pay(),
         withdraw::withdraw(),
     ]
 }
 
-pub async fn update_shop_post<'a>(ctx: &Context<'a>, shop_id: i64) {
-    if let Some(result) = build_shop_string(ctx, shop_id).await {
+pub async fn update_wallet_post<'a>(ctx: &Context<'a>, wallet_id: i64) {
+    if let Some(result) = build_wallet_string(ctx, wallet_id).await {
         let message = ctx
             .serenity_context()
             .http
@@ -32,8 +32,8 @@ pub async fn update_shop_post<'a>(ctx: &Context<'a>, shop_id: i64) {
                 Err(e) => {
                     let _ = ctx
                         .say(format!(
-                            "**Failed to update the shop message for {}!**.\nThe change has been tracked, but whilst updating the message the following issue occurred: **{}**.\n\
-                            In case this says 'Thread was archived', you can probably fix this by opening the forum post and then adding and removing one poke from the shop in order to trigger another update.",
+                            "**Failed to update the wallet message for {}!**.\nThe change has been tracked, but whilst updating the message the following issue occurred: **{}**.\n\
+                            In case this says 'Thread was archived', you can probably fix this by opening the forum post and then adding and removing one poke from the wallet in order to trigger another update.",
                             result.name,
                             e
                         ))
@@ -44,22 +44,22 @@ pub async fn update_shop_post<'a>(ctx: &Context<'a>, shop_id: i64) {
     }
 }
 
-async fn build_shop_string<'a>(
+async fn build_wallet_string<'a>(
     ctx: &Context<'a>,
-    shop_id: i64,
+    wallet_id: i64,
 ) -> Option<BuildUpdatedStatMessageStringResult> {
     let entry = sqlx::query!(
         "SELECT name, money, bot_message_id, bot_message_channel_id, creation_timestamp \
-            FROM shop WHERE id = ? ORDER BY rowid LIMIT 1",
-        shop_id
+            FROM wallet WHERE id = ? ORDER BY rowid LIMIT 1",
+        wallet_id
     )
     .fetch_one(&ctx.data().database)
     .await;
 
     let owners = sqlx::query!(
         "SELECT character.name FROM character WHERE id in (\
-                SELECT character_id FROM shop_owner WHERE shop_id = ?)",
-        shop_id
+                SELECT character_id FROM wallet_owner WHERE wallet_id = ?)",
+        wallet_id
     )
     .fetch_all(&ctx.data().database)
     .await;
@@ -88,7 +88,7 @@ async fn build_shop_string<'a>(
         Ok(entry) => Some(BuildUpdatedStatMessageStringResult {
             message: format!(
                 "\
-## {}{}
+## 👛 {}{}
 {} {}
 ",
                 entry.name,
@@ -104,22 +104,22 @@ async fn build_shop_string<'a>(
     }
 }
 
-pub async fn change_shop_stat_after_validation<'a>(
+pub async fn change_wallet_stat_after_validation<'a>(
     ctx: &Context<'a>,
     database_column: &str,
-    shop: &ShopCacheItem,
+    wallet: &WalletCacheItem,
     amount: i64,
     action_type: &ActionType,
 ) -> Result<(), Error> {
     ctx.defer().await?;
     let record = sqlx::query_as::<_, EntityWithNameAndNumericValue>(
         format!(
-            "SELECT id, name, {} as value FROM shop WHERE id = ?",
+            "SELECT id, name, {} as value FROM wallet WHERE id = ?",
             database_column
         )
         .as_str(),
     )
-    .bind(shop.id)
+    .bind(wallet.id)
     .fetch_one(&ctx.data().database)
     .await;
 
@@ -127,7 +127,7 @@ pub async fn change_shop_stat_after_validation<'a>(
         Ok(record) => {
             let new_value = record.value + amount;
             let result = sqlx::query(
-                format!("UPDATE shop SET {} = ? WHERE id = ? AND {} = ?", database_column, database_column).as_str())
+                format!("UPDATE wallet SET {} = ? WHERE id = ? AND {} = ?", database_column, database_column).as_str())
                 .bind(new_value)
                 .bind(record.id)
                 .bind(record.value)
@@ -137,7 +137,7 @@ pub async fn change_shop_stat_after_validation<'a>(
                 return crate::commands::characters::send_stale_data_error(ctx).await
             }
 
-            update_shop_post(ctx, record.id).await;
+            update_wallet_post(ctx, record.id).await;
             let action = if database_column == "money" {
                 emoji::POKE_COIN
             } else {
@@ -156,7 +156,7 @@ pub async fn change_shop_stat_after_validation<'a>(
             log_action(action_type, ctx, format!("{} {} {} {} {}", added_or_removed, amount.abs(), action, to_or_from, record.name).as_str()).await
         }
         Err(_) => {
-            send_error(ctx, format!("Unable to find a shop named {}.\n**Internal cache must be out of date. Please let me know if this ever happens.**", shop.name).as_str()).await
+            send_error(ctx, format!("Unable to find a wallet named {}.\n**Internal cache must be out of date. Please let me know if this ever happens.**", wallet.name).as_str()).await
         }
     }
 }
