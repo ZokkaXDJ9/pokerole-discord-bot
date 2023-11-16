@@ -8,6 +8,7 @@ use poise::Command;
 mod add_wallet_owner;
 mod initialize_wallet;
 mod pay;
+mod wallet_info;
 mod withdraw;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
@@ -16,6 +17,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         add_wallet_owner::add_wallet_owner(),
         pay::pay(),
         withdraw::withdraw(),
+        wallet_info::wallet_info(),
     ]
 }
 
