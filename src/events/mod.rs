@@ -9,8 +9,9 @@ use poise::Event;
 use serenity::client::Context;
 use serenity::model::application::component::ComponentType;
 use serenity::model::application::interaction::Interaction;
+use serenity::model::id::ChannelId;
 use serenity::model::prelude::interaction::message_component::MessageComponentInteraction;
-use serenity::model::prelude::InteractionResponseType;
+use serenity::model::prelude::{GuildId, InteractionResponseType, User};
 
 type FrameworkContext<'a> = poise::FrameworkContext<'a, Data, Error>;
 
@@ -29,8 +30,42 @@ pub async fn handle_events<'a>(
         Event::ReactionRemove { removed_reaction } => {
             role_reaction::handle_reaction_remove(context, framework, removed_reaction).await
         }
+        Event::GuildMemberRemoval {
+            guild_id,
+            user,
+            member_data_if_available: _member_data_if_available,
+        } => handle_guild_member_removal(context, guild_id, user).await,
         _ => Ok(()),
     }
+}
+
+async fn handle_guild_member_removal(
+    context: &Context,
+    guild_id: &GuildId,
+    user: &User,
+) -> Result<(), Error> {
+    // TODO: Should be a Database setting instead of being hardcoded.
+    let channel_id: u64;
+    if guild_id.0 == 1113123066059436093 {
+        // Explorers of the Sea
+        channel_id = 1113127675586941140;
+    } else if guild_id.0 == 1115690620342763645 {
+        // Test Server
+        channel_id = 1120344272571486309;
+    } else {
+        return Ok(());
+    }
+
+    let channel = ChannelId::from(channel_id);
+    channel
+        .send_message(context, |create_message| {
+            create_message
+                .content(&format!("{} has left the server.", user))
+                .allowed_mentions(|mentions| mentions.empty_users())
+        })
+        .await?;
+
+    Ok(())
 }
 
 async fn handle_interaction(
