@@ -10,6 +10,7 @@ We poll and combine data from different sources, this allows us to update the da
 - **CUSTOM_DATA** – path to your custom data overrides. In our case, that's https://github.com/Jacudibu/pokerole-custom-data.
 - **DISCORD_TOKEN** – the Discord Token for your bot.
 - **DATABASE_URL** – URL to the SQLite database file.
+- **DB_BACKUP_CHANNEL_ID** – Optional. Discord Channel ID into which daily backups should be posted.
 
 ## TODO
 A small list of ideas which might be useful to explore in the future.

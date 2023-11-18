@@ -1,3 +1,4 @@
+mod backups;
 mod button_interaction;
 mod quests;
 mod role_reaction;
@@ -33,8 +34,12 @@ pub async fn handle_events<'a>(
         Event::GuildMemberRemoval {
             guild_id,
             user,
-            member_data_if_available: _member_data_if_available,
+            member_data_if_available: _,
         } => handle_guild_member_removal(context, guild_id, user).await,
+        Event::CacheReady { guilds: _ } => {
+            backups::start_backup_thread(context, framework.user_data).await;
+            Ok(())
+        }
         _ => Ok(()),
     }
 }
