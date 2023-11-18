@@ -1,8 +1,7 @@
 use crate::data::Data;
-use chrono::{Duration, Timelike, Utc};
+use chrono::{Duration, Utc};
 use serenity::model::id::ChannelId;
 use serenity::prelude::Context;
-use std::fmt::Debug;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
