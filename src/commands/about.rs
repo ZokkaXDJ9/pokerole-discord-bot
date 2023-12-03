@@ -7,7 +7,11 @@ pub async fn about(ctx: Context<'_>) -> Result<(), Error> {
     ctx.say("\
 ```k4rpOS v0x3b```
 Made with love, cookies and <:ferris_happy:1120237205013663804>!
-## Data Sources:
+## Semi-Useful Links
+- Bot development & support discord server: <https://discord.gg/jVrv2YG2zU>
+- [Source code](<https://github.com/Jacudibu/pokerole-discord-bot>)
+- [Custom Bot Data](<https://github.com/Jacudibu/pokerole-custom-data>)
+### External Data Sources
 - **Original Pokerole System**: <https://www.pokeroleproject.com>
 - Weather & Status Effects taken from **Pokerole-Discord.py-Base** [[Link](<https://github.com/XShadeSlayerXx/PokeRole-Discord.py-Base>)]
 - All other Pokerole specific data is taken from **Pokerole-Data** [[Link](<https://github.com/Pokerole-Software-Development/Pokerole-Data>)]
