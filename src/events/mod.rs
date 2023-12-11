@@ -35,7 +35,7 @@ pub async fn handle_events<'a>(
             guild_id,
             user,
             member_data_if_available: _,
-        } => handle_guild_member_removal(context, guild_id, user).await,
+        } => handle_guild_member_removal(context, framework.user_data, guild_id, user).await,
         Event::CacheReady { guilds: _ } => {
             backups::start_backup_thread(context, framework.user_data).await;
             Ok(())
@@ -46,26 +46,48 @@ pub async fn handle_events<'a>(
 
 async fn handle_guild_member_removal(
     context: &Context,
+    data: &Data,
     guild_id: &GuildId,
     user: &User,
 ) -> Result<(), Error> {
     // TODO: Should be a Database setting instead of being hardcoded.
     let channel_id: u64;
-    if guild_id.0 == 1113123066059436093 {
+    let user_id = user.id.0 as i64;
+    let guild_id = guild_id.0 as i64;
+    if guild_id == 1113123066059436093 {
         // Explorers of the Sea
         channel_id = 1113127675586941140;
-    } else if guild_id.0 == 1115690620342763645 {
+    } else if guild_id == 1115690620342763645 {
         // Test Server
         channel_id = 1120344272571486309;
     } else {
         return Ok(());
     }
 
+    let character_names = sqlx::query!(
+        "SELECT name FROM character WHERE user_id = ? AND guild_id = ?",
+        user_id,
+        guild_id
+    )
+    .fetch_all(&data.database)
+    .await;
+
+    let names;
+    if let Ok(character_names) = character_names {
+        names = character_names
+            .iter()
+            .map(|x| x.name.clone())
+            .collect::<Vec<String>>()
+            .join(", ");
+    } else {
+        names = String::from("didn't find any characters for them in the database");
+    }
+
     let channel = ChannelId::from(channel_id);
     channel
         .send_message(context, |create_message| {
             create_message
-                .content(&format!("{} has left the server.", user))
+                .content(&format!("{} ({}) has left the server.", user, names))
                 .allowed_mentions(|mentions| mentions.empty_users())
         })
         .await?;
