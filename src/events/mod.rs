@@ -74,13 +74,17 @@ async fn handle_guild_member_removal(
 
     let names;
     if let Ok(character_names) = character_names {
-        names = character_names
-            .iter()
-            .map(|x| x.name.clone())
-            .collect::<Vec<String>>()
-            .join(", ");
+        if character_names.is_empty() {
+            names = String::from("didn't find any characters for them in the database");
+        } else {
+            names = character_names
+                .iter()
+                .map(|x| x.name.clone())
+                .collect::<Vec<String>>()
+                .join(", ");
+        }
     } else {
-        names = String::from("didn't find any characters for them in the database");
+        names = String::from("failed to check database for matching character names...?");
     }
 
     let channel = ChannelId::from(channel_id);
