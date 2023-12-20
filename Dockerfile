@@ -1,6 +1,13 @@
 FROM rust:1-bookworm as builder
 WORKDIR /usr/src/pokerole-discord-bot
 COPY . .
+
+ARG DATABASE_URL="sqlite:///build-db.sqlite"
+
+RUN cargo install sqlx-cli
+RUN sqlx database create
+RUN sqlx migrate run
+RUN cargo sqlx prepare
 RUN cargo install --path .
 
 FROM debian:bookworm-slim
