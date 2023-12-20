@@ -38,7 +38,7 @@ pub async fn initialize_data() -> GameData {
     let (move_names, move_hash_map) = parse_moves(&pokerole_data, &custom_data);
     let (nature_names, nature_hash_map) = parse_natures(&pokerole_data);
     let (ability_names, ability_hash_map) = parse_abilities(&pokerole_data, &custom_data);
-    let (weather_names, weather_hash_map) = parse_weather(&pokerole_csv_data, &custom_data);
+    let (weather_names, weather_hash_map) = parse_weather(&custom_data);
     let (pokemon_names, pokemon_hash_map, pokemon_by_api_id_hash_map) =
         parse_pokemon(&pokemon_api_data, &pokerole_data, &custom_data);
     let (status_names, status_hash_map) = parse_status_effects(pokerole_csv_data, &custom_data);
@@ -243,24 +243,11 @@ fn parse_moves(
     (move_names, move_hash_map)
 }
 
-fn parse_weather(
-    pokerole_csv_data: &RawPokeroleDiscordPyCsvData,
-    custom_data: &CustomDataParseResult,
-) -> (Vec<String>, HashMap<String, Weather>) {
+fn parse_weather(custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, Weather>) {
     let mut weather_names = Vec::default();
     let mut weather_hash_map = HashMap::default();
-    for x in &pokerole_csv_data.weather {
-        weather_names.push(x.name.clone());
-        weather_hash_map.insert(x.name.to_lowercase(), Weather::from_pokerole(x));
-    }
-
     for x in &custom_data.weather {
-        if weather_names.contains(&x.name) {
-            info!("Overriding {}", x.name);
-        } else {
-            weather_names.push(x.name.clone());
-        }
-
+        weather_names.push(x.name.clone());
         weather_hash_map.insert(x.name.to_lowercase(), Weather::from_custom(x));
     }
 

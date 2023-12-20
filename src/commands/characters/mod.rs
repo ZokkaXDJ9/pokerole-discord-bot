@@ -5,13 +5,11 @@ use crate::commands::{
 };
 use crate::data::Data;
 use crate::enums::MysteryDungeonRank;
-use crate::{discord_error_codes, emoji, helpers, Error};
+use crate::{emoji, Error};
 use core::fmt;
 use poise::Command;
 use regex::Regex;
-use serenity::all::{
-    CreateAllowedMentions, CreateMessage, EditMessage, HttpError, Message, MessageId,
-};
+use serenity::all::{CreateAllowedMentions, CreateMessage, EditMessage, MessageId};
 use serenity::model::id::ChannelId;
 use std::fmt::Formatter;
 
