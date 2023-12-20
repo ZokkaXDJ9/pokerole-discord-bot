@@ -10,8 +10,6 @@ use crate::game_data::pokemon_api::pokemon_api_parser::PokemonApiData;
 use crate::game_data::pokemon_api::{pokemon_api_parser, PokemonApiId};
 use crate::game_data::pokerole_data;
 use crate::game_data::pokerole_data::parser::PokeroleParseResult;
-use crate::game_data::pokerole_discord_py_data::pokerole_discord_py_csv_parser;
-use crate::game_data::pokerole_discord_py_data::pokerole_discord_py_csv_parser::RawPokeroleDiscordPyCsvData;
 use crate::game_data::potion::Potion;
 use crate::game_data::r#move::Move;
 use crate::game_data::rule::Rule;
@@ -25,13 +23,11 @@ use std::sync::Arc;
 pub async fn initialize_data() -> GameData {
     let pokerole_api_path = std::env::var("POKEMON_API").expect("missing POKEMON_API");
     let pokerole_data_path = std::env::var("POKEROLE_DATA").expect("missing POKEROLE_DATA");
-    let csv_data_path = std::env::var("CSV_DATA").expect("missing CSV_DATA");
     let custom_data_path = std::env::var("CUSTOM_DATA").expect("missing CUSTOM_DATA");
 
     let type_efficiency = pokemon_api_parser::parse_type_efficacy(pokerole_api_path.clone());
     let pokemon_api_data = pokemon_api_parser::parse_pokemon_api(pokerole_api_path);
     let pokerole_data = pokerole_data::parser::parse(&pokerole_data_path);
-    let pokerole_csv_data = pokerole_discord_py_csv_parser::parse(&csv_data_path);
     let custom_data = custom_data::parser::parse(&custom_data_path);
 
     let (rule_names, rule_hash_map) = parse_rules(&custom_data);
@@ -41,7 +37,7 @@ pub async fn initialize_data() -> GameData {
     let (weather_names, weather_hash_map) = parse_weather(&custom_data);
     let (pokemon_names, pokemon_hash_map, pokemon_by_api_id_hash_map) =
         parse_pokemon(&pokemon_api_data, &pokerole_data, &custom_data);
-    let (status_names, status_hash_map) = parse_status_effects(pokerole_csv_data, &custom_data);
+    let (status_names, status_hash_map) = parse_status_effects(&custom_data);
     let (item_names, item_hash_map) = parse_items(pokerole_data, &custom_data);
     let (potion_names, potion_hash_map) = parse_potions(&custom_data);
     GameData {
@@ -109,23 +105,12 @@ fn parse_potions(custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<S
 }
 
 fn parse_status_effects(
-    pokerole_csv_data: RawPokeroleDiscordPyCsvData,
     custom_data: &CustomDataParseResult,
 ) -> (Vec<String>, HashMap<String, StatusEffect>) {
     let mut status_names = Vec::default();
     let mut status_hash_map = HashMap::default();
-    for x in pokerole_csv_data.status_effects {
-        status_names.push(x.name.clone());
-        status_hash_map.insert(x.name.to_lowercase(), StatusEffect::from_pokerole(x));
-    }
-
     for x in &custom_data.status_effects {
-        if status_names.contains(&x.name) {
-            info!("Overriding {}", x.name);
-        } else {
-            status_names.push(x.name.clone());
-        }
-
+        status_names.push(x.name.clone());
         status_hash_map.insert(x.name.to_lowercase(), StatusEffect::from_custom_data(x));
     }
 

@@ -14,7 +14,6 @@ pub(crate) mod weather;
 
 mod pokemon_api;
 mod pokerole_data;
-mod pokerole_discord_py_data;
 
 pub(in crate::game_data) mod enums;
 
