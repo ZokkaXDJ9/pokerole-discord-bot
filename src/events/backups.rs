@@ -63,7 +63,7 @@ async fn upload_backup(ctx: Arc<Context>, channel_id: u64) {
 
     let database_path = get_database_file_path();
     let channel = ChannelId::from(channel_id);
-    match tokio::fs::File::create(database_path).await {
+    match tokio::fs::File::open(database_path).await {
         Ok(file) => {
             let filename = "backup.sqlite"; // TODO: use utc timestamp
             match CreateAttachment::file(&file, filename).await {
@@ -85,7 +85,7 @@ async fn upload_backup(ctx: Arc<Context>, channel_id: u64) {
                     send_error(
                         channel,
                         &ctx,
-                        &format!("Failed to create attachment for backup. Something went horribly wrong, I guess. File Path: {}, Internal Error: {}", get_database_file_path(), e),
+                        &format!("Failed to create attachment for backup. Something went horribly wrong, I guess. File Path: {}, Internal Error: {:?}", get_database_file_path(), e),
                     )
                         .await;
                 }
