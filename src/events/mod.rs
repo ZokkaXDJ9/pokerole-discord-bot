@@ -51,6 +51,7 @@ async fn handle_guild_member_removal(
 ) -> Result<(), Error> {
     // TODO: Should be a Database setting instead of being hardcoded.
     let channel_id: u64;
+    let user_name = &user.name;
     let user_id = user.id.get() as i64;
     let guild_id = guild_id.get() as i64;
     if guild_id == 1113123066059436093 {
@@ -91,7 +92,10 @@ async fn handle_guild_member_removal(
         .send_message(
             context,
             CreateMessage::new()
-                .content(&format!("{} ({}) has left the server.", user, names))
+                .content(&format!(
+                    "{}/{} ({}) has left the server.",
+                    user_name, user, names
+                ))
                 .allowed_mentions(CreateAllowedMentions::default().empty_users()),
         )
         .await?;
