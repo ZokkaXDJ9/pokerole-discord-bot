@@ -65,7 +65,10 @@ async fn upload_backup(ctx: Arc<Context>, channel_id: u64) {
     let channel = ChannelId::from(channel_id);
     match tokio::fs::File::open(database_path).await {
         Ok(file) => {
-            let filename = "backup.sqlite"; // TODO: use utc timestamp
+            let filename = format!(
+                "pokerolebot-backup-{}.sqlite",
+                Utc::now().format("%Y-%m-%d-%H-%M")
+            );
             match CreateAttachment::file(&file, filename).await {
                 Ok(create_attachment) => {
                     let files = vec![create_attachment];
