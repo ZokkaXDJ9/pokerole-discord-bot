@@ -8,6 +8,7 @@ services:
       mode: global
     environment:
       - POKEMON_API=/data/pokeapi/
+      - POKEMON_API_SPRITES=/data/pokeapi-sprites/
       - POKEROLE_DATA=/data/Pokerole-Data/
       - CSV_DATA=/data/PokeRole-Discord.py-Base/
       - CUSTOM_DATA=/data/pokerole-custom-data/
