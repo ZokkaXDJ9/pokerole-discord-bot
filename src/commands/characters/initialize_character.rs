@@ -88,8 +88,9 @@ pub async fn initialize_character(
             &ActionType::Initialization,
             &ctx,
             &format!(
-                "Initialized character {} with {} {} and {} exp.",
+                "Initialized character {} ({}) with {} {} and {} exp.",
                 name,
+                pokemon.name,
                 money,
                 emoji::POKE_COIN,
                 exp
