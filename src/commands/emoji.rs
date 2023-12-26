@@ -1,6 +1,6 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::commands::{Context, Error};
-use crate::enums::PokemonGeneration;
+use crate::enums::{Gender, PokemonGeneration, RegionalVariant};
 use crate::game_data::pokemon::Pokemon;
 use image::{DynamicImage, GenericImageView, ImageOutputFormat};
 use log::info;
@@ -141,11 +141,70 @@ fn find_right_border(image: &DynamicImage) -> u32 {
     image.width()
 }
 
-fn crop_whitespace() -> DynamicImage {
+struct EmojiData {
+    data: Vec<u8>,
+    name: String,
+}
+
+fn get_emoji_data(pokemon: &Pokemon, gender: &Gender, is_shiny: bool) -> Result<EmojiData, Error> {
     let path = std::env::var("POKEMON_API_SPRITES")
         .expect("missing POKEMON_API_SPRITES environment variable.");
-    let image = image::open(path + "/sprites/pokemon/25.png").unwrap();
 
+    let shiny_path = if is_shiny { "shiny/" } else { "" };
+    let use_female_sprite =
+        pokemon.species_data.has_gender_differences && gender == &Gender::Female;
+
+    let gender_path = if use_female_sprite { "female/" } else { "" };
+
+    let image = image::open(format!(
+        "{}/sprites/pokemon/{}{}{}.png",
+        path, shiny_path, gender_path, pokemon.poke_api_id.0
+    ))?;
+
+    let image = crop_whitespace(image);
+    let mut cursor = Cursor::new(Vec::new());
+    image.write_to(&mut cursor, ImageOutputFormat::Png)?;
+
+    cursor.rewind()?;
+    let reader = &mut BufReader::new(&mut cursor);
+    let mut out = Vec::new();
+    reader.read_to_end(&mut out)?;
+
+    let shiny = if is_shiny { "shiny_" } else { "" };
+    let female = if use_female_sprite { "_female" } else { "" };
+    let mut name = pokemon
+        .name
+        .to_lowercase()
+        .replace(" ", "_")
+        .replace("(", "")
+        .replace(")", "");
+
+    let regional_prefix = if let Some(regional_variant) = pokemon.regional_variant {
+        name = name
+            .replace("paldean_form", "")
+            .replace("hisuian_form", "")
+            .replace("galarian_form", "")
+            .replace("alolan_form", "");
+
+        match regional_variant {
+            RegionalVariant::Alola => "alolan_",
+            RegionalVariant::Galar => "galarian",
+            RegionalVariant::Hisui => "hisuian_",
+            RegionalVariant::Paldea => "paldean_",
+        }
+    } else {
+        ""
+    };
+
+    let name = name.trim_matches('_');
+
+    Ok(EmojiData {
+        data: out,
+        name: format!("{}{}{}{}", shiny, regional_prefix, name, female),
+    })
+}
+
+fn crop_whitespace(image: DynamicImage) -> DynamicImage {
     let top_border = find_top_border(&image);
     let bottom_border = find_bottom_border(&image);
     let left_border = find_left_border(&image);
@@ -159,11 +218,11 @@ fn crop_whitespace() -> DynamicImage {
     )
 }
 
-async fn create_emoji<'a>(ctx: &Context<'a>, image: Vec<u8>) {
+async fn upload_emoji_to_discord<'a>(ctx: &Context<'a>, emoji_data: EmojiData) {
     let guild_id = ctx.guild_id().unwrap();
-    let attachment = CreateAttachment::bytes(image, "pikachu.png");
+    let attachment = CreateAttachment::bytes(emoji_data.data, &emoji_data.name);
     match guild_id
-        .create_emoji(&ctx, "pikachu", &attachment.to_base64())
+        .create_emoji(&ctx, emoji_data.name.as_str(), &attachment.to_base64())
         .await
     {
         Ok(emoji) => {
@@ -185,16 +244,12 @@ pub async fn emoji(
     name: String,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().game.pokemon.get(&name.to_lowercase()) {
-        let image = crop_whitespace();
-        let mut cursor = Cursor::new(Vec::new());
-        let result = image.write_to(&mut cursor, ImageOutputFormat::Png);
-
-        let _ = cursor.rewind();
-        let reader = &mut BufReader::new(&mut cursor);
-        let mut out = Vec::new();
-        let result = reader.read_to_end(&mut out);
-
-        create_emoji(&ctx, out).await;
+        match get_emoji_data(pokemon, &Gender::Female, true) {
+            Ok(emoji_data) => {
+                upload_emoji_to_discord(&ctx, emoji_data).await;
+            }
+            Err(_) => {}
+        }
 
         ctx.send(CreateReply::default().content(build_string(pokemon)))
             .await?;
