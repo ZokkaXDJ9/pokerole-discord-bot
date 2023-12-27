@@ -1,11 +1,11 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::commands::{Context, Error};
+use crate::commands::{send_ephemeral_reply, Context, Error};
 use crate::enums::{Gender, PokemonGeneration, RegionalVariant};
 use crate::game_data::pokemon::Pokemon;
 use image::{DynamicImage, GenericImageView, ImageOutputFormat};
 use log::info;
 use poise::CreateReply;
-use serenity::all::CreateAttachment;
+use serenity::all::{CreateAttachment, Emoji};
 use std::io::{BufReader, Cursor, Read, Seek};
 
 const GEN5_ANIMATED: &str = "https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/versions/generation-v/black-white/animated/";
@@ -146,20 +146,40 @@ struct EmojiData {
     name: String,
 }
 
-fn get_emoji_data(pokemon: &Pokemon, gender: &Gender, is_shiny: bool) -> Result<EmojiData, Error> {
+fn local_emoji_path(
+    pokemon: &Pokemon,
+    is_female: bool,
+    is_shiny: bool,
+    is_animated: bool,
+) -> String {
     let path = std::env::var("POKEMON_API_SPRITES")
         .expect("missing POKEMON_API_SPRITES environment variable.");
 
+    let animated_path = if is_animated {
+        "versions/generation-v/black-white/animated/"
+    } else {
+        ""
+    };
     let shiny_path = if is_shiny { "shiny/" } else { "" };
+    let gender_path = if is_female { "female/" } else { "" };
+
+    format!(
+        "{}{}/sprites/pokemon/{}{}{}.png",
+        path, animated_path, shiny_path, gender_path, pokemon.poke_api_id.0
+    )
+}
+
+fn get_emoji_data(
+    pokemon: &Pokemon,
+    gender: &Gender,
+    is_shiny: bool,
+    is_animated: bool,
+) -> Result<EmojiData, Error> {
     let use_female_sprite =
         pokemon.species_data.has_gender_differences && gender == &Gender::Female;
 
-    let gender_path = if use_female_sprite { "female/" } else { "" };
-
-    let image = image::open(format!(
-        "{}/sprites/pokemon/{}{}{}.png",
-        path, shiny_path, gender_path, pokemon.poke_api_id.0
-    ))?;
+    let path = local_emoji_path(pokemon, use_female_sprite, is_shiny, is_animated);
+    let image = image::open(path)?;
 
     let image = crop_whitespace(image);
     let mut cursor = Cursor::new(Vec::new());
@@ -218,7 +238,10 @@ fn crop_whitespace(image: DynamicImage) -> DynamicImage {
     )
 }
 
-async fn upload_emoji_to_discord<'a>(ctx: &Context<'a>, emoji_data: EmojiData) {
+async fn upload_emoji_to_discord<'a>(
+    ctx: &Context<'a>,
+    emoji_data: EmojiData,
+) -> Result<Emoji, String> {
     let guild_id = ctx.guild_id().unwrap();
     let attachment = CreateAttachment::bytes(emoji_data.data, &emoji_data.name);
     match guild_id
@@ -226,11 +249,10 @@ async fn upload_emoji_to_discord<'a>(ctx: &Context<'a>, emoji_data: EmojiData) {
         .await
     {
         Ok(emoji) => {
-            let _ = ctx.say(format!("Created new emoji: {}", emoji)).await;
+            let _ = send_ephemeral_reply(ctx, &format!("Created new emoji: {}", emoji)).await;
+            Ok(emoji)
         }
-        Err(e) => {
-            info!("{}", e);
-        }
+        Err(e) => Err(e.to_string()),
     }
 }
 
@@ -242,17 +264,19 @@ pub async fn emoji(
     #[rename = "pokemon"]
     #[autocomplete = "autocomplete_pokemon"]
     name: String,
+    #[description = "Which phenotype?"] gender: Gender,
+    #[description = "Does it glow in the dark?"] is_shiny: bool,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().game.pokemon.get(&name.to_lowercase()) {
-        match get_emoji_data(pokemon, &Gender::Female, true) {
-            Ok(emoji_data) => {
-                upload_emoji_to_discord(&ctx, emoji_data).await;
-            }
-            Err(_) => {}
+        if let Ok(emoji_data) = get_emoji_data(pokemon, &gender, is_shiny, false) {
+            let _ = upload_emoji_to_discord(&ctx, emoji_data).await;
         }
 
-        ctx.send(CreateReply::default().content(build_string(pokemon)))
-            .await?;
+        if pokemon.species_data.generation <= PokemonGeneration::Five {
+            if let Ok(emoji_data) = get_emoji_data(pokemon, &gender, is_shiny, true) {
+                let _ = upload_emoji_to_discord(&ctx, emoji_data).await;
+            }
+        }
     } else {
         ctx.send(CreateReply::default()
             .content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name))

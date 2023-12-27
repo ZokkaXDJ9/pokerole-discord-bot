@@ -1,4 +1,5 @@
 use crate::emoji;
+use poise::ChoiceParameter;
 use serde::Deserialize;
 use std::fmt;
 use std::fmt::Formatter;
@@ -228,7 +229,7 @@ pub enum SocialStat {
     Cute,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize, ChoiceParameter)]
 pub enum Gender {
     Genderless,
     Male,
