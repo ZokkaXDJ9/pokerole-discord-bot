@@ -6,6 +6,7 @@ use crate::Error;
 use image::{DynamicImage, GenericImageView, ImageOutputFormat};
 use poise::CreateReply;
 use serenity::all::{CreateAttachment, Emoji};
+use std::fs::File;
 use std::io::{BufReader, Cursor, Read, Seek};
 
 const EMPTY_PIXEL: [u8; 4] = [0, 0, 0, 0];
@@ -163,6 +164,16 @@ fn get_emoji_data(
         pokemon.species_data.has_gender_differences && gender == &Gender::Female;
 
     let path = local_emoji_path(pokemon, use_female_sprite, is_shiny, is_animated);
+    if is_animated {
+        let mut file = File::open(path)?;
+        let mut out = Vec::new();
+        file.read_to_end(&mut out)?;
+        return Ok(EmojiData {
+            data: out,
+            name: emoji_string(pokemon, use_female_sprite, is_shiny, is_animated),
+        });
+    }
+
     let mut image = image::open(path)?;
 
     if !is_animated {
