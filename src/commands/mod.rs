@@ -63,7 +63,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         select_random::select_random(),
         poll::poll(),
         scale::scale(),
-        emoji::emoji(),
+        emoji::create_emojis(),
         encounter::encounter(),
         potion::potion(),
         calculate_hp_damage_modifier::calculate_hp_damage_modifier(),

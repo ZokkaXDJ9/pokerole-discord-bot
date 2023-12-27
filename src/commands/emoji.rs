@@ -1,67 +1,12 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::commands::{send_ephemeral_reply, Context, Error};
+use crate::commands::{send_ephemeral_reply, send_error, Context};
 use crate::enums::{Gender, PokemonGeneration, RegionalVariant};
 use crate::game_data::pokemon::Pokemon;
+use crate::Error;
 use image::{DynamicImage, GenericImageView, ImageOutputFormat};
-use log::info;
 use poise::CreateReply;
 use serenity::all::{CreateAttachment, Emoji};
 use std::io::{BufReader, Cursor, Read, Seek};
-
-const GEN5_ANIMATED: &str = "https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/versions/generation-v/black-white/animated/";
-const GEN5_ANIMATED_FEMALE: &str = "https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/versions/generation-v/black-white/animated/female/";
-
-const FRONT_MALE: &str = "https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/";
-const FRONT_FEMALE: &str = "https://github.com/PokeAPI/sprites/blob/master/sprites/pokemon/female/";
-
-fn build_string(pokemon: &Pokemon) -> String {
-    let mut result = String::from("");
-
-    if pokemon.species_data.generation <= PokemonGeneration::Five {
-        result.push_str(
-            std::format!(
-                "\
-## Animated Gen 5 sprite
-Male/Unisex: <{}{}.gif>\n",
-                GEN5_ANIMATED,
-                pokemon.poke_api_id.0
-            )
-            .as_str(),
-        );
-
-        if pokemon.species_data.has_gender_differences {
-            result.push_str(
-                std::format!(
-                    "Female: <{}{}.gif>\n",
-                    GEN5_ANIMATED_FEMALE,
-                    pokemon.poke_api_id.0
-                )
-                .as_str(),
-            );
-        }
-    }
-
-    result.push_str(
-        std::format!(
-            "\
-## Regular Front Sprite
-Male/Unisex: <{}{}.png>\n",
-            FRONT_MALE,
-            pokemon.poke_api_id.0
-        )
-        .as_str(),
-    );
-
-    if pokemon.species_data.has_gender_differences {
-        result.push_str(
-            std::format!("Female: <{}{}.png>\n", FRONT_FEMALE, pokemon.poke_api_id.0).as_str(),
-        );
-    }
-
-    result.push_str("\n\n**When adding the emoji to the server, make sure to cut out the whitespace around the sprite, and make it square sized so discord doesn't stretch it in some awkward way.**");
-
-    result
-}
 
 const EMPTY_PIXEL: [u8; 4] = [0, 0, 0, 0];
 
@@ -162,42 +107,22 @@ fn local_emoji_path(
     };
     let shiny_path = if is_shiny { "shiny/" } else { "" };
     let gender_path = if is_female { "female/" } else { "" };
+    let file_type = if is_animated { "gif" } else { "png" };
 
     format!(
-        "{}{}/sprites/pokemon/{}{}{}.png",
-        path, animated_path, shiny_path, gender_path, pokemon.poke_api_id.0
+        "{}sprites/pokemon/{}{}{}{}.{}",
+        path, animated_path, shiny_path, gender_path, pokemon.poke_api_id.0, file_type
     )
 }
 
-fn get_emoji_data(
-    pokemon: &Pokemon,
-    gender: &Gender,
-    is_shiny: bool,
-    is_animated: bool,
-) -> Result<EmojiData, Error> {
-    let use_female_sprite =
-        pokemon.species_data.has_gender_differences && gender == &Gender::Female;
-
-    let path = local_emoji_path(pokemon, use_female_sprite, is_shiny, is_animated);
-    let image = image::open(path)?;
-
-    let image = crop_whitespace(image);
-    let mut cursor = Cursor::new(Vec::new());
-    image.write_to(&mut cursor, ImageOutputFormat::Png)?;
-
-    cursor.rewind()?;
-    let reader = &mut BufReader::new(&mut cursor);
-    let mut out = Vec::new();
-    reader.read_to_end(&mut out)?;
-
+fn emoji_string(pokemon: &Pokemon, is_female: bool, is_shiny: bool, is_animated: bool) -> String {
     let shiny = if is_shiny { "shiny_" } else { "" };
-    let female = if use_female_sprite { "_female" } else { "" };
+    let female = if is_female { "_female" } else { "" };
     let mut name = pokemon
         .name
         .to_lowercase()
-        .replace(" ", "_")
-        .replace("(", "")
-        .replace(")", "");
+        .replace(' ', "_")
+        .replace(['(', ')'], "");
 
     let regional_prefix = if let Some(regional_variant) = pokemon.regional_variant {
         name = name
@@ -216,11 +141,50 @@ fn get_emoji_data(
         ""
     };
 
-    let name = name.trim_matches('_');
+    let animated = if is_animated { "_animated" } else { "" };
+
+    format!(
+        "{}{}{}{}{}",
+        shiny,
+        regional_prefix,
+        name.trim_matches('_'),
+        female,
+        animated
+    )
+}
+
+fn get_emoji_data(
+    pokemon: &Pokemon,
+    gender: &Gender,
+    is_shiny: bool,
+    is_animated: bool,
+) -> Result<EmojiData, Error> {
+    let use_female_sprite =
+        pokemon.species_data.has_gender_differences && gender == &Gender::Female;
+
+    let path = local_emoji_path(pokemon, use_female_sprite, is_shiny, is_animated);
+    let mut image = image::open(path)?;
+
+    if !is_animated {
+        image = crop_whitespace(image);
+    }
+
+    let mut cursor = Cursor::new(Vec::new());
+
+    if is_animated {
+        image.write_to(&mut cursor, ImageOutputFormat::Png)?;
+    } else {
+        image.write_to(&mut cursor, ImageOutputFormat::Gif)?;
+    }
+
+    cursor.rewind()?;
+    let reader = &mut BufReader::new(&mut cursor);
+    let mut out = Vec::new();
+    reader.read_to_end(&mut out)?;
 
     Ok(EmojiData {
         data: out,
-        name: format!("{}{}{}{}", shiny, regional_prefix, name, female),
+        name: emoji_string(pokemon, use_female_sprite, is_shiny, is_animated),
     })
 }
 
@@ -241,7 +205,7 @@ fn crop_whitespace(image: DynamicImage) -> DynamicImage {
 async fn upload_emoji_to_discord<'a>(
     ctx: &Context<'a>,
     emoji_data: EmojiData,
-) -> Result<Emoji, String> {
+) -> Result<Emoji, serenity::all::Error> {
     let guild_id = ctx.guild_id().unwrap();
     let attachment = CreateAttachment::bytes(emoji_data.data, &emoji_data.name);
     match guild_id
@@ -252,13 +216,13 @@ async fn upload_emoji_to_discord<'a>(
             let _ = send_ephemeral_reply(ctx, &format!("Created new emoji: {}", emoji)).await;
             Ok(emoji)
         }
-        Err(e) => Err(e.to_string()),
+        Err(e) => Err(e),
     }
 }
 
 /// Display links to fancy emojis!
 #[poise::command(slash_command, default_member_permissions = "ADMINISTRATOR")]
-pub async fn emoji(
+pub async fn create_emojis(
     ctx: Context<'_>,
     #[description = "Which pokemon?"]
     #[rename = "pokemon"]
@@ -273,8 +237,17 @@ pub async fn emoji(
         }
 
         if pokemon.species_data.generation <= PokemonGeneration::Five {
-            if let Ok(emoji_data) = get_emoji_data(pokemon, &gender, is_shiny, true) {
-                let _ = upload_emoji_to_discord(&ctx, emoji_data).await;
+            match get_emoji_data(pokemon, &gender, is_shiny, true) {
+                Ok(emoji_data) => {
+                    let _ = upload_emoji_to_discord(&ctx, emoji_data).await;
+                }
+                Err(e) => {
+                    let _ = send_error(
+                        &ctx,
+                        &format!("Something went wrong when parsing the emoji: {}", e),
+                    )
+                    .await;
+                }
             }
         }
     } else {
