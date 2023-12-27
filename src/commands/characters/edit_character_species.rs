@@ -1,4 +1,4 @@
-use crate::commands::autocompletion::autocomplete_owned_character_name;
+use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::commands::characters::{log_action, update_character_post, ActionType};
 use crate::commands::{
@@ -15,7 +15,7 @@ use crate::commands::{
 pub async fn edit_character_species(
     ctx: Context<'_>,
     #[description = "Which character?"]
-    #[autocomplete = "autocomplete_owned_character_name"]
+    #[autocomplete = "autocomplete_character_name"]
     character: String,
     #[description = "Into which pokemon?"]
     #[autocomplete = "autocomplete_pokemon"]
