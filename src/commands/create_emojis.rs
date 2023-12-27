@@ -231,7 +231,7 @@ async fn upload_emoji_to_discord<'a>(
     }
 }
 
-/// Display links to fancy emojis!
+/// Creates new emojis!
 #[poise::command(slash_command, default_member_permissions = "ADMINISTRATOR")]
 pub async fn create_emojis(
     ctx: Context<'_>,
@@ -243,23 +243,10 @@ pub async fn create_emojis(
     #[description = "Does it glow in the dark?"] is_shiny: bool,
 ) -> Result<(), Error> {
     if let Some(pokemon) = ctx.data().game.pokemon.get(&name.to_lowercase()) {
-        if let Ok(emoji_data) = get_emoji_data(pokemon, &gender, is_shiny, false) {
-            let _ = upload_emoji_to_discord(&ctx, emoji_data).await;
-        }
+        create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, false).await;
 
         if pokemon.species_data.generation <= PokemonGeneration::Five {
-            match get_emoji_data(pokemon, &gender, is_shiny, true) {
-                Ok(emoji_data) => {
-                    let _ = upload_emoji_to_discord(&ctx, emoji_data).await;
-                }
-                Err(e) => {
-                    let _ = send_error(
-                        &ctx,
-                        &format!("Something went wrong when parsing the emoji: {}", e),
-                    )
-                    .await;
-                }
-            }
+            create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, true).await;
         }
     } else {
         ctx.send(CreateReply::default()
@@ -269,4 +256,34 @@ pub async fn create_emojis(
     }
 
     Ok(())
+}
+
+async fn create_emoji_and_notify_user<'a>(
+    ctx: &Context<'a>,
+    pokemon: &Pokemon,
+    gender: &Gender,
+    is_shiny: bool,
+    is_animated: bool,
+) {
+    match get_emoji_data(pokemon, &gender, is_shiny, is_animated) {
+        Ok(emoji_data) => {
+            if let Err(e) = upload_emoji_to_discord(&ctx, emoji_data).await {
+                let _ = send_error(
+                    &ctx,
+                    &format!(
+                        "Something went wrong when uploading the emoji to discord: {:?}",
+                        e
+                    ),
+                )
+                .await;
+            }
+        }
+        Err(e) => {
+            let _ = send_error(
+                &ctx,
+                &format!("Something went wrong when parsing the emoji: {:?}", e),
+            )
+            .await;
+        }
+    }
 }

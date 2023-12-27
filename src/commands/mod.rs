@@ -16,9 +16,9 @@ mod autocompletion;
 pub mod ability;
 pub mod about;
 pub mod calculate_hp_damage_modifier;
+pub mod create_emojis;
 mod create_role_reaction_post;
 pub mod efficiency;
-pub mod emoji;
 pub mod encounter;
 pub mod item;
 pub mod learns;
@@ -63,7 +63,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         select_random::select_random(),
         poll::poll(),
         scale::scale(),
-        emoji::create_emojis(),
+        create_emojis::create_emojis(),
         encounter::encounter(),
         potion::potion(),
         calculate_hp_damage_modifier::calculate_hp_damage_modifier(),
