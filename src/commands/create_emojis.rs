@@ -9,14 +9,12 @@ use serenity::all::{CreateAttachment, Emoji};
 use std::fs::File;
 use std::io::{BufReader, Cursor, Read, Seek};
 
-const EMPTY_PIXEL: [u8; 4] = [0, 0, 0, 0];
-
 fn find_top_border(image: &DynamicImage) -> u32 {
     for y in 0..image.height() {
         let mut contains_something = false;
         for x in 0..image.width() {
             let pixel = image.get_pixel(x, y);
-            if pixel.0 != EMPTY_PIXEL {
+            if pixel.0[3] > 0 {
                 contains_something = true;
                 break;
             }
@@ -35,7 +33,7 @@ fn find_bottom_border(image: &DynamicImage) -> u32 {
         let mut contains_something = false;
         for x in 0..image.width() {
             let pixel = image.get_pixel(x, y);
-            if pixel.0 != EMPTY_PIXEL {
+            if pixel.0[3] > 0 {
                 contains_something = true;
                 break;
             }
@@ -54,7 +52,7 @@ fn find_left_border(image: &DynamicImage) -> u32 {
         let mut contains_something = false;
         for y in 0..image.height() {
             let pixel = image.get_pixel(x, y);
-            if pixel.0 != EMPTY_PIXEL {
+            if pixel.0[3] > 0 {
                 contains_something = true;
                 break;
             }
@@ -73,7 +71,7 @@ fn find_right_border(image: &DynamicImage) -> u32 {
         let mut contains_something = false;
         for y in 0..image.height() {
             let pixel = image.get_pixel(x, y);
-            if pixel.0 != EMPTY_PIXEL {
+            if pixel.0[3] > 0 {
                 contains_something = true;
                 break;
             }
