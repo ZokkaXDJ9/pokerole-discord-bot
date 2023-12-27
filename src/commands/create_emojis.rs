@@ -200,24 +200,31 @@ fn get_emoji_data(
 }
 
 fn crop_whitespace(image: DynamicImage) -> DynamicImage {
-    let top_border = find_top_border(&image);
+    let mut top_border = find_top_border(&image);
     let bottom_border = find_bottom_border(&image);
     let left_border = find_left_border(&image);
     let right_border = find_right_border(&image);
 
-    image.crop_imm(
-        left_border,
-        top_border,
-        right_border - left_border,
-        bottom_border - top_border,
-    )
+    let height = bottom_border - top_border;
+    let width = right_border - left_border;
+    if height < width {
+        // Make it square and move the cutout towards the bottom so the mon "stands" on the ground.
+        let diff = width - height;
+        if (top_border as i32) - (diff as i32) < 0 {
+            top_border = 0;
+        } else {
+            top_border -= diff;
+        }
+    }
+
+    image.crop_imm(left_border, top_border, width, bottom_border - top_border)
 }
 
 async fn upload_emoji_to_discord<'a>(
     ctx: &Context<'a>,
     emoji_data: EmojiData,
 ) -> Result<Emoji, serenity::all::Error> {
-    let guild_id = ctx.guild_id().unwrap();
+    let guild_id = ctx.guild_id().expect("create_emoji Command is guild_only!");
     let attachment = CreateAttachment::bytes(emoji_data.data, &emoji_data.name);
     match guild_id
         .create_emoji(&ctx, emoji_data.name.as_str(), &attachment.to_base64())
@@ -232,7 +239,11 @@ async fn upload_emoji_to_discord<'a>(
 }
 
 /// Creates new emojis!
-#[poise::command(slash_command, default_member_permissions = "ADMINISTRATOR")]
+#[poise::command(
+    slash_command,
+    guild_only,
+    default_member_permissions = "ADMINISTRATOR"
+)]
 pub async fn create_emojis(
     ctx: Context<'_>,
     #[description = "Which pokemon?"]
@@ -265,11 +276,11 @@ async fn create_emoji_and_notify_user<'a>(
     is_shiny: bool,
     is_animated: bool,
 ) {
-    match get_emoji_data(pokemon, &gender, is_shiny, is_animated) {
+    match get_emoji_data(pokemon, gender, is_shiny, is_animated) {
         Ok(emoji_data) => {
-            if let Err(e) = upload_emoji_to_discord(&ctx, emoji_data).await {
+            if let Err(e) = upload_emoji_to_discord(ctx, emoji_data).await {
                 let _ = send_error(
-                    &ctx,
+                    ctx,
                     &format!(
                         "Something went wrong when uploading the emoji to discord: {:?}",
                         e
@@ -280,7 +291,7 @@ async fn create_emoji_and_notify_user<'a>(
         }
         Err(e) => {
             let _ = send_error(
-                &ctx,
+                ctx,
                 &format!("Something went wrong when parsing the emoji: {:?}", e),
             )
             .await;
