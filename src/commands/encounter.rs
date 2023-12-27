@@ -1,11 +1,10 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::commands::{Context, Error};
+use crate::commands::{pokemon_from_autocomplete_string, Context, Error};
 use crate::enums::{CombatOrSocialStat, Gender, MysteryDungeonRank, PokemonType, SocialStat, Stat};
 use crate::game_data::pokemon::Pokemon;
 use crate::game_data::r#move::Move;
 use crate::game_data::GameData;
 use crate::helpers;
-use poise::CreateReply;
 use rand::seq::IteratorRandom;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
@@ -26,19 +25,12 @@ pub async fn encounter(
     #[description = "How many? Defaults to 1."]
     amount: Option<u8>,
 ) -> Result<(), Error> {
-    if let Some(pokemon) = ctx.data().game.pokemon.get(&pokemon.to_lowercase()) {
-        for encounter in build_encounter(pokemon, level, amount) {
-            for part in
-                helpers::split_long_messages(encounter.build_string(pokemon, &ctx.data().game))
-            {
-                ctx.say(part).await?;
-            }
+    let pokemon = pokemon_from_autocomplete_string(&ctx, &pokemon)?;
+    for encounter in build_encounter(pokemon, level, amount) {
+        for part in helpers::split_long_messages(encounter.build_string(pokemon, &ctx.data().game))
+        {
+            ctx.say(part).await?;
         }
-    } else {
-        ctx.send(CreateReply::default()
-            .content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", pokemon))
-            .ephemeral(true)
-        ).await?;
     }
 
     Ok(())

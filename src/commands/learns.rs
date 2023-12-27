@@ -1,5 +1,5 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::commands::{Context, Error};
+use crate::commands::{pokemon_from_autocomplete_string, Context, Error};
 use crate::game_data::pokemon::Pokemon;
 use crate::helpers;
 use poise::CreateReply;
@@ -14,14 +14,8 @@ pub async fn learns(
     #[autocomplete = "autocomplete_pokemon"]
     name: String,
 ) -> Result<(), Error> {
-    if let Some(pokemon) = ctx.data().game.pokemon.get(&name.to_lowercase()) {
-        ctx.send(create_reply(pokemon)).await?;
-    } else {
-        ctx.send(CreateReply::default()
-            .content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name))
-            .ephemeral(true)
-        ).await?;
-    }
+    let pokemon = pokemon_from_autocomplete_string(&ctx, &name)?;
+    ctx.send(create_reply(pokemon)).await?;
 
     Ok(())
 }

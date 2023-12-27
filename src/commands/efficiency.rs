@@ -1,9 +1,8 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::commands::{Context, Error};
+use crate::commands::{pokemon_from_autocomplete_string, Context, Error};
 use crate::enums::PokemonType;
 use crate::game_data::pokemon::Pokemon;
 use crate::game_data::type_efficiency::{Efficiency, TypeEfficiency};
-use poise::CreateReply;
 use std::fmt;
 use std::fmt::Formatter;
 use strum::IntoEnumIterator;
@@ -64,18 +63,12 @@ pub async fn efficiency(
     #[autocomplete = "autocomplete_pokemon"]
     name: String,
 ) -> Result<(), Error> {
-    if let Some(pokemon) = ctx.data().game.pokemon.get(&name.to_lowercase()) {
-        ctx.say(get_type_resistances_string(
-            pokemon,
-            &ctx.data().game.type_efficiency,
-        ))
-        .await?;
-    } else {
-        ctx.send(CreateReply::default()
-            .content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name))
-            .ephemeral(true)
-        ).await?;
-    }
+    let pokemon = pokemon_from_autocomplete_string(&ctx, &name)?;
+    ctx.say(get_type_resistances_string(
+        pokemon,
+        &ctx.data().game.type_efficiency,
+    ))
+    .await?;
 
     Ok(())
 }

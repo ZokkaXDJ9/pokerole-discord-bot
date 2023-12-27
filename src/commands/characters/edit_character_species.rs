@@ -1,9 +1,9 @@
 use crate::commands::autocompletion::autocomplete_owned_character_name;
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::commands::characters::{log_action, update_character_post, ActionType};
-use crate::commands::{find_character, send_ephemeral_reply, Context, Error};
-use crate::errors::ParseError;
-use crate::game_data::pokemon::Pokemon;
+use crate::commands::{
+    find_character, pokemon_from_autocomplete_string, send_ephemeral_reply, Context, Error,
+};
 
 /// Update what kinda pokemon someone is.
 #[allow(clippy::too_many_arguments)]
@@ -47,16 +47,4 @@ pub async fn edit_character_species(
     )
     .await;
     Ok(())
-}
-
-fn pokemon_from_autocomplete_string<'a>(
-    ctx: &Context<'a>,
-    name: &String,
-) -> Result<&'a Pokemon, ParseError> {
-    let pokemon = ctx.data().game.pokemon.get(&name.to_lowercase());
-    if let Some(pokemon) = pokemon {
-        Ok(pokemon)
-    } else {
-        Err(ParseError::new(&std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name)))
-    }
 }

@@ -3,7 +3,8 @@ use crate::commands::characters::{
     log_action, update_character_post, validate_user_input, ActionType,
 };
 use crate::commands::{
-    ensure_guild_exists, ensure_user_exists, send_ephemeral_reply, send_error, Context, Error,
+    ensure_guild_exists, ensure_user_exists, pokemon_from_autocomplete_string,
+    send_ephemeral_reply, send_error, Context, Error,
 };
 use crate::emoji;
 use serenity::all::CreateMessage;
@@ -36,12 +37,7 @@ pub async fn initialize_character(
         return send_error(&ctx, e).await;
     }
 
-    let pokemon = ctx.data().game.pokemon.get(&pokemon_species.to_lowercase());
-    if pokemon.is_none() {
-        return send_error(&ctx, &std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", pokemon_species)).await;
-    }
-    let pokemon = pokemon.expect("This was just checked.");
-
+    let pokemon = pokemon_from_autocomplete_string(&ctx, &pokemon_species)?;
     let is_shiny = is_shiny.unwrap_or(false);
     let exp = exp.unwrap_or(0);
     let money = money.unwrap_or(500);

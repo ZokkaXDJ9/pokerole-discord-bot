@@ -1,10 +1,11 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::commands::{send_ephemeral_reply, send_error, Context};
+use crate::commands::{
+    pokemon_from_autocomplete_string, send_ephemeral_reply, send_error, Context,
+};
 use crate::enums::{Gender, PokemonGeneration, RegionalVariant};
 use crate::game_data::pokemon::Pokemon;
 use crate::Error;
 use image::{DynamicImage, GenericImageView, ImageOutputFormat};
-use poise::CreateReply;
 use serenity::all::{CreateAttachment, Emoji};
 use std::fs::File;
 use std::io::{BufReader, Cursor, Read, Seek};
@@ -251,17 +252,11 @@ pub async fn create_emojis(
     #[description = "Which phenotype?"] gender: Gender,
     #[description = "Does it glow in the dark?"] is_shiny: bool,
 ) -> Result<(), Error> {
-    if let Some(pokemon) = ctx.data().game.pokemon.get(&name.to_lowercase()) {
-        create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, false).await;
+    let pokemon = pokemon_from_autocomplete_string(&ctx, &name)?;
+    create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, false).await;
 
-        if pokemon.species_data.generation <= PokemonGeneration::Five {
-            create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, true).await;
-        }
-    } else {
-        ctx.send(CreateReply::default()
-            .content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name))
-            .ephemeral(true)
-        ).await?;
+    if pokemon.species_data.generation <= PokemonGeneration::Five {
+        create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, true).await;
     }
 
     Ok(())

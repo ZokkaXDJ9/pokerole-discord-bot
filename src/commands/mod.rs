@@ -1,6 +1,7 @@
 use crate::cache::{CharacterCacheItem, WalletCacheItem};
 use crate::data::Data;
 use crate::errors::{ParseError, ValidationError};
+use crate::game_data::pokemon::Pokemon;
 use crate::{discord_error_codes, helpers, Error};
 use poise::{Command, CreateReply, ReplyHandle};
 use serenity::all::{EditMessage, HttpError, Message};
@@ -435,4 +436,16 @@ async fn handle_error_during_message_edit<'a>(
     }
 
     let _ = ctx.say(format!("Some very random error occurred when updating the stat message for {}.\n**The requested change has been applied, but it isn't shown in the message there right now.**\n{}, please look into this:\n```{:?}```", name.into(), helpers::ADMIN_PING_STRING, e)).await;
+}
+
+fn pokemon_from_autocomplete_string<'a>(
+    ctx: &Context<'a>,
+    name: &String,
+) -> Result<&'a Pokemon, ParseError> {
+    let pokemon = ctx.data().game.pokemon.get(&name.to_lowercase());
+    if let Some(pokemon) = pokemon {
+        Ok(pokemon)
+    } else {
+        Err(ParseError::new(&std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name)))
+    }
 }

@@ -1,6 +1,5 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::commands::{Context, Error};
-use poise::CreateReply;
+use crate::commands::{pokemon_from_autocomplete_string, Context, Error};
 use serenity::utils::MessageBuilder;
 use std::default::Default;
 
@@ -17,24 +16,18 @@ pub async fn scale(
     #[max = 133_u8]
     percent: u8,
 ) -> Result<(), Error> {
-    if let Some(pokemon) = ctx.data().game.pokemon.get(&name.to_lowercase()) {
-        let mut builder = MessageBuilder::new();
-        builder.push_bold_line(std::format!("{} scaled to {}%", &pokemon.name, percent));
-        builder.push_codeblock(
-            std::format!(
-                "{}   |   {}",
-                pokemon.height.scale(percent),
-                pokemon.weight.scale(percent)
-            ),
-            None,
-        );
-        ctx.say(builder.to_string()).await?;
-    } else {
-        ctx.send(CreateReply::default()
-            .content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name))
-            .ephemeral(true)
-        ).await?;
-    }
+    let pokemon = pokemon_from_autocomplete_string(&ctx, &name)?;
+    let mut builder = MessageBuilder::new();
+    builder.push_bold_line(std::format!("{} scaled to {}%", &pokemon.name, percent));
+    builder.push_codeblock(
+        std::format!(
+            "{}   |   {}",
+            pokemon.height.scale(percent),
+            pokemon.weight.scale(percent)
+        ),
+        None,
+    );
+    ctx.say(builder.to_string()).await?;
 
     Ok(())
 }

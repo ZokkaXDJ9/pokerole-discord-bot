@@ -1,24 +1,18 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::commands::{Context, Error};
+use crate::commands::{pokemon_from_autocomplete_string, Context, Error};
 use crate::helpers;
 use poise::CreateReply;
 use serenity::all::CreateActionRow;
 use std::default::Default;
 
 async fn print_poke_stats(ctx: Context<'_>, name: String) -> Result<(), Error> {
-    if let Some(pokemon) = ctx.data().game.pokemon.get(&name.to_lowercase()) {
-        ctx.send(
-            CreateReply::default()
-                .content(pokemon.build_stats_string())
-                .components(vec![create_buttons(&pokemon.name.to_lowercase())]),
-        )
-        .await?;
-    } else {
-        ctx.send(CreateReply::default()
-            .content(std::format!("Unable to find a pokemon named **{}**, sorry! If that wasn't a typo, maybe it isn't implemented yet?", name))
-            .ephemeral(true)
-        ).await?;
-    }
+    let pokemon = pokemon_from_autocomplete_string(&ctx, &name)?;
+    ctx.send(
+        CreateReply::default()
+            .content(pokemon.build_stats_string())
+            .components(vec![create_buttons(&pokemon.name.to_lowercase())]),
+    )
+    .await?;
 
     Ok(())
 }
