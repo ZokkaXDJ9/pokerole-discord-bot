@@ -15,6 +15,7 @@ use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
 use std::fmt::Formatter;
 
+mod edit_character_species;
 mod give_money;
 mod initialize_character;
 mod initialize_character_post;
@@ -30,6 +31,7 @@ const DEFAULT_BACKPACK_SLOTS: i64 = 6;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     vec![
+        edit_character_species::edit_character_species(),
         give_money::give_money(),
         initialize_character::initialize_character(),
         initialize_character_post::initialize_character_post(),
@@ -194,6 +196,7 @@ pub enum ActionType {
     Spar,
     NewPlayerCombatTutorial,
     NewPlayerTour,
+    CharacterEdit,
 }
 
 impl fmt::Display for ActionType {
@@ -212,6 +215,7 @@ impl fmt::Display for ActionType {
             ActionType::Spar => "🤺 [Spar]",
             ActionType::NewPlayerCombatTutorial => "⚔️ [Combat Tutorial]",
             ActionType::NewPlayerTour => "🎫 [Tour]",
+            ActionType::CharacterEdit => "📝 [Edit]",
         })
     }
 }
