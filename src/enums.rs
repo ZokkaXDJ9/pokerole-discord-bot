@@ -372,6 +372,12 @@ pub enum PokemonGeneration {
     Nine,
 }
 
+impl PokemonGeneration {
+    pub fn has_animated_sprite(&self) -> bool {
+        self <= &PokemonGeneration::Five
+    }
+}
+
 #[derive(
     Debug,
     Clone,
