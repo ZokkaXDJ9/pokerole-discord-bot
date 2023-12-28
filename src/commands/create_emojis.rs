@@ -3,7 +3,7 @@ use crate::commands::{
     ensure_guild_exists, pokemon_from_autocomplete_string, send_ephemeral_reply, send_error,
     Context,
 };
-use crate::enums::{Gender, PokemonGeneration};
+use crate::enums::Gender;
 use crate::game_data::pokemon::Pokemon;
 use crate::{emoji, Error};
 use image::{DynamicImage, GenericImageView, ImageOutputFormat};
