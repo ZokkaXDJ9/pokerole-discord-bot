@@ -82,7 +82,7 @@ pub async fn initialize_character(
     ).fetch_one(&ctx.data().database)
         .await;
 
-    create_emojis::create_emojis_for_pokemon(&ctx, pokemon, gender, is_shiny).await;
+    create_emojis::create_emojis_for_pokemon(&ctx, pokemon, &gender, is_shiny).await;
 
     if let Ok(record) = record {
         send_ephemeral_reply(&ctx, "Character has been successfully created!").await?;

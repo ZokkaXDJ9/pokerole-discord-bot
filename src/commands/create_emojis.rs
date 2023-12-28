@@ -1,12 +1,16 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::commands::{
-    pokemon_from_autocomplete_string, send_ephemeral_reply, send_error, Context,
+    ensure_guild_exists, pokemon_from_autocomplete_string, send_ephemeral_reply, send_error,
+    Context,
 };
-use crate::enums::{Gender, PokemonGeneration, RegionalVariant};
+use crate::enums::{Gender, PokemonGeneration};
 use crate::game_data::pokemon::Pokemon;
-use crate::Error;
+use crate::{helpers, Error};
 use image::{DynamicImage, GenericImageView, ImageOutputFormat};
+use log::info;
 use serenity::all::{CreateAttachment, Emoji};
+use sqlx::sqlite::SqliteQueryResult;
+use sqlx::{Pool, Sqlite};
 use std::fs::File;
 use std::io::{BufReader, Cursor, Read, Seek};
 
@@ -115,44 +119,6 @@ fn local_emoji_path(
     )
 }
 
-fn emoji_string(pokemon: &Pokemon, is_female: bool, is_shiny: bool, is_animated: bool) -> String {
-    let shiny = if is_shiny { "shiny_" } else { "" };
-    let female = if is_female { "_female" } else { "" };
-    let mut name = pokemon
-        .name
-        .to_lowercase()
-        .replace(' ', "_")
-        .replace(['(', ')'], "");
-
-    let regional_prefix = if let Some(regional_variant) = pokemon.regional_variant {
-        name = name
-            .replace("paldean_form", "")
-            .replace("hisuian_form", "")
-            .replace("galarian_form", "")
-            .replace("alolan_form", "");
-
-        match regional_variant {
-            RegionalVariant::Alola => "alolan_",
-            RegionalVariant::Galar => "galarian",
-            RegionalVariant::Hisui => "hisuian_",
-            RegionalVariant::Paldea => "paldean_",
-        }
-    } else {
-        ""
-    };
-
-    let animated = if is_animated { "_animated" } else { "" };
-
-    format!(
-        "{}{}{}{}{}",
-        shiny,
-        regional_prefix,
-        name.trim_matches('_'),
-        female,
-        animated
-    )
-}
-
 fn get_emoji_data(
     pokemon: &Pokemon,
     gender: &Gender,
@@ -169,7 +135,7 @@ fn get_emoji_data(
         file.read_to_end(&mut out)?;
         return Ok(EmojiData {
             data: out,
-            name: emoji_string(pokemon, use_female_sprite, is_shiny, is_animated),
+            name: helpers::pokemon_to_emoji_name(pokemon, use_female_sprite, is_shiny, is_animated),
         });
     }
 
@@ -194,7 +160,7 @@ fn get_emoji_data(
 
     Ok(EmojiData {
         data: out,
-        name: emoji_string(pokemon, use_female_sprite, is_shiny, is_animated),
+        name: helpers::pokemon_to_emoji_name(pokemon, use_female_sprite, is_shiny, is_animated),
     })
 }
 
@@ -253,20 +219,92 @@ pub async fn create_emojis(
     #[description = "Does it glow in the dark?"] is_shiny: bool,
 ) -> Result<(), Error> {
     let pokemon = pokemon_from_autocomplete_string(&ctx, &name)?;
-    create_emojis_for_pokemon(&ctx, pokemon, gender, is_shiny).await;
+    let created_emojis = create_emojis_for_pokemon(&ctx, pokemon, &gender, is_shiny).await;
+    if created_emojis == 0 {
+        let _ = send_error(&ctx, "Emojis for this pokemon already seem to exist!").await;
+    }
+
     Ok(())
 }
 
 pub async fn create_emojis_for_pokemon<'a>(
     ctx: &Context<'a>,
     pokemon: &Pokemon,
-    gender: Gender,
+    gender: &Gender,
     is_shiny: bool,
-) {
-    create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, false).await;
+) -> u8 {
+    let guild_id = ctx.guild_id().expect("Emoji creation is guild_only.").get() as i64;
+    let mut created_emojis = 0u8;
+    if !does_emoji_exist_in_database(
+        &ctx.data().database,
+        guild_id,
+        pokemon,
+        gender,
+        is_shiny,
+        false,
+    )
+    .await
+    {
+        create_emoji_and_notify_user(ctx, pokemon, gender, is_shiny, false).await;
+        created_emojis += 1u8;
+    }
 
     if pokemon.species_data.generation <= PokemonGeneration::Five {
-        create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, true).await;
+        if !does_emoji_exist_in_database(
+            &ctx.data().database,
+            guild_id,
+            pokemon,
+            gender,
+            is_shiny,
+            true,
+        )
+        .await
+        {
+            create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, true).await;
+            created_emojis += 1u8;
+        }
+    }
+
+    created_emojis
+}
+
+async fn store_emoji_in_database(
+    database: &Pool<Sqlite>,
+    guild_id: i64,
+    emoji: &Emoji,
+    pokemon: &Pokemon,
+    gender: &Gender,
+    is_shiny: bool,
+    is_animated: bool,
+) {
+    let api_id = pokemon.poke_api_id.0 as i64;
+    let is_female = pokemon.species_data.has_gender_differences && gender == &Gender::Female;
+    let discord_string = emoji.to_string();
+    match sqlx::query!("INSERT INTO emoji (species_api_id, guild_id, is_female, is_shiny, is_animated, discord_string) VALUES (?, ?, ?, ?, ?, ?)", api_id, guild_id, is_female, is_shiny, is_animated, discord_string).execute(database).await {
+        Ok(_) => {}
+        Err(e) => {info!("{:?}", e);}
+    };
+}
+
+async fn does_emoji_exist_in_database(
+    database: &Pool<Sqlite>,
+    guild_id: i64,
+    pokemon: &Pokemon,
+    gender: &Gender,
+    is_shiny: bool,
+    is_animated: bool,
+) -> bool {
+    let api_id = pokemon.poke_api_id.0 as i64;
+    let is_female = pokemon.species_data.has_gender_differences && gender == &Gender::Female;
+
+    let result = sqlx::query!("SELECT COUNT(*) as count FROM emoji WHERE species_api_id = ? AND guild_id = ? AND is_female = ? AND is_shiny = ? AND is_animated = ?", api_id, guild_id, is_female, is_shiny, is_animated)
+        .fetch_one(database)
+        .await;
+
+    if let Ok(result) = result {
+        result.count > 0
+    } else {
+        false
     }
 }
 
@@ -277,9 +315,24 @@ async fn create_emoji_and_notify_user<'a>(
     is_shiny: bool,
     is_animated: bool,
 ) {
+    let guild_id = ctx.guild_id().expect("Creating emoji is guild_only!").get() as i64;
+    ensure_guild_exists(ctx, guild_id).await;
+
     match get_emoji_data(pokemon, gender, is_shiny, is_animated) {
-        Ok(emoji_data) => {
-            if let Err(e) = upload_emoji_to_discord(ctx, emoji_data).await {
+        Ok(emoji_data) => match upload_emoji_to_discord(ctx, emoji_data).await {
+            Ok(emoji) => {
+                store_emoji_in_database(
+                    &ctx.data().database,
+                    guild_id,
+                    &emoji,
+                    pokemon,
+                    gender,
+                    is_shiny,
+                    is_animated,
+                )
+                .await;
+            }
+            Err(e) => {
                 let _ = send_error(
                     ctx,
                     &format!(
@@ -289,7 +342,7 @@ async fn create_emoji_and_notify_user<'a>(
                 )
                 .await;
             }
-        }
+        },
         Err(e) => {
             let _ = send_error(
                 ctx,
