@@ -253,13 +253,21 @@ pub async fn create_emojis(
     #[description = "Does it glow in the dark?"] is_shiny: bool,
 ) -> Result<(), Error> {
     let pokemon = pokemon_from_autocomplete_string(&ctx, &name)?;
+    create_emojis_for_pokemon(&ctx, pokemon, gender, is_shiny).await;
+    Ok(())
+}
+
+pub async fn create_emojis_for_pokemon<'a>(
+    ctx: &Context<'a>,
+    pokemon: &Pokemon,
+    gender: Gender,
+    is_shiny: bool,
+) {
     create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, false).await;
 
     if pokemon.species_data.generation <= PokemonGeneration::Five {
         create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, true).await;
     }
-
-    Ok(())
 }
 
 async fn create_emoji_and_notify_user<'a>(

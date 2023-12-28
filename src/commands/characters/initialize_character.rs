@@ -3,7 +3,7 @@ use crate::commands::characters::{
     log_action, update_character_post, validate_user_input, ActionType,
 };
 use crate::commands::{
-    ensure_guild_exists, ensure_user_exists, pokemon_from_autocomplete_string,
+    create_emojis, ensure_guild_exists, ensure_user_exists, pokemon_from_autocomplete_string,
     send_ephemeral_reply, send_error, Context, Error,
 };
 use crate::emoji;
@@ -28,7 +28,7 @@ pub async fn initialize_character(
     #[description = "Optional. Does it glow in the dark? Defaults to false."] is_shiny: Option<
         bool,
     >,
-    #[description = "What does it look like?"] phenotype: Gender,
+    #[description = "Which phenotype?"] gender: Gender,
     #[description = "Optional. Defaults to 0."]
     #[min = 0_i64]
     exp: Option<i64>,
@@ -44,7 +44,7 @@ pub async fn initialize_character(
     let is_shiny = is_shiny.unwrap_or(false);
     let exp = exp.unwrap_or(0);
     let money = money.unwrap_or(500);
-    let phenotype = phenotype as i64;
+    let phenotype = gender as i64;
 
     let message = ctx
         .channel_id()
@@ -81,6 +81,8 @@ pub async fn initialize_character(
         phenotype
     ).fetch_one(&ctx.data().database)
         .await;
+
+    create_emojis::create_emojis_for_pokemon(&ctx, pokemon, gender, is_shiny).await;
 
     if let Ok(record) = record {
         send_ephemeral_reply(&ctx, "Character has been successfully created!").await?;
