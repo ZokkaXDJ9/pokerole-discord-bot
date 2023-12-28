@@ -1,5 +1,7 @@
-use crate::enums::{Gender, PokemonGeneration, RegionalVariant};
+use crate::data::Data;
+use crate::enums::{Gender, RegionalVariant};
 use crate::game_data::pokemon::Pokemon;
+use crate::game_data::PokemonApiId;
 use sqlx::{Pool, Sqlite};
 
 pub const POKE_COIN: &str = "<:poke_coin:1120237132200546304>";
@@ -29,7 +31,37 @@ pub const FENCING: &str = "🤺";
 pub const TICKET: &str = "🎫";
 pub const CROSSED_SWORDS: &str = "⚔️";
 
-pub async fn get_character_emoji(
+pub async fn get_character_emoji(data: &Data, character_id: i64) -> Option<String> {
+    let result = sqlx::query!(
+        "SELECT guild_id, species_api_id, is_shiny, phenotype FROM character WHERE id = ?",
+        character_id
+    )
+    .fetch_one(&data.database)
+    .await;
+
+    if let Ok(record) = result {
+        let gender = Gender::from_phenotype(record.phenotype);
+        let api_id = PokemonApiId(record.species_api_id as u16);
+        let pokemon = data
+            .game
+            .pokemon_by_api_id
+            .get(&api_id)
+            .expect("DB species ID should always be set!");
+
+        get_pokemon_emoji(
+            &data.database,
+            record.guild_id,
+            pokemon,
+            &gender,
+            record.is_shiny,
+        )
+        .await
+    } else {
+        None
+    }
+}
+
+pub async fn get_pokemon_emoji(
     database: &Pool<Sqlite>,
     guild_id: i64,
     pokemon: &Pokemon,

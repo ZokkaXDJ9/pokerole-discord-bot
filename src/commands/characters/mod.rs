@@ -121,7 +121,7 @@ pub async fn build_character_string(
                 ))
                 .expect("All mons inside the Database should have a valid API ID assigned.");
             let gender = Gender::from_phenotype(entry.phenotype);
-            let emoji = emoji::get_character_emoji(
+            let emoji = emoji::get_pokemon_emoji(
                 &data.database,
                 entry.guild_id,
                 pokemon,
