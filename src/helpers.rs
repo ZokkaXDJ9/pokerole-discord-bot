@@ -1,5 +1,6 @@
 use crate::data::Data;
 use crate::enums::QuestParticipantSelectionMechanism;
+use crate::game_data::PokemonApiId;
 use crate::Error;
 use serenity::all::{
     ButtonStyle, ChannelId, Context, CreateActionRow, CreateButton, EditMessage, MessageId,
@@ -76,6 +77,8 @@ fn find_best_split_pos(message: &str) -> usize {
 
 struct Signup {
     character_name: String,
+    character_species_id: i64,
+    character_experience: i64,
     user_id: i64,
     accepted: bool,
 }
@@ -88,7 +91,7 @@ pub async fn generate_quest_post_message_content(
 ) -> Result<String, Error> {
     let quest_signups = sqlx::query_as!(
         Signup,
-        "SELECT character.name as character_name, character.user_id as user_id, quest_signup.accepted as accepted
+        "SELECT character.name as character_name, character.user_id as user_id, character.species_api_id as character_species_id, character.experience as character_experience, quest_signup.accepted as accepted
 FROM quest_signup
 INNER JOIN character ON
     quest_signup.character_id = character.id
@@ -121,24 +124,24 @@ ORDER BY quest_signup.accepted DESC, quest_signup.timestamp ASC
                 }
 
                 text.push_str("**Participants:**\n");
-                add_character_names(&mut text, accepted_participants);
+                add_character_names(&mut text, accepted_participants, data);
 
                 if !floating_participants.is_empty() {
                     text.push_str("\n**Waiting Queue:**\n");
-                    add_character_names(&mut text, floating_participants);
+                    add_character_names(&mut text, floating_participants, data);
                 }
             }
             QuestParticipantSelectionMechanism::Random
             | QuestParticipantSelectionMechanism::GMPicks => {
                 if accepted_participants.is_empty() {
                     text.push_str("**Signups:**\n");
-                    add_character_names(&mut text, floating_participants);
+                    add_character_names(&mut text, floating_participants, data);
                 } else {
                     text.push_str("**Participants:**\n");
-                    add_character_names(&mut text, accepted_participants);
+                    add_character_names(&mut text, accepted_participants, data);
                     if !floating_participants.is_empty() {
                         text.push_str("\n**Waiting Queue:**\n");
-                        add_character_names(&mut text, floating_participants);
+                        add_character_names(&mut text, floating_participants, data);
                     }
                 }
             }
@@ -156,9 +159,23 @@ ORDER BY quest_signup.accepted DESC, quest_signup.timestamp ASC
     Ok(text)
 }
 
-fn add_character_names(text: &mut String, quest_signups: Vec<&Signup>) {
+fn add_character_names(text: &mut String, quest_signups: Vec<&Signup>, data: &Data) {
     for record in quest_signups {
-        text.push_str(format!("- {} (<@{}>)\n", record.character_name, record.user_id).as_str());
+        let pokemon = data
+            .game
+            .pokemon_by_api_id
+            .get(&PokemonApiId(record.character_species_id as u16))
+            .expect("Database species IDs should always contain valid values!");
+        text.push_str(
+            format!(
+                "- {} (<@{}>) [{} Lv.{}]\n",
+                record.character_name,
+                record.user_id,
+                pokemon.name,
+                record.character_experience / 100,
+            )
+            .as_str(),
+        );
     }
 }
 
