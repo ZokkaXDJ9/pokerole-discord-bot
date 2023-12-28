@@ -5,11 +5,10 @@ use crate::commands::{
 };
 use crate::enums::{Gender, PokemonGeneration};
 use crate::game_data::pokemon::Pokemon;
-use crate::{helpers, Error};
+use crate::{emoji, Error};
 use image::{DynamicImage, GenericImageView, ImageOutputFormat};
 use log::info;
 use serenity::all::{CreateAttachment, Emoji};
-use sqlx::sqlite::SqliteQueryResult;
 use sqlx::{Pool, Sqlite};
 use std::fs::File;
 use std::io::{BufReader, Cursor, Read, Seek};
@@ -135,7 +134,7 @@ fn get_emoji_data(
         file.read_to_end(&mut out)?;
         return Ok(EmojiData {
             data: out,
-            name: helpers::pokemon_to_emoji_name(pokemon, use_female_sprite, is_shiny, is_animated),
+            name: emoji::pokemon_to_emoji_name(pokemon, use_female_sprite, is_shiny, is_animated),
         });
     }
 
@@ -160,7 +159,7 @@ fn get_emoji_data(
 
     Ok(EmojiData {
         data: out,
-        name: helpers::pokemon_to_emoji_name(pokemon, use_female_sprite, is_shiny, is_animated),
+        name: emoji::pokemon_to_emoji_name(pokemon, use_female_sprite, is_shiny, is_animated),
     })
 }
 

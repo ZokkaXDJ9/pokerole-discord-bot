@@ -246,6 +246,16 @@ impl fmt::Display for Gender {
     }
 }
 
+impl Gender {
+    pub fn from_phenotype(value: i64) -> Gender {
+        match value {
+            1 => Gender::Male,
+            2 => Gender::Female,
+            _ => Gender::Genderless,
+        }
+    }
+}
+
 impl fmt::Display for Stat {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
