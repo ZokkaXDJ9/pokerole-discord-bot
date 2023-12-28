@@ -231,9 +231,9 @@ pub enum SocialStat {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize, ChoiceParameter)]
 pub enum Gender {
-    Genderless,
-    Male,
-    Female,
+    Genderless = 0,
+    Male = 1,
+    Female = 2,
 }
 
 impl fmt::Display for Gender {

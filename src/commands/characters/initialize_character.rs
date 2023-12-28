@@ -7,10 +7,12 @@ use crate::commands::{
     send_ephemeral_reply, send_error, Context, Error,
 };
 use crate::emoji;
+use crate::enums::Gender;
 use serenity::all::CreateMessage;
 use serenity::model::user::User;
 
 /// Create a new character within the database.
+#[allow(clippy::too_many_arguments)]
 #[poise::command(
     slash_command,
     guild_only,
@@ -26,6 +28,7 @@ pub async fn initialize_character(
     #[description = "Optional. Does it glow in the dark? Defaults to false."] is_shiny: Option<
         bool,
     >,
+    #[description = "What does it look like?"] phenotype: Gender,
     #[description = "Optional. Defaults to 0."]
     #[min = 0_i64]
     exp: Option<i64>,
@@ -41,6 +44,7 @@ pub async fn initialize_character(
     let is_shiny = is_shiny.unwrap_or(false);
     let exp = exp.unwrap_or(0);
     let money = money.unwrap_or(500);
+    let phenotype = phenotype as i64;
 
     let message = ctx
         .channel_id()
@@ -63,7 +67,7 @@ pub async fn initialize_character(
     let creation_date = chrono::Utc::now().date_naive();
 
     let record = sqlx::query!(
-        "INSERT INTO character (user_id, guild_id, name, stat_message_id, stat_channel_id, creation_date, experience, money, species_api_id, is_shiny) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
+        "INSERT INTO character (user_id, guild_id, name, stat_message_id, stat_channel_id, creation_date, experience, money, species_api_id, is_shiny, phenotype) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
         user_id,
         guild_id,
         name,
@@ -73,7 +77,8 @@ pub async fn initialize_character(
         exp,
         money,
         pokemon.poke_api_id.0,
-        is_shiny
+        is_shiny,
+        phenotype
     ).fetch_one(&ctx.data().database)
         .await;
 
