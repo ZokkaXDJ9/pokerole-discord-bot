@@ -54,7 +54,7 @@ You can copy the command string either by just pressing the up key inside the te
 }
 
 pub async fn update_character_post<'a>(ctx: &Context<'a>, id: i64) {
-    if let Some(result) = build_character_string(&ctx.data(), id).await {
+    if let Some(result) = build_character_string(ctx.data(), id).await {
         let message = ctx
             .serenity_context()
             .http
