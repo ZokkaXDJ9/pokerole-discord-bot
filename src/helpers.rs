@@ -1,9 +1,11 @@
 use crate::data::Data;
-use crate::enums::QuestParticipantSelectionMechanism;
+use crate::enums::{Gender, QuestParticipantSelectionMechanism, RegionalVariant};
+use crate::game_data::pokemon::Pokemon;
 use crate::game_data::PokemonApiId;
 use crate::Error;
 use serenity::all::{
-    ButtonStyle, ChannelId, Context, CreateActionRow, CreateButton, EditMessage, MessageId,
+    ButtonStyle, ChannelId, Context, CreateActionRow, CreateButton, EditMessage, Emoji, GuildId,
+    MessageId,
 };
 
 pub const ADMIN_PING_STRING: &str = "<@878982444412448829>";
@@ -241,4 +243,70 @@ pub async fn update_quest_message(
             .await?;
     }
     Ok(())
+}
+
+pub async fn get_emoji(
+    context: &Context,
+    guild_id: GuildId,
+    pokemon: &Pokemon,
+    gender: &Gender,
+    is_shiny: bool,
+) -> Option<Emoji> {
+    let emojis = context.http.get_emojis(guild_id).await.unwrap();
+    let prefer_female_prefix =
+        gender == &Gender::Female && pokemon.species_data.has_gender_differences;
+
+    let emoji_name = pokemon_to_emoji_name(pokemon, prefer_female_prefix, is_shiny, false);
+    if let Some(emoji) = emojis.iter().find(|x| x.name == emoji_name) {
+        return Some(emoji.clone());
+    }
+    let emoji_name = pokemon_to_emoji_name(pokemon, false, false, false);
+    if let Some(emoji) = emojis.iter().find(|x| x.name == emoji_name) {
+        return Some(emoji.clone());
+    }
+
+    None
+}
+
+pub fn pokemon_to_emoji_name(
+    pokemon: &Pokemon,
+    is_female: bool,
+    is_shiny: bool,
+    is_animated: bool,
+) -> String {
+    let shiny = if is_shiny { "shiny_" } else { "" };
+    let female = if is_female { "_female" } else { "" };
+    let mut name = pokemon
+        .name
+        .to_lowercase()
+        .replace(' ', "_")
+        .replace(['(', ')'], "");
+
+    let regional_prefix = if let Some(regional_variant) = pokemon.regional_variant {
+        name = name
+            .replace("paldean_form", "")
+            .replace("hisuian_form", "")
+            .replace("galarian_form", "")
+            .replace("alolan_form", "");
+
+        match regional_variant {
+            RegionalVariant::Alola => "alolan_",
+            RegionalVariant::Galar => "galarian",
+            RegionalVariant::Hisui => "hisuian_",
+            RegionalVariant::Paldea => "paldean_",
+        }
+    } else {
+        ""
+    };
+
+    let animated = if is_animated { "_animated" } else { "" };
+
+    format!(
+        "{}{}{}{}{}",
+        shiny,
+        regional_prefix,
+        name.trim_matches('_'),
+        female,
+        animated
+    )
 }
