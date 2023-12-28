@@ -108,6 +108,12 @@ impl Pokemon {
 }
 
 impl Pokemon {
+    pub(crate) fn has_animated_sprite(&self) -> bool {
+        self.species_data.generation.has_animated_sprite()
+    }
+}
+
+impl Pokemon {
     pub(crate) fn build_pokedex_string(&self) -> String {
         let mut result = std::format!("## {} Pokedex Entries\n", self.name);
         for x in &self.species_data.pokedex_entries {
@@ -660,8 +666,8 @@ impl Pokemon {
         Some(raw)
     }
 
-    pub fn build_stats_string(&self) -> String {
-        let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
+    pub fn build_stats_string(&self, emoji: String) -> String {
+        let mut result = std::format!("### {}{} [#{}]\n", emoji, self.name, self.number);
         result.push_str(&std::format!("{}   |   {}\n", self.height, self.weight));
         result.push_str("**Type**: ");
         result.push_str(std::format!("{}", self.type1).as_str());

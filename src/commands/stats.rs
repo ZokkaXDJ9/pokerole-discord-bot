@@ -1,15 +1,16 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::commands::{pokemon_from_autocomplete_string, Context, Error};
-use crate::helpers;
+use crate::{emoji, helpers};
 use poise::CreateReply;
 use serenity::all::CreateActionRow;
 use std::default::Default;
 
 async fn print_poke_stats(ctx: Context<'_>, name: String) -> Result<(), Error> {
     let pokemon = pokemon_from_autocomplete_string(&ctx, &name)?;
+    let emoji = emoji::get_any_pokemon_emoji_with_space(&ctx.data().database, pokemon).await;
     ctx.send(
         CreateReply::default()
-            .content(pokemon.build_stats_string())
+            .content(pokemon.build_stats_string(emoji))
             .components(vec![create_buttons(&pokemon.name.to_lowercase())]),
     )
     .await?;

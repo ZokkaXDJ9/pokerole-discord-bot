@@ -248,8 +248,8 @@ pub async fn create_emojis_for_pokemon<'a>(
         created_emojis += 1u8;
     }
 
-    if pokemon.species_data.generation <= PokemonGeneration::Five {
-        if !does_emoji_exist_in_database(
+    if pokemon.has_animated_sprite()
+        && !does_emoji_exist_in_database(
             &ctx.data().database,
             guild_id,
             pokemon,
@@ -258,10 +258,9 @@ pub async fn create_emojis_for_pokemon<'a>(
             true,
         )
         .await
-        {
-            create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, true).await;
-            created_emojis += 1u8;
-        }
+    {
+        create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, true).await;
+        created_emojis += 1u8;
     }
 
     created_emojis
