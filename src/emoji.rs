@@ -48,10 +48,22 @@ pub async fn get_character_emoji(
         return Some(result.discord_string);
     }
 
-    // Try again, without guild_id
+    // Try again, without guild_id. Technically we could just leech emojis off of extra servers
     let result = sqlx::query!("SELECT discord_string FROM emoji WHERE species_api_id = ? AND is_female = ? AND is_shiny = ? AND is_animated = ?", api_id, is_female, is_shiny, is_animated)
         .fetch_one(database)
         .await;
+
+    if let Ok(result) = result {
+        return Some(result.discord_string);
+    }
+
+    // Desperate final attempt!
+    let result = sqlx::query!(
+        "SELECT discord_string FROM emoji WHERE species_api_id = ?",
+        api_id
+    )
+    .fetch_one(database)
+    .await;
 
     if let Ok(result) = result {
         return Some(result.discord_string);
