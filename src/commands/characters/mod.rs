@@ -4,7 +4,7 @@ use crate::commands::{
     BuildUpdatedStatMessageStringResult, Context,
 };
 use crate::data::Data;
-use crate::enums::MysteryDungeonRank;
+use crate::enums::{Gender, MysteryDungeonRank};
 use crate::game_data::PokemonApiId;
 use crate::{emoji, Error};
 use core::fmt;
@@ -95,7 +95,7 @@ pub async fn build_character_string(
     character_id: i64,
 ) -> Option<BuildUpdatedStatMessageStringResult> {
     let entry = sqlx::query!(
-        "SELECT name, experience, money, stat_message_id, stat_channel_id, backpack_upgrade_count, total_spar_count, total_new_player_tour_count, total_new_player_combat_tutorial_count, species_api_id, is_shiny \
+        "SELECT name, guild_id, experience, money, stat_message_id, stat_channel_id, backpack_upgrade_count, total_spar_count, total_new_player_tour_count, total_new_player_combat_tutorial_count, species_api_id, is_shiny, phenotype \
                 FROM character WHERE id = ? \
                 ORDER BY rowid \
                 LIMIT 1",
@@ -120,17 +120,27 @@ pub async fn build_character_string(
                         .expect("Should always be in valid range."),
                 ))
                 .expect("All mons inside the Database should have a valid API ID assigned.");
+            let gender = Gender::from_phenotype(entry.phenotype);
+            let emoji = emoji::get_character_emoji(
+                &data.database,
+                entry.guild_id,
+                pokemon,
+                &gender,
+                entry.is_shiny,
+            )
+            .await
+            .unwrap_or(format!("[{}]", pokemon.name));
 
             let mut message = format!(
                 "\
-## {} {} [{}]
+## {} {} {}
 **Level {}** `({} / 100)`
 {} {}
 
 {} Backpack Slots: {}\n\n",
                 rank.emoji_string(),
                 entry.name,
-                pokemon.name,
+                emoji,
                 level,
                 experience,
                 entry.money,

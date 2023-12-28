@@ -1,3 +1,7 @@
+use crate::enums::{Gender, PokemonGeneration, RegionalVariant};
+use crate::game_data::pokemon::Pokemon;
+use sqlx::{Pool, Sqlite};
+
 pub const POKE_COIN: &str = "<:poke_coin:1120237132200546304>";
 
 pub const RANK_BRONZE: &str = "<:badge_bronze:1119186018793435177>";
@@ -24,3 +28,77 @@ pub const BACKPACK: &str = "🎒";
 pub const FENCING: &str = "🤺";
 pub const TICKET: &str = "🎫";
 pub const CROSSED_SWORDS: &str = "⚔️";
+
+pub async fn get_character_emoji(
+    database: &Pool<Sqlite>,
+    guild_id: i64,
+    pokemon: &Pokemon,
+    gender: &Gender,
+    is_shiny: bool,
+) -> Option<String> {
+    let api_id = pokemon.poke_api_id.0 as i64;
+    let is_female = pokemon.species_data.has_gender_differences && gender == &Gender::Female;
+    let is_animated = pokemon.species_data.generation <= PokemonGeneration::Five;
+
+    let result = sqlx::query!("SELECT discord_string FROM emoji WHERE species_api_id = ? AND guild_id = ? AND is_female = ? AND is_shiny = ? AND is_animated = ?", api_id, guild_id, is_female, is_shiny, is_animated)
+        .fetch_one(database)
+        .await;
+
+    if let Ok(result) = result {
+        return Some(result.discord_string);
+    }
+
+    // Try again, without guild_id
+    let result = sqlx::query!("SELECT discord_string FROM emoji WHERE species_api_id = ? AND is_female = ? AND is_shiny = ? AND is_animated = ?", api_id, is_female, is_shiny, is_animated)
+        .fetch_one(database)
+        .await;
+
+    if let Ok(result) = result {
+        return Some(result.discord_string);
+    }
+
+    None
+}
+
+pub fn pokemon_to_emoji_name(
+    pokemon: &Pokemon,
+    is_female: bool,
+    is_shiny: bool,
+    is_animated: bool,
+) -> String {
+    let shiny = if is_shiny { "shiny_" } else { "" };
+    let female = if is_female { "_female" } else { "" };
+    let mut name = pokemon
+        .name
+        .to_lowercase()
+        .replace(' ', "_")
+        .replace(['(', ')'], "");
+
+    let regional_prefix = if let Some(regional_variant) = pokemon.regional_variant {
+        name = name
+            .replace("paldean_form", "")
+            .replace("hisuian_form", "")
+            .replace("galarian_form", "")
+            .replace("alolan_form", "");
+
+        match regional_variant {
+            RegionalVariant::Alola => "alolan_",
+            RegionalVariant::Galar => "galarian",
+            RegionalVariant::Hisui => "hisuian_",
+            RegionalVariant::Paldea => "paldean_",
+        }
+    } else {
+        ""
+    };
+
+    let animated = if is_animated { "_animated" } else { "" };
+
+    format!(
+        "{}{}{}{}{}",
+        shiny,
+        regional_prefix,
+        name.trim_matches('_'),
+        female,
+        animated
+    )
+}
