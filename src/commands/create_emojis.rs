@@ -266,7 +266,7 @@ pub async fn create_emojis_for_pokemon<'a>(
     created_emojis
 }
 
-async fn store_emoji_in_database(
+pub async fn store_emoji_in_database(
     database: &Pool<Sqlite>,
     guild_id: i64,
     emoji: &Emoji,
@@ -284,7 +284,7 @@ async fn store_emoji_in_database(
     };
 }
 
-async fn does_emoji_exist_in_database(
+pub async fn does_emoji_exist_in_database(
     database: &Pool<Sqlite>,
     guild_id: i64,
     pokemon: &Pokemon,
