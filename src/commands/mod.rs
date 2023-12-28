@@ -41,13 +41,11 @@ mod characters;
 mod quests;
 mod say;
 mod setting_time_offset;
-mod update_all_character_posts;
 mod update_user_names;
 mod wallets;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     let mut result = vec![
-        update_all_character_posts::update_all_character_posts(),
         roll::roll(),
         roll::r(),
         r#move::poke_move(),
