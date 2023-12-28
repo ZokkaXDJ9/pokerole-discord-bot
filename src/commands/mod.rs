@@ -39,6 +39,7 @@ pub mod weather;
 
 mod characters;
 mod quests;
+mod register_existing_emoji;
 mod say;
 mod setting_time_offset;
 mod update_user_names;
@@ -46,6 +47,7 @@ mod wallets;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     let mut result = vec![
+        register_existing_emoji::parse_existing_emoji(),
         roll::roll(),
         roll::r(),
         r#move::poke_move(),

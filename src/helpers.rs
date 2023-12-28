@@ -1,6 +1,5 @@
 use crate::data::Data;
 use crate::enums::QuestParticipantSelectionMechanism;
-use crate::game_data::PokemonApiId;
 use crate::{emoji, Error};
 use serenity::all::{
     ButtonStyle, ChannelId, Context, CreateActionRow, CreateButton, EditMessage, MessageId,
@@ -77,7 +76,6 @@ fn find_best_split_pos(message: &str) -> usize {
 
 struct Signup {
     character_name: String,
-    character_species_id: i64,
     character_experience: i64,
     user_id: i64,
     accepted: bool,
@@ -112,7 +110,6 @@ ORDER BY quest_signup.accepted DESC, quest_signup.timestamp ASC
 
         quest_signups.push(Signup {
             character_name: record.character_name.clone(),
-            character_species_id: record.character_species_id,
             character_experience: record.character_experience,
             user_id: record.user_id,
             accepted: record.accepted,
