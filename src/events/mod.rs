@@ -35,6 +35,26 @@ pub async fn handle_events<'a>(
         FullEvent::GuildMemberRemoval { guild_id, user, .. } => {
             handle_guild_member_removal(context, framework.user_data, guild_id, user).await
         }
+        FullEvent::GuildMemberAddition { new_member } => {
+            // TODO: Add default roles
+            Ok(())
+        }
+        FullEvent::MessageDelete {
+            channel_id,
+            deleted_message_id,
+            guild_id,
+        } => {
+            // TODO: Maybe log message edit
+            Ok(())
+        }
+        FullEvent::MessageUpdate {
+            old_if_available,
+            new,
+            event,
+        } => {
+            // TODO: Maybe log message deletion
+            Ok(())
+        }
         FullEvent::Ready { .. } => {
             // TODO: Could use the data inside this event to lazily count how many discord servers are using the bot.
             backups::start_backup_thread(context, framework.user_data).await;
