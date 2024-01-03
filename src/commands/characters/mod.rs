@@ -15,7 +15,7 @@ use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
 use std::fmt::Formatter;
 
-mod edit_character_species;
+mod edit_character;
 mod give_money;
 mod initialize_character;
 mod initialize_character_post;
@@ -31,7 +31,7 @@ const DEFAULT_BACKPACK_SLOTS: i64 = 6;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     vec![
-        edit_character_species::edit_character_species(),
+        edit_character::edit_character(),
         give_money::give_money(),
         initialize_character::initialize_character(),
         initialize_character_post::initialize_character_post(),
