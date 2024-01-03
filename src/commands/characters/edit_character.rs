@@ -49,7 +49,7 @@ pub async fn edit_character(
     };
 
     let name = if let Some(name) = name {
-        action_log.push(format!("name to {}", record.name));
+        action_log.push(format!("name to {}", name));
         name
     } else {
         record.name
