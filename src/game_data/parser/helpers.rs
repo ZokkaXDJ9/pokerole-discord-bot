@@ -5,11 +5,13 @@ use std::io::Read;
 use std::path::Path;
 
 /// Data Objects which should be ignored
-const REJECTED_DATA_FILE_NAMES: [&str; 4] = [
+const REJECTED_DATA_FILE_NAMES: [&str; 6] = [
     "Any Move.json",
     "Potion.json",
     "Super Potion.json",
     "Hyper Potion.json",
+    "Full Heal.json",
+    "Full Restore.json",
 ];
 
 fn parse_file<T: DeserializeOwned>(file_path: &str) -> Result<T, Box<dyn std::error::Error>> {
