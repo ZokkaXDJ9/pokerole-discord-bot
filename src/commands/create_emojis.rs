@@ -138,19 +138,9 @@ fn get_emoji_data(
         });
     }
 
-    let mut image = image::open(path)?;
-
-    if !is_animated {
-        image = crop_whitespace(image);
-    }
-
+    let image = crop_whitespace(image::open(path)?);
     let mut cursor = Cursor::new(Vec::new());
-
-    if is_animated {
-        image.write_to(&mut cursor, ImageOutputFormat::Png)?;
-    } else {
-        image.write_to(&mut cursor, ImageOutputFormat::Gif)?;
-    }
+    image.write_to(&mut cursor, ImageOutputFormat::Png)?;
 
     cursor.rewind()?;
     let reader = &mut BufReader::new(&mut cursor);
@@ -259,7 +249,7 @@ pub async fn create_emojis_for_pokemon<'a>(
         )
         .await
     {
-        create_emoji_and_notify_user(&ctx, pokemon, &gender, is_shiny, true).await;
+        create_emoji_and_notify_user(ctx, pokemon, gender, is_shiny, true).await;
         created_emojis += 1u8;
     }
 
