@@ -38,6 +38,7 @@ pub mod timestamp;
 pub mod weather;
 
 mod characters;
+mod prune_emojis;
 mod quests;
 mod say;
 mod setting_time_offset;
@@ -73,6 +74,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         say::say(),
         update_user_names::update_user_names(),
         about::about(),
+        prune_emojis::prune_emojis(),
     ];
 
     for x in characters::get_all_commands() {
