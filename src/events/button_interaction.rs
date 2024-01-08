@@ -79,12 +79,15 @@ pub async fn handle_button_interaction(
         "abilities" => {
             disable_button_on_original_message(context, interaction).await?;
             let pokemon = framework.user_data.game.pokemon.get(args[0]).unwrap();
+            let emoji =
+                emoji::get_any_pokemon_emoji_with_space(&framework.user_data.database, pokemon)
+                    .await;
             interaction
                 .message
                 .reply(
                     context,
                     pokemon
-                        .build_ability_string(&framework.user_data.game.abilities)
+                        .build_ability_string(emoji, &framework.user_data.game.abilities)
                         .into(),
                 )
                 .await?;

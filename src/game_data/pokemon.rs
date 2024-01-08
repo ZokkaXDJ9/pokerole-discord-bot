@@ -143,9 +143,10 @@ impl Pokemon {
 impl Pokemon {
     pub(crate) fn build_ability_string(
         &self,
+        emoji: String,
         abilities: &Arc<HashMap<String, Ability>>,
     ) -> impl Into<String> + Sized {
-        let mut result = std::format!("## {} Abilities\n", self.name);
+        let mut result = std::format!("## {}{} Abilities\n", emoji, self.name);
         Pokemon::push_ability(&mut result, &self.ability1, abilities, "");
         if let Some(ability) = &self.ability2 {
             Pokemon::push_ability(&mut result, ability, abilities, "");
