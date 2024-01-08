@@ -559,7 +559,7 @@ impl Pokemon {
     pub(in crate::game_data) fn from_custom_data(
         raw: &CustomPokemon,
         api: &HashMap<String, PokemonApiData>,
-    ) -> Self {
+    ) -> Option<Self> {
         let regional_variant = raw.variant;
 
         let api_issue;
@@ -571,12 +571,10 @@ impl Pokemon {
             (api_issue, api_option) = Pokemon::get_api_entry(&raw.name, api, &regional_variant);
         }
 
-        let api_data = api_option.unwrap_or_else(|| {
-            panic!(
-                "API Data should ALWAYS be found for custom mons. {}",
-                raw.name
-            )
-        });
+        if api_option.is_none() {
+            return None;
+        }
+        let api_data = api_option.unwrap();
 
         let moves = LearnablePokemonMoves::create_from(
             Pokemon::moves_from_custom(&raw.moves),
@@ -606,7 +604,7 @@ impl Pokemon {
                 .collect(),
         );
 
-        Pokemon {
+        Some(Pokemon {
             number: raw.number,
             poke_api_id: PokemonApiId(api_data.pokemon_id.0),
             data_source: DataSource::Custom,
@@ -630,7 +628,7 @@ impl Pokemon {
             height: api_data.height.clone(),
             weight: api_data.weight.clone(),
             moves,
-        }
+        })
     }
 
     fn parse_variant(dex_id: &str) -> Option<RegionalVariant> {

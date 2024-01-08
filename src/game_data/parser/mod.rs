@@ -148,15 +148,18 @@ fn parse_pokemon(
     }
 
     for x in &custom_data.pokemon {
-        if pokemon_names.contains(&x.name) {
-            info!("Overriding {}", x.name);
-        } else {
-            pokemon_names.push(x.name.clone());
-        }
+        if let Some(pokemon) = Pokemon::from_custom_data(x, pokemon_api_data) {
+            if pokemon_names.contains(&x.name) {
+                info!("Overriding {}", x.name);
+            } else {
+                pokemon_names.push(x.name.clone());
+            }
 
-        let pokemon = Pokemon::from_custom_data(x, pokemon_api_data);
-        learnable_moves_by_api_id.insert(pokemon.poke_api_id, pokemon.moves.clone());
-        parsed_pokemon.push(pokemon);
+            learnable_moves_by_api_id.insert(pokemon.poke_api_id, pokemon.moves.clone());
+            parsed_pokemon.push(pokemon);
+        } else {
+            error!("Was unable to find a pokeapi implementation for {}", x.name)
+        }
     }
 
     parsed_pokemon.sort_by(|a, b| a.poke_api_id.0.cmp(&b.poke_api_id.0));
