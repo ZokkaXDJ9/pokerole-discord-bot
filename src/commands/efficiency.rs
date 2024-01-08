@@ -1,5 +1,6 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::commands::{pokemon_from_autocomplete_string, Context, Error};
+use crate::emoji;
 use crate::enums::PokemonType;
 use crate::game_data::pokemon::Pokemon;
 use crate::game_data::type_efficiency::{Efficiency, TypeEfficiency};
@@ -34,7 +35,11 @@ impl fmt::Display for EfficiencyMapping {
     }
 }
 
-pub fn get_type_resistances_string(pokemon: &Pokemon, type_efficiency: &TypeEfficiency) -> String {
+pub fn get_type_resistances_string(
+    pokemon: &Pokemon,
+    emoji: String,
+    type_efficiency: &TypeEfficiency,
+) -> String {
     let efficiencies: Vec<EfficiencyMapping> = PokemonType::iter()
         .filter(|x| x != &PokemonType::Shadow)
         .map(|x| EfficiencyMapping {
@@ -43,7 +48,7 @@ pub fn get_type_resistances_string(pokemon: &Pokemon, type_efficiency: &TypeEffi
         })
         .collect();
 
-    let mut result = std::format!("## Type Efficiency against {}\n", pokemon.name);
+    let mut result = std::format!("## Type Efficiency against {}{}\n", emoji, pokemon.name);
     print(&mut result, &efficiencies, Efficiency::SuperEffective);
     print(&mut result, &efficiencies, Efficiency::Effective);
     // print(&mut result, &efficiencies, Efficiency::Normal);
@@ -64,8 +69,10 @@ pub async fn efficiency(
     name: String,
 ) -> Result<(), Error> {
     let pokemon = pokemon_from_autocomplete_string(&ctx, &name)?;
+    let emoji = emoji::get_any_pokemon_emoji_with_space(&ctx.data().database, pokemon).await;
     ctx.say(get_type_resistances_string(
         pokemon,
+        emoji,
         &ctx.data().game.type_efficiency,
     ))
     .await?;
