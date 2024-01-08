@@ -180,8 +180,11 @@ impl Pokemon {
 }
 
 impl Pokemon {
-    pub(crate) fn build_all_learnable_moves_list(&self) -> impl Into<String> + Sized {
-        let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
+    pub(crate) fn build_all_learnable_moves_list(
+        &self,
+        emoji: String,
+    ) -> impl Into<String> + Sized {
+        let mut result = std::format!("### {}{} [#{}]\n", emoji, self.name, self.number);
         if let Some(issue) = self.api_issue {
             if issue == ApiIssueType::FoundNothing {
                 result.push_str("\nUnable to match any species to this particular pokemon when searching for TM Moves.");

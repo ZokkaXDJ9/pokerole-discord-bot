@@ -32,8 +32,11 @@ pub async fn handle_button_interaction(
         "learns-all" => {
             disable_button_on_original_message(context, interaction).await?;
             let pokemon = framework.user_data.game.pokemon.get(args[0]).unwrap();
+            let emoji =
+                emoji::get_any_pokemon_emoji_with_space(&framework.user_data.database, pokemon)
+                    .await;
             for response_part in
-                helpers::split_long_messages(pokemon.build_all_learnable_moves_list().into())
+                helpers::split_long_messages(pokemon.build_all_learnable_moves_list(emoji).into())
             {
                 interaction.message.reply(context, response_part).await?;
             }
