@@ -1,6 +1,6 @@
 use crate::commands::{efficiency, learns};
 use crate::events::{parse_interaction_command, quests, FrameworkContext};
-use crate::{commands, helpers, Error};
+use crate::{commands, emoji, helpers, Error};
 use serenity::all::{
     ActionRow, ActionRowComponent, Button, ButtonKind, ComponentInteraction,
     CreateInteractionResponse, CreateInteractionResponseFollowup, CreateInteractionResponseMessage,
@@ -62,10 +62,13 @@ pub async fn handle_button_interaction(
         "moves" => {
             disable_button_on_original_message(context, interaction).await?;
             let pokemon = framework.user_data.game.pokemon.get(args[0]).unwrap();
+            let emoji =
+                emoji::get_any_pokemon_emoji_with_space(&framework.user_data.database, pokemon)
+                    .await;
             interaction
                 .create_followup(
                     context,
-                    learns::create_reply(pokemon)
+                    learns::create_reply(pokemon, emoji)
                         .to_slash_followup_response(CreateInteractionResponseFollowup::new()),
                 )
                 .await?;

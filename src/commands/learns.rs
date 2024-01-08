@@ -1,7 +1,7 @@
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::commands::{pokemon_from_autocomplete_string, Context, Error};
 use crate::game_data::pokemon::Pokemon;
-use crate::helpers;
+use crate::{emoji, helpers};
 use poise::CreateReply;
 use serenity::all::CreateActionRow;
 
@@ -15,14 +15,16 @@ pub async fn learns(
     name: String,
 ) -> Result<(), Error> {
     let pokemon = pokemon_from_autocomplete_string(&ctx, &name)?;
-    ctx.send(create_reply(pokemon)).await?;
+    let emoji = emoji::get_any_pokemon_emoji_with_space(&ctx.data().database, pokemon).await;
+
+    ctx.send(create_reply(pokemon, emoji)).await?;
 
     Ok(())
 }
 
-pub fn create_reply(pokemon: &Pokemon) -> CreateReply {
+pub fn create_reply(pokemon: &Pokemon, emoji: String) -> CreateReply {
     CreateReply::default()
-        .content(pokemon.build_move_string())
+        .content(pokemon.build_move_string(emoji))
         .components(vec![CreateActionRow::Buttons(vec![
             helpers::create_button(
                 "Show All Learnable Moves",

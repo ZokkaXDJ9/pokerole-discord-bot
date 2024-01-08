@@ -224,8 +224,8 @@ impl Pokemon {
 }
 
 impl Pokemon {
-    pub(crate) fn build_move_string(&self) -> impl Into<String> + Sized {
-        let mut result = std::format!("### {} [#{}]\n", self.name, self.number);
+    pub(crate) fn build_move_string(&self, emoji: String) -> impl Into<String> + Sized {
+        let mut result = std::format!("### {}{} [#{}]\n", emoji, self.name, self.number);
         self.filter_moves(
             &mut result,
             emoji::RANK_BRONZE,
