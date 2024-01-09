@@ -1,4 +1,4 @@
-use crate::commands::{Context, Error};
+use crate::commands::{send_error, Context, Error};
 use crate::data::Data;
 use crate::enums::QuestParticipantSelectionMechanism;
 use crate::helpers;
@@ -22,13 +22,19 @@ pub async fn create_quest(
     let reply_message = reply.message().await?;
     let channel_id = ctx.channel_id().get() as i64;
 
-    let oldest_message_in_channel = ctx
+    let messages = ctx
         .guild_channel()
         .await
         .unwrap()
-        .messages(ctx, GetMessages::new())
+        .messages(ctx, GetMessages::new().limit(50))
         .await
-        .unwrap()
+        .unwrap();
+
+    if messages.len() > 40 {
+        return send_error(&ctx, "There have already been over 40 messages sent within this channel. Are you sure you are using this command in a freshly created forum post?").await;
+    }
+
+    let oldest_message_inside_channel = messages
         .iter()
         .min_by(|a, b| a.timestamp.cmp(&b.timestamp))
         .expect("There should be at least one message in this forum?");
@@ -41,7 +47,7 @@ pub async fn create_quest(
         reply_message.id.get() as i64,
         max_participants,
         selection_mechanism,
-        oldest_message_in_channel.id.get() as i64,
+        oldest_message_inside_channel.id.get() as i64,
     )
     .await;
 
@@ -64,7 +70,7 @@ pub async fn create_quest(
                 .await?;
 
             let _ = reply_message.pin(&ctx).await;
-            let _ = oldest_message_in_channel.pin(&ctx).await;
+            let _ = oldest_message_inside_channel.pin(&ctx).await;
 
             for message in ctx
                 .guild_channel()
