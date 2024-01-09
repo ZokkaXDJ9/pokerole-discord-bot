@@ -4,6 +4,7 @@ use crate::enums::QuestParticipantSelectionMechanism;
 use crate::helpers;
 use chrono::Utc;
 use poise::CreateReply;
+use serenity::all::{GetMessages, MessageType};
 
 #[poise::command(
     slash_command,
@@ -18,17 +19,29 @@ pub async fn create_quest(
     let reply = ctx
         .send(CreateReply::default().content("Creating Quest..."))
         .await?;
-    let message_id = reply.message().await?.id;
+    let reply_message = reply.message().await?;
     let channel_id = ctx.channel_id().get() as i64;
+
+    let oldest_message_in_channel = ctx
+        .guild_channel()
+        .await
+        .unwrap()
+        .messages(ctx, GetMessages::new())
+        .await
+        .unwrap()
+        .iter()
+        .min_by(|a, b| a.timestamp.cmp(&b.timestamp))
+        .expect("There should be at least one message in this forum?");
 
     let result = create_quest_impl(
         ctx.data(),
         ctx.guild_id().expect("Command is guild_only").get() as i64,
         channel_id,
         ctx.author().id.get() as i64,
-        message_id.get() as i64,
+        reply_message.id.get() as i64,
         max_participants,
         selection_mechanism,
+        oldest_message_in_channel.id.get() as i64,
     )
     .await;
 
@@ -49,6 +62,23 @@ pub async fn create_quest(
                     ]),
                 )
                 .await?;
+
+            let _ = reply_message.pin(&ctx).await;
+            let _ = oldest_message_in_channel.pin(&ctx).await;
+
+            for message in ctx
+                .guild_channel()
+                .await
+                .unwrap()
+                .messages(ctx, GetMessages::new())
+                .await
+                .unwrap()
+            {
+                if message.kind == MessageType::PinsAdd {
+                    let _ = message.delete(&ctx).await;
+                }
+            }
+
             Ok(())
         }
         Err(e) => {
@@ -74,11 +104,12 @@ async fn create_quest_impl(
     bot_message_id: i64,
     max_participants: i64,
     selection_mechanism: QuestParticipantSelectionMechanism,
+    quest_description_message_id: i64,
 ) -> Result<(), String> {
     let timestamp = Utc::now().timestamp();
 
-    let result = sqlx::query!("INSERT INTO quest (guild_id, channel_id, creator_id, bot_message_id, creation_timestamp, maximum_participant_count, participant_selection_mechanism) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        guild_id, channel_id, creator_id, bot_message_id, timestamp, max_participants, selection_mechanism
+    let result = sqlx::query!("INSERT INTO quest (guild_id, channel_id, creator_id, bot_message_id, creation_timestamp, maximum_participant_count, participant_selection_mechanism, quest_description_message_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        guild_id, channel_id, creator_id, bot_message_id, timestamp, max_participants, selection_mechanism, quest_description_message_id
     )
         .execute(&data.database).await;
 
@@ -112,6 +143,7 @@ mod tests {
         let bot_message_id = 400;
         let max_participants = 5;
         let mechanism = QuestParticipantSelectionMechanism::FirstComeFirstServe;
+        let quest_description_message_id = 700;
 
         database_helpers::create_mock::guild(&data.database, guild_id).await;
         database_helpers::create_mock::user(&data.database, creator_id).await;
@@ -124,6 +156,7 @@ mod tests {
             bot_message_id,
             max_participants,
             mechanism,
+            quest_description_message_id,
         )
         .await?;
         let timestamp_after = Utc::now().timestamp();
@@ -160,6 +193,7 @@ mod tests {
         let bot_message_id = 400;
         let max_participants = 5;
         let selection_mechanism = QuestParticipantSelectionMechanism::FirstComeFirstServe;
+        let quest_description_message_id = 700;
 
         database_helpers::create_mock::guild(&data.database, guild_id).await;
         database_helpers::create_mock::user(&data.database, creator_id).await;
@@ -172,6 +206,7 @@ mod tests {
             bot_message_id,
             max_participants,
             selection_mechanism,
+            quest_description_message_id,
         )
         .await?;
         let result = create_quest_impl(
@@ -182,6 +217,7 @@ mod tests {
             bot_message_id,
             max_participants,
             selection_mechanism,
+            quest_description_message_id,
         )
         .await;
 
