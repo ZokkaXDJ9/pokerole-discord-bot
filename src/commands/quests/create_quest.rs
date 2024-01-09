@@ -31,6 +31,7 @@ pub async fn create_quest(
         .unwrap();
 
     if messages.len() > 40 {
+        let _ = reply_message.delete(&ctx).await;
         return send_error(&ctx, "There have already been over 40 messages sent within this channel. Are you sure you are using this command in a freshly created forum post?").await;
     }
 
