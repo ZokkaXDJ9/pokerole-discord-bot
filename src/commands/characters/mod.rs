@@ -15,6 +15,7 @@ use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
 use std::fmt::Formatter;
 
+mod cs_mock;
 mod edit_character;
 mod give_money;
 mod initialize_character;
@@ -42,6 +43,8 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         reward_spar::reward_spar(),
         reward_giving_combat_tutorial::reward_giving_combat_tutorial(),
         reward_giving_tour::reward_giving_tour(),
+        cs_mock::cs_mock_1(),
+        cs_mock::cs_mock_2(),
     ]
 }
 

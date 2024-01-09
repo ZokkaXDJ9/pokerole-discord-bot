@@ -29,6 +29,18 @@ pub async fn handle_button_interaction(
                 )
                 .await?;
         }
+        "ignore" => {
+            interaction
+                .create_response(
+                    context,
+                    CreateInteractionResponse::Message(
+                        CreateInteractionResponseMessage::new()
+                            .ephemeral(true)
+                            .content("That tickles!"),
+                    ),
+                )
+                .await?;
+        }
         "learns-all" => {
             disable_button_on_original_message(context, interaction).await?;
             let pokemon = framework.user_data.game.pokemon.get(args[0]).unwrap();
