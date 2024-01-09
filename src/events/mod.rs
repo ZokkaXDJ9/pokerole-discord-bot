@@ -36,7 +36,11 @@ pub async fn handle_events<'a>(
             handle_guild_member_removal(context, framework.user_data, guild_id, user).await
         }
         FullEvent::GuildMemberAddition { new_member } => {
-            // TODO: Add default roles
+            // TODO: Send greeting, add default roles
+            Ok(())
+        }
+        FullEvent::UserUpdate { old_data, new } => {
+            // TODO: Update internal username cache
             Ok(())
         }
         FullEvent::MessageDelete {
