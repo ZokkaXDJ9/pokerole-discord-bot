@@ -154,7 +154,17 @@ async fn edit_specific_stat(
     };
 
     if amount > 0 {
-        let remaining_points = character.remaining_combat_points();
+        let (remaining_points, limit_break_count) = if stat.is_combat_stat() {
+            (
+                character.remaining_combat_points(),
+                character.combat_stats.count_limit_breaks(),
+            )
+        } else {
+            (
+                character.remaining_social_points(),
+                character.social_stats.count_limit_breaks(),
+            )
+        };
         if remaining_points == 0 {
             return send_error(
                 &interaction,
@@ -165,7 +175,7 @@ async fn edit_specific_stat(
         }
 
         let points_required_for_limit_break =
-            helpers::calculate_next_limit_break_cost(character.combat_stats.count_limit_breaks());
+            helpers::calculate_next_limit_break_cost(limit_break_count);
         if edited_stat.current + 1 > edited_stat.species_max
             && remaining_points < points_required_for_limit_break
         {

@@ -322,12 +322,19 @@ async fn create_stat_edit_overview_message(
         String::new()
     };
 
+    let all_at_once_substring = if remaining_points > 1 {
+        "\n*(You don't have to apply them all at once!)*"
+    } else {
+        ""
+    };
+
     let message = format!(
-        "### {}{}\n```\n{}```\n{} Remaining Points.{}",
+        "### {}{}\n```\n{}```\n{} Remaining Points.{}{}",
         character_data.emoji,
         character_data.name,
         stats.build_string(),
         remaining_points,
+        all_at_once_substring,
         limit_break_substring
     );
 
