@@ -10,7 +10,6 @@ use crate::commands::{
 };
 use crate::enums::Gender;
 use crate::game_data::PokemonApiId;
-use crate::helpers::ADMIN_PING_STRING;
 
 /// Update character data.
 #[allow(clippy::too_many_arguments)]

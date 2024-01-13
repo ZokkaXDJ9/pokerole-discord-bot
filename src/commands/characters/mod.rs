@@ -38,7 +38,7 @@ const DEFAULT_BACKPACK_SLOTS: i64 = 6;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     vec![
-        update_all_character_posts(),
+        reset_all_character_stats(),
         edit_character::edit_character(),
         give_money::give_money(),
         initialize_character::initialize_character(),
@@ -56,13 +56,44 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     ]
 }
 
-/// Trigger an update for all character sheets.
+// /// Trigger an update for all character sheets.
+// #[poise::command(
+//     slash_command,
+//     guild_only,
+//     default_member_permissions = "ADMINISTRATOR"
+// )]
+// async fn update_all_character_posts(ctx: Context<'_>) -> Result<(), Error> {
+//     if ctx.author().id.get() != ADMIN_ID {
+//         return send_error(
+//             &ctx,
+//             &format!(
+//                 "Sorry, but this command is so unbelievably spam-inducing that it's only available for {}.",
+//                 ADMIN_PING_STRING
+//             ),
+//         )
+//         .await;
+//     }
+//
+//     let _ = ctx.defer_ephemeral().await;
+//     for record in sqlx::query!("SELECT id from character")
+//         .fetch_all(&ctx.data().database)
+//         .await
+//         .unwrap()
+//     {
+//         update_character_post(&ctx, record.id).await;
+//     }
+//
+//     let _ = send_ephemeral_reply(&ctx, "Done!").await;
+//     Ok(())
+// }
+
+/// Reset all character stats.
 #[poise::command(
     slash_command,
     guild_only,
     default_member_permissions = "ADMINISTRATOR"
 )]
-async fn update_all_character_posts(ctx: Context<'_>) -> Result<(), Error> {
+async fn reset_all_character_stats(ctx: Context<'_>) -> Result<(), Error> {
     if ctx.author().id.get() != ADMIN_ID {
         return send_error(
             &ctx,
@@ -75,12 +106,9 @@ async fn update_all_character_posts(ctx: Context<'_>) -> Result<(), Error> {
     }
 
     let _ = ctx.defer_ephemeral().await;
-    for record in sqlx::query!("SELECT id from character")
-        .fetch_all(&ctx.data().database)
-        .await
-        .unwrap()
-    {
-        update_character_post(&ctx, record.id).await;
+    for cache_item in ctx.data().cache.get_characters().await.iter() {
+        let _ = reset_character_stats::reset_db_stats(&ctx, cache_item).await;
+        update_character_post(&ctx, cache_item.id).await;
     }
 
     let _ = send_ephemeral_reply(&ctx, "Done!").await;
