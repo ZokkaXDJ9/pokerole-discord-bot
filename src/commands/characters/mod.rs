@@ -532,7 +532,16 @@ pub async fn change_character_stat_after_validation<'a>(
                     let old_level = helpers::calculate_level_from_experience(record.value);
                     let new_level = helpers::calculate_level_from_experience(record.value + amount);
                     if new_level > old_level {
-                        let _ = ctx.say(format!("### {} Level Up! {}\n**{}** just reached level {}!", emoji::PARTY_POPPER, emoji::PARTYING_FACE, record.name, new_level)).await;
+                        let old_rank = MysteryDungeonRank::from_level(old_level as u8);
+                        let new_rank = MysteryDungeonRank::from_level(new_level as u8);
+
+                        let rank_notification = if new_rank > old_rank {
+                            format!(" They are now {}!", new_rank)
+                        } else {
+                            String::new()
+                        };
+
+                        let _ = ctx.say(format!("### {} Level Up! {}\n**{}** just reached level {}!{}", emoji::PARTY_POPPER, emoji::PARTYING_FACE, record.name, new_level, rank_notification)).await;
                     }
                 }
             } else {

@@ -2,7 +2,7 @@ use crate::emoji;
 use poise::ChoiceParameter;
 use serde::Deserialize;
 use std::fmt;
-use std::fmt::Formatter;
+use std::fmt::{Display, Formatter};
 use strum_macros::{EnumIter, EnumString, FromRepr};
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq, EnumString, Hash, EnumIter)]
@@ -163,6 +163,18 @@ pub enum MysteryDungeonRank {
     Gold,
     Platinum,
     Diamond,
+}
+
+impl Display for MysteryDungeonRank {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            MysteryDungeonRank::Bronze => write!(f, "{} Bronze Rank", emoji::RANK_BRONZE),
+            MysteryDungeonRank::Silver => write!(f, "{} Silver Rank", emoji::RANK_SILVER),
+            MysteryDungeonRank::Gold => write!(f, "{} Gold Rank", emoji::RANK_GOLD),
+            MysteryDungeonRank::Platinum => write!(f, "{} Platinum Rank", emoji::RANK_PLATINUM),
+            MysteryDungeonRank::Diamond => write!(f, "{} Diamond Rank", emoji::RANK_DIAMOND),
+        }
+    }
 }
 
 impl MysteryDungeonRank {
