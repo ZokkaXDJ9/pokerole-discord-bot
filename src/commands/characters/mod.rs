@@ -18,7 +18,7 @@ use serenity::all::{
 };
 use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
-use std::fmt::Formatter;
+use std::fmt::{format, Formatter};
 
 mod cs_mock;
 mod edit_character;
@@ -527,6 +527,14 @@ pub async fn change_character_stat_after_validation<'a>(
             if amount > 0 {
                 added_or_removed = "Added";
                 to_or_from = "to";
+
+                if database_column == "experience" {
+                    let old_level = helpers::calculate_level_from_experience(record.value);
+                    let new_level = helpers::calculate_level_from_experience(record.value + amount);
+                    if new_level > old_level {
+                        let _ = ctx.say(format!("### {} Level Up! {}\n**{}** just reached level {}!", emoji::PARTY_POPPER, emoji::PARTYING_FACE, record.name, new_level)).await;
+                    }
+                }
             } else {
                 added_or_removed = "Removed";
                 to_or_from = "from";

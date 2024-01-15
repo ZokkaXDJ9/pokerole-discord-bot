@@ -31,6 +31,8 @@ pub const BACKPACK: &str = "🎒";
 pub const FENCING: &str = "🤺";
 pub const TICKET: &str = "🎫";
 pub const CROSSED_SWORDS: &str = "⚔️";
+pub const PARTY_POPPER: &str = "🎉";
+pub const PARTYING_FACE: &str = "🥳";
 
 pub const DOT_EMPTY: char = '⭘';
 pub const DOT_FILLED: char = '⬤';
