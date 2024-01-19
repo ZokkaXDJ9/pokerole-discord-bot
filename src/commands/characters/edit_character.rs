@@ -54,7 +54,13 @@ pub async fn edit_character(
 
         let gender = Gender::from_phenotype(record.phenotype);
         create_emojis_for_pokemon(&ctx, species, &gender, record.is_shiny).await;
-        reset_species_override = true;
+        if let Some(existing_species_override) = record.species_override_for_stats {
+            if existing_species_override == species.poke_api_id.0 as i64 {
+                reset_species_override = true;
+                should_stats_be_reset = false;
+            }
+        }
+
         species
     } else {
         ctx.data()
@@ -71,7 +77,6 @@ pub async fn edit_character(
                 action_log.push(format!("species stat override to {}", species.name));
                 should_stats_be_reset = true;
             }
-
             Some(species.poke_api_id.0 as i64)
         } else if reset_species_override {
             None
