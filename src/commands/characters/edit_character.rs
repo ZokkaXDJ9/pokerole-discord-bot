@@ -44,15 +44,17 @@ pub async fn edit_character(
     let mut action_log = Vec::new();
 
     let mut should_stats_be_reset = false;
+    let mut reset_species_override = false;
     let species = if let Some(species) = species {
         let species = pokemon_from_autocomplete_string(&ctx, &species)?;
         if species.poke_api_id.0 as i64 != record.species_api_id {
             action_log.push(format!("species to {}", species.name));
-            should_stats_be_reset = true;
+            should_stats_be_reset = record.species_override_for_stats.is_none();
         }
 
         let gender = Gender::from_phenotype(record.phenotype);
         create_emojis_for_pokemon(&ctx, species, &gender, record.is_shiny).await;
+        reset_species_override = true;
         species
     } else {
         ctx.data()
@@ -71,6 +73,8 @@ pub async fn edit_character(
             }
 
             Some(species.poke_api_id.0 as i64)
+        } else if reset_species_override {
+            None
         } else {
             record.species_override_for_stats
         };
