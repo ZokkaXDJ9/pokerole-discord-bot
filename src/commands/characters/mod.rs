@@ -222,7 +222,7 @@ pub async fn build_character_string(
                         .unwrap();
 
                     format!(
-                        "| [Override: Using base stats for {}]",
+                        " | [Override: Using base stats for {}]",
                         species_override_for_stats.name
                     )
                 } else {
