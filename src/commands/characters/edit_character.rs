@@ -84,8 +84,11 @@ You can't (and probably also don't really want to) edit a character's species an
             if species.poke_api_id.0 as i64 != record.species_api_id {
                 action_log.push(format!("species stat override to {}", species.name));
                 should_stats_be_reset = true;
+                Some(species.poke_api_id.0 as i64)
+            } else {
+                action_log.push(String::from("removed species stat override"));
+                None
             }
-            Some(species.poke_api_id.0 as i64)
         } else if reset_species_override {
             action_log.push(String::from("removed species stat override"));
             None
