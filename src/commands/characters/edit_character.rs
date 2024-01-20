@@ -11,7 +11,7 @@ use crate::commands::{
 use crate::enums::Gender;
 use crate::game_data::PokemonApiId;
 
-/// Update character data.
+/// Update character data. All arguments are optional.
 #[allow(clippy::too_many_arguments)]
 #[poise::command(
     slash_command,
@@ -31,6 +31,14 @@ pub async fn edit_character(
     #[autocomplete = "autocomplete_pokemon"]
     species_override_for_stats: Option<String>,
 ) -> Result<(), Error> {
+    if species.is_some() && species_override_for_stats.is_some() {
+        send_error(&ctx, "\
+You can't (and probably also don't really want to) edit a character's species and its override at the same time:
+- Changing the species will remove any existing overrides.
+- Overrides are meant for situations where you aren't able to change the species due to to other external constraints.").await?;
+        return Ok(());
+    }
+
     let guild_id = ctx.guild_id().expect("Command is guild_only").get();
     let character = find_character(ctx.data(), guild_id, &character).await?;
 
@@ -79,6 +87,7 @@ pub async fn edit_character(
             }
             Some(species.poke_api_id.0 as i64)
         } else if reset_species_override {
+            action_log.push(String::from("removed species stat override"));
             None
         } else {
             record.species_override_for_stats
