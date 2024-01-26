@@ -1,13 +1,15 @@
 use crate::commands::{Context, Error};
-use crate::emoji;
 use crate::game_data::PokemonApiId;
+use crate::{emoji, helpers};
 
 /// View some fancy server stats.
-#[poise::command(slash_command)]
+#[poise::command(slash_command, guild_only)]
 pub async fn server_stats(ctx: Context<'_>) -> Result<(), Error> {
     let defer = ctx.defer();
+    let guild_id = ctx.guild_id().expect("Command is guild_only!").get() as i64;
     let records = sqlx::query!(
-        "SELECT species_api_id, COUNT(*) as count FROM character GROUP BY species_api_id ORDER BY species_api_id ASC"
+        "SELECT species_api_id, COUNT(*) as count FROM character WHERE guild_id = ? GROUP BY species_api_id ORDER BY species_api_id ASC",
+        guild_id
     )
     .fetch_all(&ctx.data().database)
     .await
@@ -35,6 +37,18 @@ pub async fn server_stats(ctx: Context<'_>) -> Result<(), Error> {
     result.push_str("\n*(Got any other ideas for what should be displayed here? Lemme know and I might add it!)*");
 
     let _ = defer.await;
-    let _ = ctx.reply(result).await;
+
+    for message in helpers::split_long_messages(result) {
+        let result = ctx.reply(message).await;
+        if let Err(error) = result {
+            let _ = ctx
+                .reply(&format!(
+                    "Encountered an unexpected error:\n```{}```",
+                    error
+                ))
+                .await;
+        }
+    }
+
     Ok(())
 }
