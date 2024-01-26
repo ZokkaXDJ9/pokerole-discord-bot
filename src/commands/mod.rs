@@ -41,6 +41,7 @@ pub mod characters;
 mod prune_emojis;
 mod quests;
 mod say;
+mod server_stats;
 mod setting_time_offset;
 mod update_user_names;
 mod wallets;
@@ -75,6 +76,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         update_user_names::update_user_names(),
         about::about(),
         prune_emojis::prune_emojis(),
+        server_stats::server_stats(),
     ];
 
     for x in characters::get_all_commands() {

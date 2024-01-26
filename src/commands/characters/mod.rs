@@ -18,7 +18,7 @@ use serenity::all::{
 };
 use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
-use std::fmt::{format, Formatter};
+use std::fmt::Formatter;
 
 mod cs_mock;
 mod edit_character;
