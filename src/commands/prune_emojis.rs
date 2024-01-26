@@ -1,7 +1,7 @@
 use crate::commands::{send_ephemeral_reply, Context};
 use crate::Error;
 
-// TODO: Make this an automated task instead of a command.
+// TODO: Discord doesn't seem to ever delete emoji data. So neither should we. We should still track whether emojis actually exist on the server, though.
 /// Removes emojis which have been deleted from the server from the database.
 #[poise::command(
     slash_command,
