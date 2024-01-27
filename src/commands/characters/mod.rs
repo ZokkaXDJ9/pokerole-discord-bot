@@ -377,6 +377,7 @@ pub enum ActionType {
     Spar,
     NewPlayerCombatTutorial,
     NewPlayerTour,
+    WalletEdit,
     CharacterEdit,
     CharacterStatReset,
 }
@@ -397,6 +398,7 @@ impl fmt::Display for ActionType {
             ActionType::Spar => "🤺 [Spar]",
             ActionType::NewPlayerCombatTutorial => "⚔️ [Combat Tutorial]",
             ActionType::NewPlayerTour => "🎫 [Tour]",
+            ActionType::WalletEdit => "📝 [Edit]",
             ActionType::CharacterEdit => "📝 [Edit]",
             ActionType::CharacterStatReset => "📝 [Edit]",
         })

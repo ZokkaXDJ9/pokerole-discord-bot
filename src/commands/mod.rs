@@ -212,7 +212,7 @@ pub async fn find_wallet(
     wallet_name: &str,
 ) -> Result<WalletCacheItem, ParseError> {
     match parse_user_input_to_wallet(data, guild_id as i64, wallet_name).await {
-        Some(character) => Ok(character),
+        Some(wallet) => Ok(wallet),
         None => Err(ParseError::new(&format!(
             "Unable to find a wallet named {}",
             wallet_name

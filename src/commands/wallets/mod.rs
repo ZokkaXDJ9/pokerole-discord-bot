@@ -9,6 +9,7 @@ use poise::Command;
 use serenity::all::{ChannelId, EditMessage, MessageId};
 
 mod add_wallet_owner;
+mod edit_wallet;
 mod initialize_wallet;
 mod pay;
 mod wallet_info;
@@ -21,6 +22,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         pay::pay(),
         withdraw::withdraw(),
         wallet_info::wallet_info(),
+        edit_wallet::edit_wallet(),
     ]
 }
 
