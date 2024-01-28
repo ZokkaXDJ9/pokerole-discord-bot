@@ -62,6 +62,10 @@ impl Cache {
         self.character_cache.lock().await.clone()
     }
 
+    pub async fn reset(&self, db: &Pool<Sqlite>) {
+        self.update_character_names(db).await;
+    }
+
     pub async fn update_character_names(&self, db: &Pool<Sqlite>) {
         let entries = sqlx::query!(
 "SELECT character.id, character.name as character_name, character.user_id, character.guild_id, character.is_retired, user_in_guild.name as user_name
