@@ -32,6 +32,7 @@ mod reward_giving_combat_tutorial;
 mod reward_giving_tour;
 mod reward_money;
 mod reward_spar;
+mod unretire_character;
 mod upgrade_backpack;
 
 const DEFAULT_BACKPACK_SLOTS: i64 = 6;
@@ -52,6 +53,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         reward_giving_tour::reward_giving_tour(),
         reset_character_stats::reset_character_stats(),
         retire_character::retire_character(),
+        unretire_character::unretire_character(),
     ]
 }
 
@@ -382,6 +384,8 @@ pub enum ActionType {
     WalletEdit,
     CharacterEdit,
     CharacterStatReset,
+    CharacterRetirement,
+    CharacterUnRetirement,
 }
 
 impl fmt::Display for ActionType {
@@ -403,6 +407,8 @@ impl fmt::Display for ActionType {
             ActionType::WalletEdit => "📝 [Edit]",
             ActionType::CharacterEdit => "📝 [Edit]",
             ActionType::CharacterStatReset => "📝 [Edit]",
+            ActionType::CharacterRetirement => "💤 [Retirement]",
+            ActionType::CharacterUnRetirement => "⏰ [UnRetirement]",
         })
     }
 }
