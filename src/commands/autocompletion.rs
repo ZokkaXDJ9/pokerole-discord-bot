@@ -78,6 +78,7 @@ pub async fn autocomplete_character_name<'a>(ctx: Context<'a>, partial: &'a str)
             .await
             .iter()
             .filter(|x| x.guild_id == ctx.guild_id().expect("Command should be guild_only!").get())
+            .filter(|x| !x.is_retired)
             .map(|x| x.get_autocomplete_name()),
         0,
     )
@@ -112,6 +113,25 @@ pub async fn autocomplete_owned_character_name<'a>(
             .iter()
             .filter(|x| x.user_id == ctx.author().id.get())
             .filter(|x| x.guild_id == ctx.guild_id().expect("Command should be guild_only!").get())
+            .filter(|x| !x.is_retired)
+            .map(|x| x.get_autocomplete_name()),
+        0,
+    )
+}
+
+pub async fn autocomplete_retired_character_name<'a>(
+    ctx: Context<'a>,
+    partial: &'a str,
+) -> Vec<String> {
+    filter_and_sort(
+        partial,
+        ctx.data()
+            .cache
+            .get_characters()
+            .await
+            .iter()
+            .filter(|x| x.guild_id == ctx.guild_id().expect("Command should be guild_only!").get())
+            .filter(|x| x.is_retired)
             .map(|x| x.get_autocomplete_name()),
         0,
     )
