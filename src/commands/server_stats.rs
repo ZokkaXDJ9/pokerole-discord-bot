@@ -8,7 +8,7 @@ pub async fn server_stats(ctx: Context<'_>) -> Result<(), Error> {
     let defer = ctx.defer();
     let guild_id = ctx.guild_id().expect("Command is guild_only!").get() as i64;
     let records = sqlx::query!(
-        "SELECT species_api_id, COUNT(*) as count FROM character WHERE guild_id = ? GROUP BY species_api_id ORDER BY species_api_id ASC",
+        "SELECT species_api_id, COUNT(*) as count FROM character WHERE guild_id = ? AND is_retired = false GROUP BY species_api_id ORDER BY species_api_id ASC",
         guild_id
     )
     .fetch_all(&ctx.data().database)
