@@ -26,6 +26,7 @@ mod initialize_character;
 mod initialize_character_post;
 mod initialize_guild;
 mod reset_character_stats;
+mod retire_character;
 mod reward_experience;
 mod reward_giving_combat_tutorial;
 mod reward_giving_tour;
@@ -50,6 +51,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         reward_giving_combat_tutorial::reward_giving_combat_tutorial(),
         reward_giving_tour::reward_giving_tour(),
         reset_character_stats::reset_character_stats(),
+        retire_character::retire_character(),
     ]
 }
 
