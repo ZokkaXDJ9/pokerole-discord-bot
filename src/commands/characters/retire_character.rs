@@ -1,5 +1,5 @@
 use crate::commands::autocompletion::autocomplete_character_name;
-use crate::commands::characters::{log_action, ActionType};
+use crate::commands::characters::{log_action, update_character_post, ActionType};
 use crate::commands::{find_character, Context, Error};
 use crate::helpers;
 
@@ -39,6 +39,7 @@ pub async fn retire_character(
             .await;
 
             ctx.data().cache.reset(&ctx.data().database).await;
+            update_character_post(&ctx, character.id).await;
         }
         Err(e) => {
             let _ = ctx
