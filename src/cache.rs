@@ -6,18 +6,27 @@ use tokio::sync::Mutex;
 pub struct CharacterCacheItem {
     pub id: i64,
     pub name: String,
-    pub user_id: u64,
+    pub is_retired: bool,
     pub guild_id: u64,
+    pub user_id: u64,
     autocomplete_name: String,
 }
 
 impl CharacterCacheItem {
-    pub fn new(id: i64, name: String, user_id: u64, guild_id: u64, user_nickname: String) -> Self {
+    pub fn new(
+        id: i64,
+        name: String,
+        user_id: u64,
+        guild_id: u64,
+        is_retired: bool,
+        user_nickname: String,
+    ) -> Self {
         CharacterCacheItem {
             autocomplete_name: CharacterCacheItem::build_autocomplete_name(&name, &user_nickname),
             id,
             user_id,
             guild_id,
+            is_retired,
             name,
         }
     }
@@ -55,7 +64,7 @@ impl Cache {
 
     pub async fn update_character_names(&self, db: &Pool<Sqlite>) {
         let entries = sqlx::query!(
-"SELECT character.id, character.name as character_name, character.user_id, character.guild_id, user_in_guild.name as user_name
+"SELECT character.id, character.name as character_name, character.user_id, character.guild_id, character.is_retired, user_in_guild.name as user_name
 FROM character
 LEFT JOIN user_in_guild ON
     user_in_guild.user_id = character.user_id AND
@@ -73,6 +82,7 @@ LEFT JOIN user_in_guild ON
                         x.character_name,
                         x.user_id as u64,
                         x.guild_id as u64,
+                        x.is_retired,
                         x.user_name.unwrap_or(String::new()),
                     ))
                 }
