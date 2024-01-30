@@ -239,12 +239,14 @@ Willpower: {}
 {}
 Defense: {}
 Special Defense: {}
+Active Move Limit: {}
 ",
                     (base_hp as i64 + self.vitality_or_beauty.current) * 2,
                     self.insight_or_clever.current + 2,
                     self.build_stat_block(),
                     (self.vitality_or_beauty.current as f32 * 0.5).ceil(),
-                    (self.insight_or_clever.current as f32 * 0.5).ceil()
+                    (self.insight_or_clever.current as f32 * 0.5).ceil(),
+                    self.insight_or_clever.current + 2,
                 )
             }
             CharacterStatType::Social => self.build_stat_block(),
