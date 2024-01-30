@@ -14,7 +14,7 @@ use poise::Command;
 use regex::Regex;
 use serenity::all::{
     ButtonStyle, CreateActionRow, CreateAllowedMentions, CreateButton, CreateMessage, EditMessage,
-    MessageId,
+    GetMessages, MessageId,
 };
 use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
@@ -434,6 +434,18 @@ pub async fn log_action<'a>(
     .fetch_one(&ctx.data().database)
     .await;
 
+    let origin = match ctx
+        .channel_id()
+        .messages(ctx, GetMessages::new().limit(1))
+        .await
+    {
+        Ok(messages) => match messages.first() {
+            None => String::new(),
+            Some(m) => format!(" in {}", m.link_ensured(ctx).await),
+        },
+        Err(_) => String::new(),
+    };
+
     if let Ok(record) = record {
         if let Some(action_log_channel_id) = record.action_log_channel_id {
             let channel_id = ChannelId::from(action_log_channel_id as u64);
@@ -442,10 +454,11 @@ pub async fn log_action<'a>(
                     ctx,
                     CreateMessage::new()
                         .content(std::format!(
-                            "{} {} (triggered by {})",
+                            "{} {} (triggered by {}{})",
                             action_type,
                             message,
-                            ctx.author()
+                            ctx.author(),
+                            origin
                         ))
                         .allowed_mentions(CreateAllowedMentions::new().empty_users()),
                 )
