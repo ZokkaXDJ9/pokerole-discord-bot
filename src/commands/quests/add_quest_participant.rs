@@ -49,7 +49,7 @@ pub async fn add_quest_participant(
         String::from("Manually signed up the following character(s) for this quest:\n");
     for x in characters {
         sqlx::query!("INSERT INTO quest_signup (quest_id, character_id, timestamp, accepted) VALUES (?, ?, ?, ?)
-ON CONFLICT (quest_id, character_id) DO UPDATE SET accepted = true WHERE quest_id = excluded.quest_id AND character_id = excluded.character_id", 
+ON CONFLICT (quest_id, character_id) DO UPDATE SET accepted = true", 
             channel_id,
             x.id,
             timestamp,

@@ -100,13 +100,11 @@ async fn handle_guild_member_update(
     let result = sqlx::query!(
         "
 INSERT INTO user_in_guild (name, user_id, guild_id) VALUES (?, ?, ?) 
-ON CONFLICT(user_id, guild_id) DO UPDATE SET name = ? WHERE user_id = ? AND guild_id = ?",
+ON CONFLICT(user_id, guild_id) DO UPDATE SET name = ?",
         nickname,
         user_id,
         guild_id,
         nickname,
-        user_id,
-        guild_id,
     )
     .execute(&framework.user_data.database)
     .await;
