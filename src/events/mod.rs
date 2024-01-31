@@ -11,7 +11,7 @@ use crate::{helpers, Error};
 use serenity::all::{
     ComponentInteraction, ComponentInteractionDataKind, CreateAllowedMentions,
     CreateInteractionResponse, CreateInteractionResponseMessage, CreateMessage, FullEvent, GuildId,
-    Interaction, User,
+    GuildMemberUpdateEvent, Interaction, Member, User,
 };
 use serenity::client::Context;
 use serenity::model::id::ChannelId;
@@ -40,9 +40,17 @@ pub async fn handle_events<'a>(
             // TODO: Send greeting, add default roles
             Ok(())
         }
-        FullEvent::UserUpdate { old_data, new } => {
-            // TODO: Update internal username cache
-            Ok(())
+        FullEvent::GuildMemberUpdate {
+            old_if_available,
+            new,
+            event,
+        } => {
+            if let Some(new) = new {
+                handle_guild_member_update(context, &framework, new, event).await
+            } else {
+                // TODO: Weird edge case, log this
+                Ok(())
+            }
         }
         FullEvent::MessageDelete {
             channel_id,
@@ -68,6 +76,43 @@ pub async fn handle_events<'a>(
         }
         _ => Ok(()),
     }
+}
+
+async fn handle_guild_member_update(
+    ctx: &Context,
+    framework: &FrameworkContext<'_>,
+    new: &Member,
+    event: &GuildMemberUpdateEvent,
+) -> Result<(), Error> {
+    let user_id = new.user.id.get() as i64;
+    let guild_id = new.guild_id.get() as i64;
+
+    let nickname = match &new.nick {
+        None => &new.user.name,
+        Some(nick) => nick,
+    };
+
+    let result = sqlx::query!(
+        "
+INSERT INTO user_in_guild (name, user_id, guild_id) VALUES (?, ?, ?) 
+ON CONFLICT(user_id, guild_id) DO UPDATE SET name = ? WHERE user_id = ? AND guild_id = ?",
+        nickname,
+        user_id,
+        guild_id,
+        nickname,
+        user_id,
+        guild_id,
+    )
+    .execute(&framework.user_data.database)
+    .await;
+
+    framework
+        .user_data
+        .cache
+        .reset(&framework.user_data.database)
+        .await;
+
+    Ok(())
 }
 
 async fn handle_guild_member_removal(
