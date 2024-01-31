@@ -36,10 +36,6 @@ pub async fn handle_events<'a>(
         FullEvent::GuildMemberRemoval { guild_id, user, .. } => {
             handle_guild_member_removal(context, framework.user_data, guild_id, user).await
         }
-        FullEvent::GuildMemberAddition { new_member } => {
-            // TODO: Send greeting, add default roles
-            Ok(())
-        }
         FullEvent::GuildMemberUpdate {
             old_if_available,
             new,
@@ -48,16 +44,25 @@ pub async fn handle_events<'a>(
             if let Some(new) = new {
                 handle_guild_member_update(context, &framework, new, event).await
             } else {
-                // TODO: Weird edge case, log this
+                let _ = helpers::ERROR_LOG_CHANNEL
+                    .send_message(&context, CreateMessage::new().content(
+                        format!("Encountered a weird edge case in GuildMemberUpdate.\n old: {:?}\n new: {:?}, event: {:?}",
+                                old_if_available, new, event)))
+                    .await;
+
                 Ok(())
             }
+        }
+        FullEvent::GuildMemberAddition { new_member } => {
+            // TODO: Send greeting, add default roles
+            Ok(())
         }
         FullEvent::MessageDelete {
             channel_id,
             deleted_message_id,
             guild_id,
         } => {
-            // TODO: Maybe log message edit
+            // TODO: Maybe log message deletion
             Ok(())
         }
         FullEvent::MessageUpdate {
@@ -65,7 +70,7 @@ pub async fn handle_events<'a>(
             new,
             event,
         } => {
-            // TODO: Maybe log message deletion
+            // TODO: Maybe log message edit
             Ok(())
         }
         FullEvent::Ready { .. } => {
