@@ -267,12 +267,17 @@ pub async fn build_character_string(
 
             let retired_or_not = if record.is_retired { "[RETIRED]" } else { "" };
 
+            let battle_point = if record.battle_points > 0 {
+                format!("{} {}\n", record.battle_points, emoji::BATTLE_POINT)
+            } else {
+                String::new()
+            };
+
             let mut message = format!(
                 "\
 ## {} {} {} {}
 **Level {}** `({} / 100)`
-{} {}
-{} {}
+{} {} {}
 ### Stats {}{}
 ```
 {}
@@ -289,8 +294,7 @@ pub async fn build_character_string(
                 experience,
                 record.money,
                 emoji::POKE_COIN,
-                record.battle_points,
-                emoji::BATTLE_POINT,
+                battle_point,
                 type_emojis,
                 species_override_for_stats,
                 combat_stats.build_string(),
