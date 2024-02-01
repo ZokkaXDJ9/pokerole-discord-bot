@@ -1,0 +1,1 @@
+ALTER TABLE character ADD COLUMN battle_points INTEGER NOT NULL DEFAULT 0;

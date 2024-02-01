@@ -5,6 +5,7 @@ use crate::game_data::PokemonApiId;
 use sqlx::{Pool, Sqlite};
 
 pub const POKE_COIN: &str = "<:poke_coin:1120237132200546304>";
+pub const BATTLE_POINT: &str = "<:battle_point:1202570025802661938>";
 
 pub const RANK_BRONZE: &str = "<:badge_bronze:1119186018793435177>";
 pub const RANK_SILVER: &str = "<:badge_silver:1119185975545954314>";

@@ -178,7 +178,7 @@ pub async fn build_character_string(
     character_id: i64,
 ) -> Option<BuildUpdatedStatMessageStringResult> {
     let entry = sqlx::query!(
-        "SELECT name, guild_id, experience, money, stat_message_id, stat_channel_id, backpack_upgrade_count, total_spar_count, total_new_player_tour_count, total_new_player_combat_tutorial_count, species_api_id, is_shiny, phenotype, is_retired, \
+        "SELECT name, guild_id, experience, money, battle_points, stat_message_id, stat_channel_id, backpack_upgrade_count, total_spar_count, total_new_player_tour_count, total_new_player_combat_tutorial_count, species_api_id, is_shiny, phenotype, is_retired, \
                       stat_strength, stat_dexterity, stat_vitality, stat_special, stat_insight, stat_tough, stat_cool, stat_beauty, stat_cute, stat_clever, species_override_for_stats
                 FROM character WHERE id = ? \
                 ORDER BY rowid \
@@ -272,6 +272,7 @@ pub async fn build_character_string(
 ## {} {} {} {}
 **Level {}** `({} / 100)`
 {} {}
+{} {}
 ### Stats {}{}
 ```
 {}
@@ -288,6 +289,8 @@ pub async fn build_character_string(
                 experience,
                 record.money,
                 emoji::POKE_COIN,
+                record.battle_points,
+                emoji::BATTLE_POINT,
                 type_emojis,
                 species_override_for_stats,
                 combat_stats.build_string(),
