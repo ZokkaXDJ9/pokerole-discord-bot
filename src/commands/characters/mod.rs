@@ -27,6 +27,7 @@ mod initialize_character_post;
 mod initialize_guild;
 mod reset_character_stats;
 mod retire_character;
+mod reward_battle_points;
 mod reward_experience;
 mod reward_giving_combat_tutorial;
 mod reward_giving_tour;
@@ -48,6 +49,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         reward_experience::reward_experience(),
         reward_money::reward_money(),
         upgrade_backpack::upgrade_backpack(),
+        reward_battle_points::reward_battle_points(),
         reward_spar::reward_spar(),
         reward_giving_combat_tutorial::reward_giving_combat_tutorial(),
         reward_giving_tour::reward_giving_tour(),
@@ -268,7 +270,7 @@ pub async fn build_character_string(
             let retired_or_not = if record.is_retired { "[RETIRED]" } else { "" };
 
             let battle_point = if record.battle_points > 0 {
-                format!("{} {}\n", record.battle_points, emoji::BATTLE_POINT)
+                format!("\n{} {}", record.battle_points, emoji::BATTLE_POINT)
             } else {
                 String::new()
             };
@@ -547,10 +549,10 @@ pub async fn change_character_stat_after_validation<'a>(
             }
 
             update_character_post(ctx, record.id).await;
-            let action = if database_column == "money" {
-                emoji::POKE_COIN
-            } else {
-                database_column
+            let action = match database_column {
+                "money" => emoji::POKE_COIN,
+                "battle_points" => emoji::BATTLE_POINT,
+                _ => database_column,
             };
             let added_or_removed: &str;
             let to_or_from: &str;
