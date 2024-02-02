@@ -7,8 +7,9 @@ use crate::commands::{
     send_ephemeral_reply, send_error, Context, Error,
 };
 use crate::enums::Gender;
+use crate::errors::ValidationError;
 use crate::{emoji, helpers};
-use serenity::all::CreateMessage;
+use serenity::all::{CreateMessage, GetMessages};
 use serenity::model::user::User;
 
 /// Create a new character within the database.
@@ -55,6 +56,14 @@ pub async fn initialize_character(
             ),
         )
         .await?;
+
+    if let Ok(messages) = ctx.channel_id().messages(ctx, GetMessages::new()).await {
+        if messages.len() > 10 {
+            send_error(&ctx, "Seems like there's already been a looot of messages been sent in this channel! Cannot create a character here, that seems wrong.").await?;
+            message.delete(ctx).await?;
+            return Ok(());
+        }
+    }
 
     let user_id = player.id.get() as i64;
     let guild_id = ctx.guild_id().expect("Command is guild_only").get() as i64;
