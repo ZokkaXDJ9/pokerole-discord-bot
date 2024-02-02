@@ -7,7 +7,6 @@ use crate::commands::{
     send_ephemeral_reply, send_error, Context, Error,
 };
 use crate::enums::Gender;
-use crate::errors::ValidationError;
 use crate::{emoji, helpers};
 use serenity::all::{CreateMessage, GetMessages};
 use serenity::model::user::User;

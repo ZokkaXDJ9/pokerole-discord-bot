@@ -62,6 +62,15 @@ impl Cache {
         self.character_cache.lock().await.clone()
     }
 
+    pub async fn get_character(&self, id: i64) -> Option<CharacterCacheItem> {
+        self.character_cache
+            .lock()
+            .await
+            .iter()
+            .find(|x| x.id == id)
+            .cloned()
+    }
+
     pub async fn reset(&self, db: &Pool<Sqlite>) {
         self.update_character_names(db).await;
     }

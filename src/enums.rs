@@ -178,6 +178,16 @@ impl Display for MysteryDungeonRank {
 }
 
 impl MysteryDungeonRank {
+    pub fn name_without_emoji(&self) -> &str {
+        match self {
+            MysteryDungeonRank::Bronze => "Bronze Rank",
+            MysteryDungeonRank::Silver => "Silver Rank",
+            MysteryDungeonRank::Gold => "Gold Rank",
+            MysteryDungeonRank::Platinum => "Platinum Rank",
+            MysteryDungeonRank::Diamond => "Diamond Rank",
+        }
+    }
+
     pub fn die_count(&self) -> u8 {
         match self {
             MysteryDungeonRank::Bronze => 1,
