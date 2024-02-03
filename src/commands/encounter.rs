@@ -297,9 +297,13 @@ INS: {:>2} / {:>2}      Cute:   {} / 5
 
         result.push_str("## Moves\n");
         for move_name in &self.moves {
+            let move_name = move_name
+                .trim_end_matches('¹')
+                .trim_end_matches('²')
+                .to_lowercase();
             let m = data
                 .moves
-                .get(&move_name.to_lowercase())
+                .get(&move_name)
                 .unwrap_or_else(|| panic!("Every move should be set! {}", move_name));
             result.push_str(
                 std::format!(
