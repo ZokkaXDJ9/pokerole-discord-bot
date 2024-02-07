@@ -27,7 +27,7 @@ pub async fn quest_sign_up(
     let channel_id = interaction.channel_id.get() as i64;
 
     let available_characters = sqlx::query!(
-        "SELECT id, name FROM character WHERE user_id = ? AND guild_id = ?",
+        "SELECT id, name FROM character WHERE user_id = ? AND guild_id = ? AND is_retired = false",
         user_id,
         guild_id
     )
