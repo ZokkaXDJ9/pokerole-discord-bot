@@ -5,11 +5,12 @@ use std::io::Read;
 use std::path::Path;
 
 /// Data Objects which should be ignored
-const REJECTED_DATA_FILE_NAMES: [&str; 6] = [
+const REJECTED_DATA_FILE_NAMES: [&str; 7] = [
     "Any Move.json",
     "Potion.json",
     "Super Potion.json",
     "Hyper Potion.json",
+    "Max Potion.json",
     "Full Heal.json",
     "Full Restore.json",
 ];
