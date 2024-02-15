@@ -2,6 +2,7 @@ use std::fmt;
 
 pub type ValidationError = CommandInvocationError;
 pub type ParseError = CommandInvocationError;
+pub type DatabaseError = CommandInvocationError;
 
 #[derive(Debug)]
 pub struct CommandInvocationError {

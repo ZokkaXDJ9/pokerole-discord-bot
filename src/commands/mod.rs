@@ -38,6 +38,7 @@ pub mod timestamp;
 pub mod weather;
 
 pub mod characters;
+mod player_info;
 mod prune_emojis;
 mod quests;
 mod say;
@@ -65,6 +66,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         efficiency::efficiency(),
         select_random::select_random(),
         poll::poll(),
+        player_info::player_info(),
         scale::scale(),
         create_emojis::create_emojis(),
         encounter::encounter(),

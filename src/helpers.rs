@@ -322,6 +322,15 @@ pub fn get_usual_evolution_stage_for_level<'a>(
 pub fn calculate_level_from_experience(experience: i64) -> i64 {
     experience / 100 + 1
 }
+
+pub fn calculate_current_experience(experience: i64) -> i64 {
+    experience % 100
+}
+
+pub fn channel_id_link(channel_id: ChannelId) -> String {
+    format!("<#{}>", channel_id)
+}
+
 pub fn calculate_next_limit_break_cost(limit_break_count: i64) -> i64 {
     2 + limit_break_count
 }

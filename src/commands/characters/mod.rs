@@ -195,7 +195,7 @@ pub async fn build_character_string(
     match entry {
         Ok(record) => {
             let level = helpers::calculate_level_from_experience(record.experience);
-            let experience = record.experience % 100;
+            let experience = helpers::calculate_current_experience(record.experience);
             let rank = MysteryDungeonRank::from_level(level as u8);
             let pokemon = data
                 .game
