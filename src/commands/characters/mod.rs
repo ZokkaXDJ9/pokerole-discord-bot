@@ -21,6 +21,7 @@ use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
 use std::fmt::Formatter;
 
+mod character_sheet;
 mod edit_character;
 mod give_money;
 mod initialize_character;
@@ -42,6 +43,7 @@ const DEFAULT_BACKPACK_SLOTS: i64 = 6;
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     vec![
         reset_all_character_stats(),
+        character_sheet::character_sheet(),
         edit_character::edit_character(),
         give_money::give_money(),
         initialize_character::initialize_character(),

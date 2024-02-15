@@ -90,7 +90,7 @@ async fn build_reply(data: &Data, user_in_guild: &Member, characters: Vec<QueryO
         "## {}
 **Joined at**: {}
 **Total Character Level**: {} 
-**Lifetime Experience**: {}
+**Total Experience**: {}
 **Character Slots**: {}/{}
 {}",
         user_in_guild.display_name(),

@@ -77,7 +77,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         say::say(),
         update_user_names::update_user_names(),
         about::about(),
-        prune_emojis::prune_emojis(),
+        //prune_emojis::prune_emojis(),
         server_stats::server_stats(),
     ];
 
