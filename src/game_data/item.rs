@@ -9,12 +9,16 @@ pub struct Item {
     pub description: String,
     pub category: String,
     pub single_use: bool,
+    pub health_restored: Option<u8>,
 }
 
 impl Item {
     pub(crate) fn build_string(&self) -> impl Into<String> + Sized {
         let mut result: String = std::format!("### {}\n", &self.name);
 
+        if let Some(health_restored) = &self.health_restored {
+            result.push_str(&format!("**Health Restored**: {}\n", health_restored));
+        }
         if let Some(price) = &self.price {
             result.push_str(&format!("**Price**: {}\n", price));
         }
@@ -32,6 +36,7 @@ impl Item {
             description: raw.description,
             category: Item::parse_category(raw.pocket, raw.category),
             single_use: raw.one_use,
+            health_restored: raw.health_restored,
         }
     }
 
@@ -42,6 +47,7 @@ impl Item {
             description: raw.description.clone(),
             category: raw.category.clone(),
             single_use: raw.single_use,
+            health_restored: raw.health_restored.clone(),
         }
     }
 

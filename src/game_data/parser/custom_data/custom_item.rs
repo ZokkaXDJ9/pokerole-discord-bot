@@ -5,4 +5,5 @@ pub struct CustomItem {
     pub category: String,
     pub description: String,
     pub single_use: bool,
+    pub health_restored: Option<u8>,
 }
