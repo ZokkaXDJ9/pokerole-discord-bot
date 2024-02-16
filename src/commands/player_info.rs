@@ -26,9 +26,20 @@ pub async fn player_info(
         .fetch_all(&ctx.data().database)
         .await;
 
+    let hosted_quest_count = match sqlx::query!(
+        "SELECT COUNT(*) as count FROM quest WHERE creator_id = ? AND completion_timestamp IS NOT NULL",
+        user_id,
+    )
+    .fetch_one(&ctx.data().database)
+    .await {
+        Ok(record) => {record.count}
+        Err(_) => {0}
+    };
+
     match characters {
         Ok(characters) => {
-            let reply = build_reply(ctx.data(), &user_in_guild, characters).await;
+            let reply =
+                build_reply(ctx.data(), &user_in_guild, characters, hosted_quest_count).await;
             for message in split_long_messages(reply) {
                 let _ = ctx.reply(message).await;
             }
@@ -44,7 +55,12 @@ pub async fn player_info(
     Ok(())
 }
 
-async fn build_reply(data: &Data, user_in_guild: &Member, characters: Vec<QueryObject>) -> String {
+async fn build_reply(
+    data: &Data,
+    user_in_guild: &Member,
+    characters: Vec<QueryObject>,
+    hosted_quest_count: i32,
+) -> String {
     let mut character_list = String::new();
     let character_count = characters.len();
     let mut total_levels = 0;
@@ -84,6 +100,12 @@ async fn build_reply(data: &Data, user_in_guild: &Member, characters: Vec<QueryO
         String::from("Unknown")
     };
 
+    let hosted_quest_count = if hosted_quest_count > 0 {
+        format!("\n**Hosted Quests:** {}", hosted_quest_count)
+    } else {
+        String::new()
+    };
+
     let character_slots = 1 + total_levels / 5;
 
     format!(
@@ -91,7 +113,7 @@ async fn build_reply(data: &Data, user_in_guild: &Member, characters: Vec<QueryO
 **Joined at**: {}
 **Total Character Level**: {} 
 **Total Experience**: {}
-**Character Slots**: {}/{}
+**Character Slots**: {}/{}{}
 {}",
         user_in_guild.display_name(),
         joined,
@@ -99,6 +121,7 @@ async fn build_reply(data: &Data, user_in_guild: &Member, characters: Vec<QueryO
         total_exp,
         character_count,
         character_slots,
+        hosted_quest_count,
         character_list
     )
 }
