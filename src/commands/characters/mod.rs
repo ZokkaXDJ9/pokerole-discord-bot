@@ -35,6 +35,7 @@ mod reward_giving_combat_tutorial;
 mod reward_giving_tour;
 mod reward_money;
 mod reward_spar;
+mod unlock_hidden_ability;
 mod unretire_character;
 mod upgrade_backpack;
 
@@ -52,6 +53,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         reward_experience::reward_experience(),
         reward_money::reward_money(),
         upgrade_backpack::upgrade_backpack(),
+        unlock_hidden_ability::unlock_hidden_ability(),
         reward_battle_points::reward_battle_points(),
         reward_spar::reward_spar(),
         reward_giving_combat_tutorial::reward_giving_combat_tutorial(),
@@ -387,6 +389,7 @@ pub enum ActionType {
     Reward,
     Payment,
     BackpackUpgrade,
+    HiddenAbilityUnlock,
     TradeOutgoing,
     TradeIncoming,
     WalletChange,
@@ -409,6 +412,7 @@ impl fmt::Display for ActionType {
             ActionType::Initialization => "🌟 [Init]",
             ActionType::Reward => "✨ [Reward]",
             ActionType::BackpackUpgrade => "🎒 [Upgrade]",
+            ActionType::HiddenAbilityUnlock => "💊 [HA Unlock]",
             ActionType::Payment => "💰 [Payment]",
             ActionType::TradeOutgoing => "➡️ [Trade]",
             ActionType::TradeIncoming => "⬅️ [Trade]",
