@@ -2,7 +2,6 @@ use serenity::all::{ChannelId, Member, User};
 
 use crate::commands::{Context, Error};
 use crate::data::Data;
-use crate::enums::Gender;
 use crate::errors::DatabaseError;
 use crate::game_data::PokemonApiId;
 use crate::helpers::split_long_messages;
@@ -74,7 +73,6 @@ async fn build_reply(
 
         let channel_id = ChannelId::new(character.stat_channel_id as u64);
         let api_id = PokemonApiId(character.species_api_id as u16);
-        let gender = Gender::from_phenotype(character.phenotype);
 
         let pokemon = data
             .game

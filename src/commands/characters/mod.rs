@@ -1,16 +1,6 @@
-use crate::cache::CharacterCacheItem;
-use crate::character_stats::GenericCharacterStats;
-use crate::commands::{
-    handle_error_during_message_edit, parse_character_names, send_ephemeral_reply, send_error,
-    BuildUpdatedStatMessageStringResult, Context,
-};
-use crate::data::Data;
-use crate::emoji::get_character_emoji;
-use crate::enums::{Gender, MysteryDungeonRank};
-use crate::game_data::PokemonApiId;
-use crate::helpers::{ADMIN_ID, ADMIN_PING_STRING};
-use crate::{emoji, helpers, Error};
 use core::fmt;
+use std::fmt::Formatter;
+
 use poise::Command;
 use regex::Regex;
 use serenity::all::{
@@ -19,7 +9,18 @@ use serenity::all::{
 };
 use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
-use std::fmt::Formatter;
+
+use crate::cache::CharacterCacheItem;
+use crate::character_stats::GenericCharacterStats;
+use crate::commands::{
+    handle_error_during_message_edit, parse_character_names, send_ephemeral_reply, send_error,
+    BuildUpdatedStatMessageStringResult, Context,
+};
+use crate::data::Data;
+use crate::enums::{Gender, MysteryDungeonRank};
+use crate::game_data::PokemonApiId;
+use crate::helpers::{ADMIN_ID, ADMIN_PING_STRING};
+use crate::{emoji, helpers, Error};
 
 mod character_sheet;
 mod edit_character;
