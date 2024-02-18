@@ -143,6 +143,14 @@ fn parse_pokemon(
         pokemon_names.push(x.name.clone());
 
         let pokemon = Pokemon::from_pokerole_data(x, pokemon_api_data);
+        if pokemon.event_abilities.is_some() {
+            info!(
+                "{}: {}",
+                &pokemon.name,
+                &pokemon.event_abilities.clone().unwrap()
+            )
+        }
+
         learnable_moves_by_api_id.insert(pokemon.poke_api_id, pokemon.moves.clone());
         parsed_pokemon.push(pokemon);
     }

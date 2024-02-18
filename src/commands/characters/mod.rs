@@ -186,7 +186,7 @@ pub async fn build_character_string(
 ) -> Option<BuildUpdatedStatMessageStringResult> {
     let entry = sqlx::query!(
         "SELECT name, guild_id, experience, money, battle_points, stat_message_id, stat_channel_id, backpack_upgrade_count, total_spar_count, total_new_player_tour_count, total_new_player_combat_tutorial_count, species_api_id, is_shiny, phenotype, is_retired, \
-                      stat_strength, stat_dexterity, stat_vitality, stat_special, stat_insight, stat_tough, stat_cool, stat_beauty, stat_cute, stat_clever, species_override_for_stats
+                      is_hidden_ability_unlocked, stat_strength, stat_dexterity, stat_vitality, stat_special, stat_insight, stat_tough, stat_cool, stat_beauty, stat_cute, stat_clever, species_override_for_stats
                 FROM character WHERE id = ? \
                 ORDER BY rowid \
                 LIMIT 1",
@@ -270,7 +270,8 @@ pub async fn build_character_string(
                 record.stat_clever,
             );
 
-            let ability_list = pokemon.build_simple_ability_list(false);
+            let ability_list =
+                pokemon.build_simple_ability_list(record.is_hidden_ability_unlocked, false);
 
             let retired_or_not = if record.is_retired { "[RETIRED]" } else { "" };
 
