@@ -14,6 +14,7 @@ mod helpers;
 mod logger;
 
 use crate::data::Data;
+use crate::errors::CommandInvocationError;
 use poise::builtins::on_error;
 use poise::{serenity_prelude as serenity, CreateReply, FrameworkError};
 use sqlx::{Pool, Sqlite};
@@ -66,11 +67,18 @@ async fn main() {
 async fn handle_error(error: FrameworkError<'_, Data, Error>) {
     match error {
         FrameworkError::Command { ctx, error, .. } => {
-            log::error!(
-                "An error occurred in command /{}: {}",
-                &ctx.command().name,
-                error
-            );
+            let should_error_get_logged = match error.downcast_ref::<CommandInvocationError>() {
+                None => true,
+                Some(e) => e.log,
+            };
+
+            if should_error_get_logged {
+                log::error!(
+                    "An error occurred in command /{}: {}",
+                    &ctx.command().name,
+                    error
+                );
+            }
             if let Err(e) = ctx
                 .send(
                     CreateReply::default()
