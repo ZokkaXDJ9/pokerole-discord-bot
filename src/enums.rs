@@ -1,9 +1,13 @@
-use crate::emoji;
-use poise::ChoiceParameter;
-use serde::Deserialize;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::iter::Iterator;
+use std::string::ToString;
+
+use poise::ChoiceParameter;
+use serde::Deserialize;
 use strum_macros::{EnumIter, EnumString, FromRepr};
+
+use crate::emoji;
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq, EnumString, Hash, EnumIter)]
 pub enum PokemonType {
@@ -28,7 +32,7 @@ pub enum PokemonType {
     Shadow,
 }
 
-impl fmt::Display for PokemonType {
+impl Display for PokemonType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
             PokemonType::Normal => "<:type_normal:1118590014931095662> Normal",
@@ -50,6 +54,78 @@ impl fmt::Display for PokemonType {
             PokemonType::Dark => "<:type_dark:1118594879195447387> Dark",
             PokemonType::Fairy => "<:type_fairy:1118594881368100894> Fairy",
             PokemonType::Shadow => "Shadow",
+        })
+    }
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq, EnumString, Hash, EnumIter)]
+pub enum PokemonTypeWithoutShadow {
+    Normal,
+    Fighting,
+    Flying,
+    Poison,
+    Ground,
+    Rock,
+    Bug,
+    Ghost,
+    Steel,
+    Fire,
+    Water,
+    Grass,
+    Electric,
+    Psychic,
+    Ice,
+    Dragon,
+    Dark,
+    Fairy,
+}
+
+impl PokemonTypeWithoutShadow {
+    pub fn get_names_vec() -> Vec<String> {
+        vec![
+            String::from("Normal"),
+            String::from("Fighting"),
+            String::from("Flying"),
+            String::from("Poison"),
+            String::from("Ground"),
+            String::from("Rock"),
+            String::from("Bug"),
+            String::from("Ghost"),
+            String::from("Steel"),
+            String::from("Fire"),
+            String::from("Water"),
+            String::from("Grass"),
+            String::from("Electric"),
+            String::from("Psychic"),
+            String::from("Ice"),
+            String::from("Dragon"),
+            String::from("Dark"),
+            String::from("Fairy"),
+        ]
+    }
+}
+
+impl Display for PokemonTypeWithoutShadow {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            PokemonTypeWithoutShadow::Normal => "<:type_normal:1118590014931095662> Normal",
+            PokemonTypeWithoutShadow::Fighting => "<:type_fighting:1118590013194649730> Fighting",
+            PokemonTypeWithoutShadow::Flying => "<:type_flying:1118590010359283773> Flying",
+            PokemonTypeWithoutShadow::Poison => "<:type_poison:1118590008778047529> Poison",
+            PokemonTypeWithoutShadow::Ground => "<:type_ground:1118590006081114325> Ground",
+            PokemonTypeWithoutShadow::Rock => "<:type_rock:1118590005082861820> Rock",
+            PokemonTypeWithoutShadow::Bug => "<:type_bug:1118594892566908959> Bug",
+            PokemonTypeWithoutShadow::Ghost => "<:type_ghost:1118594890461368350> Ghost",
+            PokemonTypeWithoutShadow::Steel => "<:type_steel:1118594889131765821> Steel",
+            PokemonTypeWithoutShadow::Fire => "<:type_fire:1118594887399514145> Fire",
+            PokemonTypeWithoutShadow::Water => "<:type_water:1118594885344297062> Water",
+            PokemonTypeWithoutShadow::Grass => "<:type_grass:1118594883754664107> Grass",
+            PokemonTypeWithoutShadow::Electric => "<:type_electric:1118594871272415243> Electric",
+            PokemonTypeWithoutShadow::Psychic => "<:type_psychic:1118594873755435009> Psychic",
+            PokemonTypeWithoutShadow::Ice => "<:type_ice:1118594875085041825> Ice",
+            PokemonTypeWithoutShadow::Dragon => "<:type_dragon:1118594876444000357> Dragon",
+            PokemonTypeWithoutShadow::Dark => "<:type_dark:1118594879195447387> Dark",
+            PokemonTypeWithoutShadow::Fairy => "<:type_fairy:1118594881368100894> Fairy",
         })
     }
 }
@@ -401,15 +477,15 @@ impl PokemonGeneration {
 }
 
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    Deserialize,
-    PartialOrd,
-    PartialEq,
-    poise::ChoiceParameter,
-    sqlx::Type,
-    FromRepr,
+Debug,
+Clone,
+Copy,
+Deserialize,
+PartialOrd,
+PartialEq,
+poise::ChoiceParameter,
+sqlx::Type,
+FromRepr,
 )]
 #[repr(i64)]
 pub enum QuestParticipantSelectionMechanism {

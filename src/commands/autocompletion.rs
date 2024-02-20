@@ -1,9 +1,11 @@
-use crate::commands::Context;
 use std::cmp::Ordering;
+
+use crate::commands::Context;
+use crate::enums::PokemonTypeWithoutShadow;
 
 fn filter_and_sort<'a>(
     partial: &str,
-    commands: impl Iterator<Item = &'a String>,
+    commands: impl Iterator<Item=&'a String>,
     minimum_query_length: usize,
 ) -> Vec<String> {
     if partial.len() < minimum_query_length {
@@ -69,6 +71,10 @@ pub async fn autocomplete_potion<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<
     filter_and_sort(partial, ctx.data().game.potion_names.iter(), 0)
 }
 
+pub async fn autocomplete_pokemon_type<'a>(_ctx: Context<'a>, partial: &'a str) -> Vec<String> {
+    filter_and_sort(partial, PokemonTypeWithoutShadow::get_names_vec().iter(), 0)
+}
+
 pub async fn autocomplete_character_name<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
     filter_and_sort(
         partial,
@@ -90,8 +96,8 @@ pub async fn autocomplete_wallet_name<'a>(ctx: Context<'a>, partial: &'a str) ->
         "SELECT name FROM wallet WHERE wallet.guild_id = ?",
         guild_id
     )
-    .fetch_all(&ctx.data().database)
-    .await;
+        .fetch_all(&ctx.data().database)
+        .await;
 
     if let Ok(entries) = entries {
         filter_and_sort(partial, entries.iter().map(|x| &x.name), 0)
