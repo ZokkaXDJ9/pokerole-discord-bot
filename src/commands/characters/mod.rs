@@ -36,6 +36,7 @@ mod reward_giving_combat_tutorial;
 mod reward_giving_tour;
 mod reward_money;
 mod reward_spar;
+mod reward_terastallization;
 mod unlock_hidden_ability;
 mod unretire_character;
 mod upgrade_backpack;
@@ -62,6 +63,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         reset_character_stats::reset_character_stats(),
         retire_character::retire_character(),
         unretire_character::unretire_character(),
+        reward_terastallization::reward_terastallization(),
     ]
 }
 
@@ -98,9 +100,9 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
 
 /// Reset all character stats.
 #[poise::command(
-    slash_command,
-    guild_only,
-    default_member_permissions = "ADMINISTRATOR"
+slash_command,
+guild_only,
+default_member_permissions = "ADMINISTRATOR"
 )]
 async fn reset_all_character_stats(ctx: Context<'_>) -> Result<(), Error> {
     if ctx.author().id.get() != ADMIN_ID {
@@ -111,7 +113,7 @@ async fn reset_all_character_stats(ctx: Context<'_>) -> Result<(), Error> {
                 ADMIN_PING_STRING
             ),
         )
-        .await;
+            .await;
     }
 
     let _ = ctx.defer_ephemeral().await;
@@ -128,7 +130,7 @@ pub async fn send_stale_data_error<'a>(ctx: &Context<'a>) -> Result<(), Error> {
     send_error(ctx, "Something went wrong!
 You hit an absolute edge case where the value has been updated by someone else while this command has been running.
 If this seriously ever happens and/or turns into a problem, let me know. For now... try again? :'D
-You can copy the command string either by just pressing the up key inside the text field on pc."
+You can copy the command string either by just pressing the up key inside the text field on pc.",
     ).await
 }
 
@@ -160,7 +162,7 @@ pub async fn update_character_post<'a>(ctx: &Context<'a>, id: i64) {
                     Some(result.components),
                     result.name,
                 )
-                .await;
+                    .await;
             }
         }
     }
@@ -171,8 +173,8 @@ async fn count_completed_quests<'a>(database: &Pool<Sqlite>, character_id: i64) 
         "SELECT COUNT(*) as count FROM quest_completion WHERE character_id = ?",
         character_id
     )
-    .fetch_optional(database)
-    .await;
+        .fetch_optional(database)
+        .await;
 
     if let Ok(Some(record)) = result {
         record.count
@@ -193,8 +195,8 @@ pub async fn build_character_string(
                 LIMIT 1",
         character_id,
     )
-    .fetch_one(&data.database)
-    .await;
+        .fetch_one(&data.database)
+        .await;
 
     let completed_quest_count = count_completed_quests(&data.database, character_id).await;
     match entry {
@@ -220,8 +222,8 @@ pub async fn build_character_string(
                 &gender,
                 record.is_shiny,
             )
-            .await
-            .unwrap_or(format!("[{}]", pokemon.name));
+                .await
+                .unwrap_or(format!("[{}]", pokemon.name));
             let species_override_for_stats =
                 if let Some(species_override_for_stats) = record.species_override_for_stats {
                     let species_override_for_stats = data
@@ -406,6 +408,7 @@ pub enum ActionType {
     CharacterStatReset,
     CharacterRetirement,
     CharacterUnRetirement,
+    TerastallizationUnlock,
 }
 
 impl fmt::Display for ActionType {
@@ -430,6 +433,7 @@ impl fmt::Display for ActionType {
             ActionType::CharacterStatReset => "📝 [Edit]",
             ActionType::CharacterRetirement => "💤 [Retirement]",
             ActionType::CharacterUnRetirement => "⏰ [UnRetirement]",
+            ActionType::TerastallizationUnlock => "🧃 [Terastallization Unlock]",
         })
     }
 }
@@ -449,8 +453,8 @@ pub async fn log_action<'a>(
         "SELECT action_log_channel_id FROM guild WHERE id = ?",
         guild_id
     )
-    .fetch_one(&ctx.data().database)
-    .await;
+        .fetch_one(&ctx.data().database)
+        .await;
 
     let origin = match ctx
         .channel_id()
@@ -516,7 +520,7 @@ pub async fn change_character_stat<'a>(
                     amount,
                     &action_type,
                 )
-                .await;
+                    .await;
             }
             Ok(characters)
         }
@@ -537,11 +541,11 @@ pub async fn change_character_stat_after_validation<'a>(
             "SELECT id, name, {} as value FROM character WHERE id = ?",
             database_column
         )
-        .as_str(),
+            .as_str(),
     )
-    .bind(character.id)
-    .fetch_one(&ctx.data().database)
-    .await;
+        .bind(character.id)
+        .fetch_one(&ctx.data().database)
+        .await;
 
     match record {
         Ok(record) => {
@@ -554,7 +558,7 @@ pub async fn change_character_stat_after_validation<'a>(
                 .execute(&ctx.data().database).await;
 
             if result.is_err() || result.unwrap().rows_affected() != 1 {
-                return send_stale_data_error(ctx).await
+                return send_stale_data_error(ctx).await;
             }
 
             update_character_post(ctx, record.id).await;
@@ -625,9 +629,9 @@ async fn update_thread_title_to_match_character(ctx: &Context<'_>, character: Ch
         "SELECT experience, species_api_id FROM character WHERE id = ?",
         character.id
     )
-    .fetch_one(&ctx.data().database)
-    .await
-    .expect("Characters with an ID should always exist!");
+        .fetch_one(&ctx.data().database)
+        .await
+        .expect("Characters with an ID should always exist!");
 
     let rank = MysteryDungeonRank::from_level(helpers::calculate_level_from_experience(
         record.experience,
