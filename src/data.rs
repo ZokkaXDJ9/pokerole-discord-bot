@@ -1,8 +1,10 @@
-use crate::cache::Cache;
-use crate::game_data::GameData;
-use sqlx::{Pool, Sqlite};
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
+
+use sqlx::{Pool, Sqlite};
+
+use crate::cache::Cache;
+use crate::game_data::GameData;
 
 pub struct Data {
     pub database: Pool<Sqlite>,
@@ -10,6 +12,7 @@ pub struct Data {
     pub cache: Arc<Cache>,
     pub is_backup_thread_running: AtomicBool,
     pub is_weekly_reset_thread_running: AtomicBool,
+    pub is_monthly_reset_thread_running: AtomicBool,
 }
 
 impl Data {
@@ -20,6 +23,7 @@ impl Data {
             cache: Arc::new(Cache::new()),
             is_backup_thread_running: AtomicBool::new(false),
             is_weekly_reset_thread_running: AtomicBool::new(false),
+            is_monthly_reset_thread_running: AtomicBool::new(false),
         };
 
         result.cache.update_character_names(&result.database).await;

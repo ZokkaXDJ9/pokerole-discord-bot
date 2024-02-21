@@ -1,11 +1,13 @@
-use crate::data::Data;
-use crate::events::send_error_to_log_channel;
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
+
 use chrono::{Duration, Utc};
 use serenity::all::{CreateAttachment, CreateMessage};
 use serenity::model::id::ChannelId;
 use serenity::prelude::Context;
-use std::sync::atomic::Ordering;
-use std::sync::Arc;
+
+use crate::data::Data;
+use crate::events::send_error_to_log_channel;
 
 pub async fn start_backup_thread(ctx: &Context, data: &Data) {
     if let Ok(backup_channel_id) = std::env::var("DB_BACKUP_CHANNEL_ID") {
@@ -32,7 +34,7 @@ pub async fn start_backup_thread(ctx: &Context, data: &Data) {
 
 fn calculate_duration_until_next_run() -> std::time::Duration {
     let now = Utc::now();
-    let next_run = (now + Duration::days(1))
+    let next_run = (now + Duration::days(1) + Duration::minutes(2)) // In case we run a tad too early, adding two minutes here means it will still be later
         .date_naive()
         .and_hms_opt(0, 0, 0)
         .expect("Should never return None when passing 0's.");
