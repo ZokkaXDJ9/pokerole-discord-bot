@@ -59,6 +59,7 @@ impl Display for PokemonType {
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq, EnumString, Hash, EnumIter)]
+#[strum(ascii_case_insensitive)]
 pub enum PokemonTypeWithoutShadow {
     Normal,
     Fighting,
@@ -102,6 +103,52 @@ impl PokemonTypeWithoutShadow {
             String::from("Dark"),
             String::from("Fairy"),
         ]
+    }
+
+    pub fn get_tera_unlocked_column(&self) -> &str {
+        match self {
+            PokemonTypeWithoutShadow::Normal => "tera_unlocked_normal",
+            PokemonTypeWithoutShadow::Fighting => "tera_unlocked_fighting",
+            PokemonTypeWithoutShadow::Flying => "tera_unlocked_flying",
+            PokemonTypeWithoutShadow::Poison => "tera_unlocked_poison",
+            PokemonTypeWithoutShadow::Ground => "tera_unlocked_ground",
+            PokemonTypeWithoutShadow::Rock => "tera_unlocked_rock",
+            PokemonTypeWithoutShadow::Bug => "tera_unlocked_bug",
+            PokemonTypeWithoutShadow::Ghost => "tera_unlocked_ghost",
+            PokemonTypeWithoutShadow::Steel => "tera_unlocked_steel",
+            PokemonTypeWithoutShadow::Fire => "tera_unlocked_fire",
+            PokemonTypeWithoutShadow::Water => "tera_unlocked_water",
+            PokemonTypeWithoutShadow::Grass => "tera_unlocked_grass",
+            PokemonTypeWithoutShadow::Electric => "tera_unlocked_electric",
+            PokemonTypeWithoutShadow::Psychic => "tera_unlocked_psychic",
+            PokemonTypeWithoutShadow::Ice => "tera_unlocked_ice",
+            PokemonTypeWithoutShadow::Dragon => "tera_unlocked_dragon",
+            PokemonTypeWithoutShadow::Dark => "tera_unlocked_dark",
+            PokemonTypeWithoutShadow::Fairy => "tera_unlocked_fairy",
+        }
+    }
+
+    pub fn get_tera_used_column(&self) -> &str {
+        match self {
+            PokemonTypeWithoutShadow::Normal => "tera_used_normal",
+            PokemonTypeWithoutShadow::Fighting => "tera_used_fighting",
+            PokemonTypeWithoutShadow::Flying => "tera_used_flying",
+            PokemonTypeWithoutShadow::Poison => "tera_used_poison",
+            PokemonTypeWithoutShadow::Ground => "tera_used_ground",
+            PokemonTypeWithoutShadow::Rock => "tera_used_rock",
+            PokemonTypeWithoutShadow::Bug => "tera_used_bug",
+            PokemonTypeWithoutShadow::Ghost => "tera_used_ghost",
+            PokemonTypeWithoutShadow::Steel => "tera_used_steel",
+            PokemonTypeWithoutShadow::Fire => "tera_used_fire",
+            PokemonTypeWithoutShadow::Water => "tera_used_water",
+            PokemonTypeWithoutShadow::Grass => "tera_used_grass",
+            PokemonTypeWithoutShadow::Electric => "tera_used_electric",
+            PokemonTypeWithoutShadow::Psychic => "tera_used_psychic",
+            PokemonTypeWithoutShadow::Ice => "tera_used_ice",
+            PokemonTypeWithoutShadow::Dragon => "tera_used_dragon",
+            PokemonTypeWithoutShadow::Dark => "tera_used_dark",
+            PokemonTypeWithoutShadow::Fairy => "tera_used_fairy",
+        }
     }
 }
 
@@ -477,15 +524,15 @@ impl PokemonGeneration {
 }
 
 #[derive(
-Debug,
-Clone,
-Copy,
-Deserialize,
-PartialOrd,
-PartialEq,
-poise::ChoiceParameter,
-sqlx::Type,
-FromRepr,
+    Debug,
+    Clone,
+    Copy,
+    Deserialize,
+    PartialOrd,
+    PartialEq,
+    poise::ChoiceParameter,
+    sqlx::Type,
+    FromRepr,
 )]
 #[repr(i64)]
 pub enum QuestParticipantSelectionMechanism {
