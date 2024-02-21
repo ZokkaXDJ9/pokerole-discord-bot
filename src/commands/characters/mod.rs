@@ -100,9 +100,9 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
 
 /// Reset all character stats.
 #[poise::command(
-slash_command,
-guild_only,
-default_member_permissions = "ADMINISTRATOR"
+    slash_command,
+    guild_only,
+    default_member_permissions = "ADMINISTRATOR"
 )]
 async fn reset_all_character_stats(ctx: Context<'_>) -> Result<(), Error> {
     if ctx.author().id.get() != ADMIN_ID {
@@ -162,7 +162,7 @@ pub async fn update_character_post<'a>(ctx: &Context<'a>, id: i64) {
                     Some(result.components),
                     result.name,
                 )
-                    .await;
+                .await;
             }
         }
     }
@@ -173,8 +173,8 @@ async fn count_completed_quests<'a>(database: &Pool<Sqlite>, character_id: i64) 
         "SELECT COUNT(*) as count FROM quest_completion WHERE character_id = ?",
         character_id
     )
-        .fetch_optional(database)
-        .await;
+    .fetch_optional(database)
+    .await;
 
     if let Ok(Some(record)) = result {
         record.count
@@ -222,8 +222,8 @@ pub async fn build_character_string(
                 &gender,
                 record.is_shiny,
             )
-                .await
-                .unwrap_or(format!("[{}]", pokemon.name));
+            .await
+            .unwrap_or(format!("[{}]", pokemon.name));
             let species_override_for_stats =
                 if let Some(species_override_for_stats) = record.species_override_for_stats {
                     let species_override_for_stats = data
@@ -453,8 +453,8 @@ pub async fn log_action<'a>(
         "SELECT action_log_channel_id FROM guild WHERE id = ?",
         guild_id
     )
-        .fetch_one(&ctx.data().database)
-        .await;
+    .fetch_one(&ctx.data().database)
+    .await;
 
     let origin = match ctx
         .channel_id()
@@ -520,7 +520,7 @@ pub async fn change_character_stat<'a>(
                     amount,
                     &action_type,
                 )
-                    .await;
+                .await;
             }
             Ok(characters)
         }
@@ -541,11 +541,11 @@ pub async fn change_character_stat_after_validation<'a>(
             "SELECT id, name, {} as value FROM character WHERE id = ?",
             database_column
         )
-            .as_str(),
+        .as_str(),
     )
-        .bind(character.id)
-        .fetch_one(&ctx.data().database)
-        .await;
+    .bind(character.id)
+    .fetch_one(&ctx.data().database)
+    .await;
 
     match record {
         Ok(record) => {
@@ -629,9 +629,9 @@ async fn update_thread_title_to_match_character(ctx: &Context<'_>, character: Ch
         "SELECT experience, species_api_id FROM character WHERE id = ?",
         character.id
     )
-        .fetch_one(&ctx.data().database)
-        .await
-        .expect("Characters with an ID should always exist!");
+    .fetch_one(&ctx.data().database)
+    .await
+    .expect("Characters with an ID should always exist!");
 
     let rank = MysteryDungeonRank::from_level(helpers::calculate_level_from_experience(
         record.experience,
