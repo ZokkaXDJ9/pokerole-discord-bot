@@ -1,13 +1,3 @@
-mod backups;
-mod button_interaction;
-mod character_stat_edit;
-mod quests;
-mod role_reaction;
-mod select_menu_interaction;
-mod weekly_reset;
-
-use crate::data::Data;
-use crate::{helpers, Error};
 use serenity::all::{
     ComponentInteraction, ComponentInteractionDataKind, CreateAllowedMentions,
     CreateInteractionResponse, CreateInteractionResponseMessage, CreateMessage, FullEvent, GuildId,
@@ -15,6 +5,18 @@ use serenity::all::{
 };
 use serenity::client::Context;
 use serenity::model::id::ChannelId;
+
+use crate::data::Data;
+use crate::{helpers, Error};
+
+mod backups;
+mod button_interaction;
+mod character_stat_edit;
+mod monthly_reset;
+mod quests;
+mod role_reaction;
+mod select_menu_interaction;
+mod weekly_reset;
 
 type FrameworkContext<'a> = poise::FrameworkContext<'a, Data, Error>;
 
@@ -77,6 +79,7 @@ pub async fn handle_events<'a>(
             // TODO: Could use the data inside this event to lazily count how many discord servers are using the bot.
             backups::start_backup_thread(context, framework.user_data).await;
             weekly_reset::start_weekly_reset_thread(context, framework.user_data).await;
+            monthly_reset::start_monthly_reset_thread(context, framework.user_data).await;
             Ok(())
         }
         _ => Ok(()),
