@@ -17,7 +17,7 @@ use crate::commands::{
     BuildUpdatedStatMessageStringResult, Context,
 };
 use crate::data::Data;
-use crate::enums::{Gender, MysteryDungeonRank};
+use crate::enums::{Gender, MysteryDungeonRank, PokemonTypeWithoutShadow};
 use crate::game_data::PokemonApiId;
 use crate::helpers::{ADMIN_ID, ADMIN_PING_STRING};
 use crate::{emoji, helpers, Error};
@@ -185,20 +185,34 @@ async fn count_completed_quests<'a>(database: &Pool<Sqlite>, character_id: i64) 
     }
 }
 
+pub fn append_tera_charges(
+    string: &mut String,
+    pokemon_type: PokemonTypeWithoutShadow,
+    unlocked: i64,
+    used: i64,
+) {
+    if unlocked > 0 {
+        string.push_str(&format!(
+            "- `{}/{}` {}\n",
+            unlocked - used,
+            unlocked,
+            pokemon_type
+        ));
+    }
+}
+
 pub async fn build_character_string(
     data: &Data,
     character_id: i64,
 ) -> Option<BuildUpdatedStatMessageStringResult> {
     let entry = sqlx::query!(
-        "SELECT name, guild_id, experience, money, battle_points, stat_message_id, stat_channel_id, backpack_upgrade_count, total_spar_count, total_new_player_tour_count, total_new_player_combat_tutorial_count, species_api_id, is_shiny, phenotype, is_retired, \
-                      is_hidden_ability_unlocked, stat_strength, stat_dexterity, stat_vitality, stat_special, stat_insight, stat_tough, stat_cool, stat_beauty, stat_cute, stat_clever, species_override_for_stats
-                FROM character WHERE id = ? \
+        "SELECT * FROM character WHERE id = ? \
                 ORDER BY rowid \
                 LIMIT 1",
         character_id,
     )
-        .fetch_one(&data.database)
-        .await;
+    .fetch_one(&data.database)
+    .await;
 
     let completed_quest_count = count_completed_quests(&data.database, character_id).await;
     match entry {
@@ -286,6 +300,30 @@ pub async fn build_character_string(
                 String::new()
             };
 
+            let mut tera_charges = String::new();
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Bug, record.tera_unlocked_bug, record.tera_used_bug);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Dark, record.tera_unlocked_dark, record.tera_used_dark);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Dragon, record.tera_unlocked_dragon, record.tera_used_dragon);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Electric, record.tera_unlocked_electric, record.tera_used_electric);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Fairy, record.tera_unlocked_fairy, record.tera_used_fairy);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Fire, record.tera_unlocked_fire, record.tera_used_fire);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Fighting, record.tera_unlocked_fighting, record.tera_used_fighting);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Flying, record.tera_unlocked_flying, record.tera_used_flying);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Ghost, record.tera_unlocked_ghost, record.tera_used_ghost);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Grass, record.tera_unlocked_grass, record.tera_used_grass);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Ground, record.tera_unlocked_ground, record.tera_used_ground);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Ice, record.tera_unlocked_ice, record.tera_used_ice);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Normal, record.tera_unlocked_normal, record.tera_used_normal);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Poison, record.tera_unlocked_poison, record.tera_used_poison);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Psychic, record.tera_unlocked_psychic, record.tera_used_psychic);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Rock, record.tera_unlocked_rock, record.tera_used_rock);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Steel, record.tera_unlocked_steel, record.tera_used_steel);
+            #[rustfmt::skip] append_tera_charges(&mut tera_charges, PokemonTypeWithoutShadow::Water, record.tera_unlocked_water, record.tera_used_water);
+
+            if !tera_charges.is_empty() {
+                tera_charges.insert_str(0, "### Terastallization Charges\n");
+            }
+
             let mut message = format!(
                 "\
 ## {} {} {} {}
@@ -297,7 +335,7 @@ pub async fn build_character_string(
 {}
 ```
 ### Abilities 
-{}### Statistics
+{}{}### Statistics
 {} Backpack Slots: {}\n\n",
                 rank.emoji_string(),
                 record.name,
@@ -313,6 +351,7 @@ pub async fn build_character_string(
                 combat_stats.build_string(),
                 social_stats.build_string(),
                 ability_list,
+                tera_charges,
                 emoji::BACKPACK,
                 record.backpack_upgrade_count + DEFAULT_BACKPACK_SLOTS,
             );
