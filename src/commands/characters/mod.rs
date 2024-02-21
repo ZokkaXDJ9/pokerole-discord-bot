@@ -474,7 +474,7 @@ impl fmt::Display for ActionType {
             ActionType::CharacterStatReset => "📝 [Edit]",
             ActionType::CharacterRetirement => "💤 [Retirement]",
             ActionType::CharacterUnRetirement => "⏰ [UnRetirement]",
-            ActionType::TerastallizationUnlock => "🧃 [Terastallization Unlock]",
+            ActionType::TerastallizationUnlock => "💎 [Terastallization Unlock]",
         })
     }
 }
@@ -604,9 +604,27 @@ pub async fn change_character_stat_after_validation<'a>(
 
             update_character_post(ctx, record.id).await;
             let action = match database_column {
-                "money" => emoji::POKE_COIN,
-                "battle_points" => emoji::BATTLE_POINT,
-                _ => database_column,
+                "money" => String::from(emoji::POKE_COIN),
+                "battle_points" => String::from(emoji::BATTLE_POINT),
+                "tera_unlocked_normal" => PokemonTypeWithoutShadow::Normal.to_string(),
+                "tera_unlocked_fighting" => PokemonTypeWithoutShadow::Fighting.to_string(),
+                "tera_unlocked_flying" => PokemonTypeWithoutShadow::Flying.to_string(),
+                "tera_unlocked_poison" => PokemonTypeWithoutShadow::Poison.to_string(),
+                "tera_unlocked_ground" => PokemonTypeWithoutShadow::Ground.to_string(),
+                "tera_unlocked_rock" => PokemonTypeWithoutShadow::Rock.to_string(),
+                "tera_unlocked_bug" => PokemonTypeWithoutShadow::Bug.to_string(),
+                "tera_unlocked_ghost" => PokemonTypeWithoutShadow::Ghost.to_string(),
+                "tera_unlocked_steel" => PokemonTypeWithoutShadow::Steel.to_string(),
+                "tera_unlocked_fire" => PokemonTypeWithoutShadow::Fire.to_string(),
+                "tera_unlocked_water" => PokemonTypeWithoutShadow::Water.to_string(),
+                "tera_unlocked_grass" => PokemonTypeWithoutShadow::Grass.to_string(),
+                "tera_unlocked_electric" => PokemonTypeWithoutShadow::Electric.to_string(),
+                "tera_unlocked_psychic" => PokemonTypeWithoutShadow::Psychic.to_string(),
+                "tera_unlocked_ice" => PokemonTypeWithoutShadow::Ice.to_string(),
+                "tera_unlocked_dragon" => PokemonTypeWithoutShadow::Dragon.to_string(),
+                "tera_unlocked_dark" => PokemonTypeWithoutShadow::Dark.to_string(),
+                "tera_unlocked_fairy" => PokemonTypeWithoutShadow::Fairy.to_string(),
+                _ => String::from(database_column)
             };
             let added_or_removed: &str;
             let to_or_from: &str;
