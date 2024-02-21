@@ -40,6 +40,7 @@ mod reward_terastallization;
 mod unlock_hidden_ability;
 mod unretire_character;
 mod upgrade_backpack;
+mod use_terastallization;
 
 const DEFAULT_BACKPACK_SLOTS: i64 = 6;
 
@@ -63,6 +64,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         reset_character_stats::reset_character_stats(),
         retire_character::retire_character(),
         unretire_character::unretire_character(),
+        use_terastallization::use_terastallization(),
         reward_terastallization::reward_terastallization(),
     ]
 }
