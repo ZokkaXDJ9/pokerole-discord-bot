@@ -28,6 +28,7 @@ pub async fn edit_character(
     #[description = "Change from which pokemon their stats should be taken? Useful for unevolved mons at high levels."]
     #[autocomplete = "autocomplete_pokemon"]
     species_override_for_stats: Option<String>,
+    #[description = "Change the characters' shiny state."] is_shiny: Option<bool>,
 ) -> Result<(), Error> {
     if species.is_some() && species_override_for_stats.is_some() {
         send_error(&ctx, "\
@@ -44,10 +45,13 @@ You can't (and probably also don't really want to) edit a character's species an
         "SELECT name, species_api_id, phenotype, is_shiny, species_override_for_stats FROM character WHERE id = ?",
         character.id
     )
-    .fetch_one(&ctx.data().database)
-    .await?;
+        .fetch_one(&ctx.data().database)
+        .await?;
 
     let mut action_log = Vec::new();
+    let mut create_emojis = false;
+
+    let gender = Gender::from_phenotype(record.phenotype);
 
     let mut should_stats_be_reset = false;
     let mut reset_species_override = false;
@@ -58,8 +62,7 @@ You can't (and probably also don't really want to) edit a character's species an
             should_stats_be_reset = record.species_override_for_stats.is_none();
         }
 
-        let gender = Gender::from_phenotype(record.phenotype);
-        create_emojis_for_pokemon(&ctx, species, &gender, record.is_shiny).await;
+        create_emojis = true;
         if let Some(existing_species_override) = record.species_override_for_stats {
             if existing_species_override == species.poke_api_id.0 as i64 {
                 reset_species_override = true;
@@ -101,20 +104,33 @@ You can't (and probably also don't really want to) edit a character's species an
         record.name
     };
 
+    let is_shiny = if let Some(is_shiny) = is_shiny {
+        action_log.push(format!("is_shiny to {}", is_shiny));
+        create_emojis = true;
+        is_shiny
+    } else {
+        record.is_shiny
+    };
+
     if action_log.is_empty() {
         send_error(&ctx, "No changes requested, aborting.").await?;
         return Ok(());
     }
 
+    if create_emojis {
+        create_emojis_for_pokemon(&ctx, species, &gender, is_shiny).await;
+    }
+
     sqlx::query!(
-        "UPDATE character SET name = ?, species_api_id = ?, species_override_for_stats = ? WHERE id = ?",
+        "UPDATE character SET name = ?, species_api_id = ?, species_override_for_stats = ?, is_shiny = ? WHERE id = ?",
         name,
         species.poke_api_id.0,
         species_override_for_stats,
+        is_shiny,
         character.id,
     )
-    .execute(&ctx.data().database)
-    .await?;
+        .execute(&ctx.data().database)
+        .await?;
 
     if should_stats_be_reset {
         let _ = reset_character_stats::reset_db_stats(&ctx, &character).await;
