@@ -1,12 +1,14 @@
-use crate::data::Data;
-use crate::events::send_error_to_log_channel;
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
+
 use chrono::{Datelike, Duration, NaiveDate, Utc, Weekday};
 use serenity::all::CreateMessage;
 use serenity::model::id::ChannelId;
 use serenity::prelude::Context;
 use sqlx::{Pool, Sqlite};
-use std::sync::atomic::Ordering;
-use std::sync::Arc;
+
+use crate::data::Data;
+use crate::events::send_error_to_log_channel;
 
 pub async fn start_weekly_reset_thread(ctx: &Context, data: &Data) {
     let ctx = Arc::new(ctx.clone());
@@ -74,7 +76,7 @@ async fn notify_guilds(ctx: &Arc<Context>, database: &Pool<Sqlite>) {
                 let _ = channel
                     .send_message(
                         &ctx,
-                        CreateMessage::new().content("📅 [System] Performing weekly reset."),
+                        CreateMessage::new().content("📅 [System] Performing weekly reset.\n- Weekly Spar counts have been reset."),
                     )
                     .await;
             }
