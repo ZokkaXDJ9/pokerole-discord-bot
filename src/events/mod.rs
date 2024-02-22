@@ -1,13 +1,18 @@
+use std::sync::Arc;
+
 use serenity::all::{
-    ComponentInteraction, ComponentInteractionDataKind, CreateAllowedMentions,
-    CreateInteractionResponse, CreateInteractionResponseMessage, CreateMessage, FullEvent, GuildId,
-    GuildMemberUpdateEvent, Interaction, Member, User,
+    ComponentInteraction, ComponentInteractionDataKind, CreateActionRow, CreateAllowedMentions,
+    CreateInteractionResponse, CreateInteractionResponseMessage, CreateMessage, EditMessage,
+    FullEvent, GuildId, GuildMemberUpdateEvent, HttpError, Interaction, Member, Message, MessageId,
+    User,
 };
 use serenity::client::Context;
 use serenity::model::id::ChannelId;
+use sqlx::{Pool, Sqlite};
 
 use crate::data::Data;
-use crate::{helpers, Error};
+use crate::game_data::GameData;
+use crate::{discord_error_codes, helpers, Error};
 
 mod backups;
 mod button_interaction;
@@ -262,4 +267,86 @@ async fn send_error_to_log_channel(ctx: &Context, message: impl Into<String>) {
     let _ = helpers::ERROR_LOG_CHANNEL
         .send_message(ctx, CreateMessage::new().content(message))
         .await;
+}
+
+async fn update_character_post<'a>(
+    ctx: &Context,
+    database: &Pool<Sqlite>,
+    game_data: &Arc<GameData>,
+    id: i64,
+) {
+    if let Some(result) =
+        crate::commands::characters::build_character_string(database, game_data, id).await
+    {
+        let message = ctx
+            .http
+            .get_message(
+                ChannelId::from(result.stat_channel_id as u64),
+                MessageId::from(result.stat_message_id as u64),
+            )
+            .await;
+        if let Ok(mut message) = message {
+            if let Err(e) = message
+                .edit(
+                    ctx,
+                    EditMessage::new()
+                        .content(&result.message)
+                        .components(result.components.clone()),
+                )
+                .await
+            {
+                handle_error_during_message_edit(
+                    ctx,
+                    e,
+                    message,
+                    result.message,
+                    Some(result.components),
+                    result.name,
+                )
+                .await;
+            }
+        }
+    }
+}
+
+async fn handle_error_during_message_edit(
+    ctx: &Context,
+    e: serenity::Error,
+    mut message_to_edit: Message,
+    updated_message_content: impl Into<String>,
+    components: Option<Vec<CreateActionRow>>,
+    name: impl Into<String>,
+) {
+    if let serenity::Error::Http(HttpError::UnsuccessfulRequest(e)) = &e {
+        if e.error.code == discord_error_codes::ARCHIVED_THREAD {
+            if let Ok(channel) = message_to_edit.channel(ctx).await {
+                if let Some(channel) = channel.guild() {
+                    if let Ok(response) = channel
+                        .say(ctx, "This thread was (probably) automagically archived, and I'm sending this message to reopen it so I can update some values. This message should be deleted right away, sorry if it pinged you!").await
+                    {
+                        let _ = response.delete(ctx).await;
+                        let mut edit_message = EditMessage::new().content(updated_message_content);
+                        if let Some(components) = components {
+                            edit_message = edit_message.components(components);
+                        }
+
+                        if let Err(e) = message_to_edit.edit(ctx, edit_message).await {
+                            let _ = helpers::ERROR_LOG_CHANNEL.send_message(ctx, CreateMessage::new().content(format!(
+                                "**Failed to update the stat message for {}!**.\nThe change has been tracked, but whilst updating the message some error occurred:\n```{:?}```\n",
+                                name.into(),
+                                e,
+                            ))).await;
+                        }
+
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    let _ = helpers::ERROR_LOG_CHANNEL.send_message(ctx, CreateMessage::new().content(format!(
+        "Some very random error occurred when updating the stat message for {}.\n**The requested change has been applied, but it isn't shown in the message there right now.**\n Error:\n```{:?}```",
+        name.into(), e)
+    )).await;
 }

@@ -1,7 +1,7 @@
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use chrono::{Datelike, Duration, NaiveDate, Utc, Weekday};
+use chrono::{Datelike, NaiveDate, Utc};
 use log::info;
 use serenity::all::CreateMessage;
 use serenity::model::id::ChannelId;
@@ -9,8 +9,7 @@ use serenity::prelude::Context;
 use sqlx::{Pool, Sqlite};
 
 use crate::data::Data;
-use crate::events::character_stat_edit::update_character_post;
-use crate::events::send_error_to_log_channel;
+use crate::events::{send_error_to_log_channel, update_character_post};
 use crate::game_data::GameData;
 
 pub async fn start_monthly_reset_thread(ctx: &Context, data: &Data) {

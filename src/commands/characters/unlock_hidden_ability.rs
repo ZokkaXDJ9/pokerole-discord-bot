@@ -1,11 +1,13 @@
-use crate::commands::autocompletion::autocomplete_owned_character_name;
-use crate::commands::characters::ActionType;
-use crate::commands::{characters, find_character, Context, Error};
-use crate::errors::ValidationError;
-use crate::{emoji, helpers};
+use std::time::Duration;
+
 use poise::{CreateReply, ReplyHandle};
 use serenity::all::{ButtonStyle, CreateActionRow};
-use std::time::Duration;
+
+use crate::commands::autocompletion::autocomplete_owned_character_name;
+use crate::commands::characters::ActionType;
+use crate::commands::{characters, find_character, update_character_post, Context, Error};
+use crate::errors::ValidationError;
+use crate::{emoji, helpers};
 
 const CONFIRM: &str = "unlock_hidden_ability_proceed";
 const ABORT: &str = "unlock_hidden_ability_abort";
@@ -89,8 +91,8 @@ pub async fn unlock_hidden_ability(
                         character.id,
                         character_record.money,
                     )
-                    .execute(&ctx.data().database)
-                    .await;
+                .execute(&ctx.data().database)
+                .await;
 
             if query_result.is_ok() && query_result.unwrap().rows_affected() == 1 {
                 characters::log_action(
@@ -113,7 +115,7 @@ pub async fn unlock_hidden_ability(
                 .await?;
 
                 respond_to_success(ctx, reply, original_message).await?;
-                characters::update_character_post(&ctx, character.id).await;
+                update_character_post(&ctx, character.id).await;
                 return Ok(());
             }
         } else {
@@ -157,7 +159,7 @@ async fn respond_to_unexpected_behaviour<'a>(
         ctx,
         reply,
         original_message + "\n\n**Something went wrong.**\n*This should only happen if you're actively trying to game the system... and if that's the case, thanks for trying, but... please stop? xD*")
-    .await
+        .await
 }
 
 async fn respond_to_timeout<'a>(

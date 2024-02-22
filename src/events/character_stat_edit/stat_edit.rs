@@ -5,10 +5,10 @@ use serenity::all::{ComponentInteraction, Context, EditInteractionResponse};
 use crate::character_stats::SingleCharacterStatType;
 use crate::data::Data;
 use crate::events::character_stat_edit::{
-    create_stat_edit_overview_message, get_character_data_for_edit, update_character_post,
-    CharacterDataForStatEditing, StatType,
+    create_stat_edit_overview_message, get_character_data_for_edit, CharacterDataForStatEditing,
+    StatType,
 };
-use crate::events::send_error;
+use crate::events::{send_error, update_character_post};
 use crate::{helpers, Error};
 
 pub async fn handle_edit_stat_request(

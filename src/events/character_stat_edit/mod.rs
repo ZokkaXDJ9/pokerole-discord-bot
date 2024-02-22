@@ -1,19 +1,15 @@
-use std::sync::Arc;
-
 use serenity::all::{
-    ButtonStyle, ChannelId, ComponentInteraction, CreateActionRow,
-    CreateInteractionResponseMessage, EditInteractionResponse, EditMessage, MessageId,
-    ReactionType,
+    ButtonStyle, ComponentInteraction, CreateActionRow, CreateInteractionResponseMessage,
+    EditInteractionResponse, EditMessage, ReactionType,
 };
 use serenity::builder::CreateButton;
 use serenity::client::Context;
-use sqlx::{Pool, Sqlite};
 
 use crate::character_stats::GenericCharacterStats;
 use crate::data::Data;
 use crate::enums::{Gender, MysteryDungeonRank};
 use crate::events::send_error;
-use crate::game_data::{GameData, PokemonApiId};
+use crate::game_data::PokemonApiId;
 use crate::{emoji, helpers, Error};
 
 mod initialize;
@@ -349,46 +345,5 @@ async fn create_stat_edit_overview_message(
             StatType::Combat => create_combat_buttons(character_id),
             StatType::Social => create_social_buttons(character_id),
         },
-    }
-}
-
-pub async fn update_character_post<'a>(
-    ctx: &Context,
-    database: &Pool<Sqlite>,
-    game_data: &Arc<GameData>,
-    id: i64,
-) {
-    if let Some(result) =
-        crate::commands::characters::build_character_string(database, game_data, id).await
-    {
-        let message = ctx
-            .http
-            .get_message(
-                ChannelId::from(result.stat_channel_id as u64),
-                MessageId::from(result.stat_message_id as u64),
-            )
-            .await;
-        if let Ok(mut message) = message {
-            if let Err(_) = message
-                .edit(
-                    ctx,
-                    EditMessage::new()
-                        .content(&result.message)
-                        .components(result.components.clone()),
-                )
-                .await
-            {
-                // Shouldn't happen since we just pressed a button in that thread and messages are ephemeral.
-                // crate::commands::handle_error_during_message_edit(
-                //     ctx,
-                //     e,
-                //     message,
-                //     result.message,
-                //     Some(result.components),
-                //     result.name,
-                // )
-                // .await;
-            }
-        }
     }
 }

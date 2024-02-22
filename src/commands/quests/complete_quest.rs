@@ -1,7 +1,10 @@
-use crate::commands::autocompletion::autocomplete_character_name;
-use crate::commands::characters::{build_character_list, update_character_post};
-use crate::commands::{parse_character_names, parse_variadic_args, send_error, Context, Error};
 use chrono::Utc;
+
+use crate::commands::autocompletion::autocomplete_character_name;
+use crate::commands::characters::build_character_list;
+use crate::commands::{
+    parse_character_names, parse_variadic_args, send_error, update_character_post, Context, Error,
+};
 
 /// Use this to increase the quest completion counter.
 #[allow(clippy::too_many_arguments)]

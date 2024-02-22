@@ -1,14 +1,17 @@
+use std::borrow::Cow;
+
+use poise::{Command, CreateReply, ReplyHandle};
+use serenity::all::{ChannelId, CreateActionRow, EditMessage, HttpError, Message, MessageId};
+use serenity::model::guild::Member;
+use serenity::model::id::{GuildId, UserId};
+use serenity::model::prelude::User;
+
 use crate::cache::{CharacterCacheItem, WalletCacheItem};
+use crate::commands::characters::build_character_string;
 use crate::data::Data;
 use crate::errors::{ParseError, ValidationError};
 use crate::game_data::pokemon::Pokemon;
 use crate::{discord_error_codes, helpers, Error};
-use poise::{Command, CreateReply, ReplyHandle};
-use serenity::all::{CreateActionRow, EditMessage, HttpError, Message};
-use serenity::model::guild::Member;
-use serenity::model::id::{GuildId, UserId};
-use serenity::model::prelude::User;
-use std::borrow::Cow;
 
 type Context<'a> = poise::Context<'a, Data, Error>;
 
@@ -407,6 +410,40 @@ pub async fn ensure_user_owns_wallet_or_is_gm(
         }
     } else {
         Err(ValidationError::new("Was unable to validate whether you are allowed to access this wallet. Please try again."))
+    }
+}
+
+async fn update_character_post<'a>(ctx: &Context<'a>, id: i64) {
+    if let Some(result) = build_character_string(&ctx.data().database, &ctx.data().game, id).await {
+        let message = ctx
+            .serenity_context()
+            .http
+            .get_message(
+                ChannelId::from(result.stat_channel_id as u64),
+                MessageId::from(result.stat_message_id as u64),
+            )
+            .await;
+        if let Ok(mut message) = message {
+            if let Err(e) = message
+                .edit(
+                    ctx,
+                    EditMessage::new()
+                        .content(&result.message)
+                        .components(result.components.clone()),
+                )
+                .await
+            {
+                handle_error_during_message_edit(
+                    ctx,
+                    e,
+                    message,
+                    result.message,
+                    Some(result.components),
+                    result.name,
+                )
+                .await;
+            }
+        }
     }
 }
 

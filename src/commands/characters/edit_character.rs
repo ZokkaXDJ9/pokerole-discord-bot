@@ -1,12 +1,10 @@
 use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::commands::characters::{
-    log_action, reset_character_stats, update_character_post, ActionType,
-};
+use crate::commands::characters::{log_action, reset_character_stats, ActionType};
 use crate::commands::create_emojis::create_emojis_for_pokemon;
 use crate::commands::{
-    find_character, pokemon_from_autocomplete_string, send_ephemeral_reply, send_error, Context,
-    Error,
+    find_character, pokemon_from_autocomplete_string, send_ephemeral_reply, send_error,
+    update_character_post, Context, Error,
 };
 use crate::enums::Gender;
 use crate::game_data::PokemonApiId;
