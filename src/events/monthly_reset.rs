@@ -2,7 +2,6 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
 use chrono::{Datelike, NaiveDate, Utc};
-use log::info;
 use serenity::all::CreateMessage;
 use serenity::model::id::ChannelId;
 use serenity::prelude::Context;
@@ -51,13 +50,11 @@ fn calculate_duration_until_next_run() -> std::time::Duration {
 
     let seconds_until_next_run = NaiveDate::from_ymd_opt(next_year, next_month, 1)
         .expect("Date for next month should always be valid")
-        .and_hms_opt(0, 1, 0)
+        .and_hms_opt(0, 2, 0)
         .expect("Date for next month should always be valid")
         .signed_duration_since(now.naive_utc())
         .num_seconds()
         .unsigned_abs();
-
-    info!("{}", seconds_until_next_run);
 
     std::time::Duration::from_secs(seconds_until_next_run)
 }
@@ -121,7 +118,7 @@ async fn notify_guilds(ctx: &Arc<Context>, database: &Pool<Sqlite>) {
                 let _ = channel
                     .send_message(
                         &ctx,
-                        CreateMessage::new().content("📅 [System] Performing monthly reset."),
+                        CreateMessage::new().content("📅 [System] Performing monthly reset.\n- Terastallization Charges have been reset."),
                     )
                     .await;
             }
