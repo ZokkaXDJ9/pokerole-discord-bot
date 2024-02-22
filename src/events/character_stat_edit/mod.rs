@@ -1,12 +1,5 @@
-mod initialize;
-mod stat_edit;
+use std::sync::Arc;
 
-use crate::character_stats::GenericCharacterStats;
-use crate::data::Data;
-use crate::enums::{Gender, MysteryDungeonRank};
-use crate::events::send_error;
-use crate::game_data::PokemonApiId;
-use crate::{emoji, helpers, Error};
 use serenity::all::{
     ButtonStyle, ChannelId, ComponentInteraction, CreateActionRow,
     CreateInteractionResponseMessage, EditInteractionResponse, EditMessage, MessageId,
@@ -14,6 +7,17 @@ use serenity::all::{
 };
 use serenity::builder::CreateButton;
 use serenity::client::Context;
+use sqlx::{Pool, Sqlite};
+
+use crate::character_stats::GenericCharacterStats;
+use crate::data::Data;
+use crate::enums::{Gender, MysteryDungeonRank};
+use crate::events::send_error;
+use crate::game_data::{GameData, PokemonApiId};
+use crate::{emoji, helpers, Error};
+
+mod initialize;
+mod stat_edit;
 
 pub async fn handle_character_editor_command(
     context: &Context,
@@ -24,7 +28,7 @@ pub async fn handle_character_editor_command(
     match args.remove(0) {
         "initialize" => initialize::initialize(context, interaction, data, args).await,
         "edit-stat" => stat_edit::handle_edit_stat_request(context, interaction, data, args).await,
-        &_ => {send_error(&interaction, context, "Seems like you are either trying to do something that's not yet implemented or that you are doing something fishy. Mhhhm~").await}
+        &_ => { send_error(&interaction, context, "Seems like you are either trying to do something that's not yet implemented or that you are doing something fishy. Mhhhm~").await }
     }
 }
 
@@ -219,7 +223,7 @@ async fn get_character_data_for_edit(
     let pokemon_evolution_form_for_stats = helpers::get_usual_evolution_stage_for_level(
         level,
         pokemon,
-        data,
+        &data.game,
         record.species_override_for_stats,
     );
     let combat_stats = GenericCharacterStats::from_combat_with_current_min(
@@ -348,8 +352,15 @@ async fn create_stat_edit_overview_message(
     }
 }
 
-pub async fn update_character_post<'a>(ctx: &Context, data: &Data, id: i64) {
-    if let Some(result) = crate::commands::characters::build_character_string(data, id).await {
+pub async fn update_character_post<'a>(
+    ctx: &Context,
+    database: &Pool<Sqlite>,
+    game_data: &Arc<GameData>,
+    id: i64,
+) {
+    if let Some(result) =
+        crate::commands::characters::build_character_string(database, game_data, id).await
+    {
         let message = ctx
             .http
             .get_message(
@@ -358,7 +369,7 @@ pub async fn update_character_post<'a>(ctx: &Context, data: &Data, id: i64) {
             )
             .await;
         if let Ok(mut message) = message {
-            if let Err(e) = message
+            if let Err(_) = message
                 .edit(
                     ctx,
                     EditMessage::new()

@@ -1,11 +1,14 @@
-use crate::data::Data;
-use crate::enums::{MysteryDungeonRank, QuestParticipantSelectionMechanism};
-use crate::game_data::pokemon::Pokemon;
-use crate::game_data::PokemonApiId;
-use crate::{emoji, Error};
+use std::sync::Arc;
+
 use serenity::all::{
     ButtonStyle, ChannelId, Context, CreateActionRow, CreateButton, EditMessage, MessageId,
 };
+
+use crate::data::Data;
+use crate::enums::{MysteryDungeonRank, QuestParticipantSelectionMechanism};
+use crate::game_data::pokemon::Pokemon;
+use crate::game_data::{GameData, PokemonApiId};
+use crate::{emoji, Error};
 
 pub const ADMIN_ID: u64 = 878982444412448829;
 pub const ADMIN_PING_STRING: &str = "<@878982444412448829>";
@@ -47,6 +50,7 @@ pub fn split_long_messages(message: String) -> Vec<String> {
 }
 
 const MIN_SIZE: usize = 500;
+
 fn find_best_split_pos(message: &str) -> usize {
     let split = message.split_at(2000).0;
     if let Some(index) = split.rfind("\n# ") {
@@ -101,8 +105,8 @@ ORDER BY quest_signup.accepted DESC, quest_signup.timestamp ASC
 ",
         channel_id
     )
-    .fetch_all(&data.database)
-    .await?;
+        .fetch_all(&data.database)
+        .await?;
 
     let mut quest_signups = Vec::new();
     for record in records {
@@ -275,12 +279,12 @@ const STAGE2_EVOLUTION_LEVEL_THRESHOLD: i64 = 6;
 pub fn get_usual_evolution_stage_for_level<'a>(
     level: i64,
     pokemon: &'a Pokemon,
-    data: &'a Data,
+    game_data: &'a Arc<GameData>,
     stat_override: Option<i64>,
 ) -> &'a Pokemon {
     if let Some(stat_override) = stat_override {
         let api_id = PokemonApiId(stat_override as u16);
-        return data.game.pokemon_by_api_id.get(&api_id).unwrap();
+        return game_data.pokemon_by_api_id.get(&api_id).unwrap();
     }
 
     if pokemon.evolves_from.is_none() {
@@ -292,8 +296,7 @@ pub fn get_usual_evolution_stage_for_level<'a>(
         return pokemon;
     }
 
-    let pre_evolution = data
-        .game
+    let pre_evolution = game_data
         .pokemon_by_api_id
         .get(&evolves_from)
         .expect("Pre-Evolutions should be implemented!");
@@ -313,7 +316,7 @@ pub fn get_usual_evolution_stage_for_level<'a>(
     }
 
     // Confirmed first stage stats
-    data.game
+    game_data
         .pokemon_by_api_id
         .get(&pre_evolution.evolves_from.unwrap())
         .expect("Pre-Evolutions should be implemented!")

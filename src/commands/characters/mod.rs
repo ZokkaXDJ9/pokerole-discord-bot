@@ -1,5 +1,6 @@
 use core::fmt;
 use std::fmt::Formatter;
+use std::sync::Arc;
 
 use poise::Command;
 use regex::Regex;
@@ -18,7 +19,7 @@ use crate::commands::{
 };
 use crate::data::Data;
 use crate::enums::{Gender, MysteryDungeonRank, PokemonTypeWithoutShadow};
-use crate::game_data::PokemonApiId;
+use crate::game_data::{GameData, PokemonApiId};
 use crate::helpers::{ADMIN_ID, ADMIN_PING_STRING};
 use crate::{emoji, helpers, Error};
 
@@ -137,7 +138,7 @@ You can copy the command string either by just pressing the up key inside the te
 }
 
 pub async fn update_character_post<'a>(ctx: &Context<'a>, id: i64) {
-    if let Some(result) = build_character_string(ctx.data(), id).await {
+    if let Some(result) = build_character_string(&ctx.data().database, &ctx.data().game, id).await {
         let message = ctx
             .serenity_context()
             .http
@@ -202,7 +203,8 @@ pub fn append_tera_charges(
 }
 
 pub async fn build_character_string(
-    data: &Data,
+    database: &Pool<Sqlite>,
+    game_data: &Arc<GameData>,
     character_id: i64,
 ) -> Option<BuildUpdatedStatMessageStringResult> {
     let entry = sqlx::query!(
@@ -211,17 +213,16 @@ pub async fn build_character_string(
                 LIMIT 1",
         character_id,
     )
-    .fetch_one(&data.database)
+    .fetch_one(database)
     .await;
 
-    let completed_quest_count = count_completed_quests(&data.database, character_id).await;
+    let completed_quest_count = count_completed_quests(database, character_id).await;
     match entry {
         Ok(record) => {
             let level = helpers::calculate_level_from_experience(record.experience);
             let experience = helpers::calculate_current_experience(record.experience);
             let rank = MysteryDungeonRank::from_level(level as u8);
-            let pokemon = data
-                .game
+            let pokemon = game_data
                 .pokemon_by_api_id
                 .get(&PokemonApiId(
                     record
@@ -232,7 +233,7 @@ pub async fn build_character_string(
                 .expect("All mons inside the Database should have a valid API ID assigned.");
             let gender = Gender::from_phenotype(record.phenotype);
             let emoji = emoji::get_pokemon_emoji(
-                &data.database,
+                database,
                 record.guild_id,
                 pokemon,
                 &gender,
@@ -242,8 +243,7 @@ pub async fn build_character_string(
             .unwrap_or(format!("[{}]", pokemon.name));
             let species_override_for_stats =
                 if let Some(species_override_for_stats) = record.species_override_for_stats {
-                    let species_override_for_stats = data
-                        .game
+                    let species_override_for_stats = game_data
                         .pokemon_by_api_id
                         .get(&PokemonApiId(species_override_for_stats as u16))
                         .unwrap();
@@ -269,7 +269,7 @@ pub async fn build_character_string(
             let pokemon_evolution_form_for_stats = helpers::get_usual_evolution_stage_for_level(
                 level,
                 pokemon,
-                data,
+                game_data,
                 record.species_override_for_stats,
             );
             let combat_stats = GenericCharacterStats::from_combat(

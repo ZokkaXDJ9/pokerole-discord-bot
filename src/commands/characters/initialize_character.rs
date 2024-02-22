@@ -1,3 +1,6 @@
+use serenity::all::{CreateMessage, GetMessages};
+use serenity::model::user::User;
+
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::commands::characters::{
     log_action, update_character_post, validate_user_input, ActionType,
@@ -8,8 +11,6 @@ use crate::commands::{
 };
 use crate::enums::Gender;
 use crate::{emoji, helpers};
-use serenity::all::{CreateMessage, GetMessages};
-use serenity::model::user::User;
 
 /// Create a new character within the database.
 #[allow(clippy::too_many_arguments)]
@@ -75,7 +76,7 @@ pub async fn initialize_character(
     let creation_date = chrono::Utc::now().date_naive();
 
     let level = helpers::calculate_level_from_experience(exp);
-    let mon = helpers::get_usual_evolution_stage_for_level(level, pokemon, ctx.data(), None);
+    let mon = helpers::get_usual_evolution_stage_for_level(level, pokemon, &ctx.data().game, None);
 
     let record = sqlx::query!(
         "INSERT INTO character (user_id, guild_id, name, stat_message_id, stat_channel_id, creation_date, experience, money, species_api_id, is_shiny, phenotype,\
