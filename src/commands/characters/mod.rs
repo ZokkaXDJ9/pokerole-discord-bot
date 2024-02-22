@@ -6,7 +6,7 @@ use poise::Command;
 use regex::Regex;
 use serenity::all::{
     AutoArchiveDuration, ButtonStyle, CreateActionRow, CreateAllowedMentions, CreateButton,
-    CreateMessage, EditMessage, EditThread, GetMessages, MessageId,
+    CreateMessage, EditThread, GetMessages,
 };
 use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
@@ -14,7 +14,7 @@ use sqlx::{Pool, Sqlite};
 use crate::cache::CharacterCacheItem;
 use crate::character_stats::GenericCharacterStats;
 use crate::commands::{
-    handle_error_during_message_edit, parse_character_names, send_ephemeral_reply, send_error,
+    parse_character_names, send_ephemeral_reply, send_error, update_character_post,
     BuildUpdatedStatMessageStringResult, Context,
 };
 use crate::data::Data;
@@ -135,40 +135,6 @@ You hit an absolute edge case where the value has been updated by someone else w
 If this seriously ever happens and/or turns into a problem, let me know. For now... try again? :'D
 You can copy the command string either by just pressing the up key inside the text field on pc.",
     ).await
-}
-
-pub async fn update_character_post<'a>(ctx: &Context<'a>, id: i64) {
-    if let Some(result) = build_character_string(&ctx.data().database, &ctx.data().game, id).await {
-        let message = ctx
-            .serenity_context()
-            .http
-            .get_message(
-                ChannelId::from(result.stat_channel_id as u64),
-                MessageId::from(result.stat_message_id as u64),
-            )
-            .await;
-        if let Ok(mut message) = message {
-            if let Err(e) = message
-                .edit(
-                    ctx,
-                    EditMessage::new()
-                        .content(&result.message)
-                        .components(result.components.clone()),
-                )
-                .await
-            {
-                handle_error_during_message_edit(
-                    ctx,
-                    e,
-                    message,
-                    result.message,
-                    Some(result.components),
-                    result.name,
-                )
-                .await;
-            }
-        }
-    }
 }
 
 async fn count_completed_quests<'a>(database: &Pool<Sqlite>, character_id: i64) -> i32 {

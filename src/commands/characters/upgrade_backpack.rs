@@ -1,10 +1,14 @@
-use crate::commands::autocompletion::autocomplete_owned_character_name;
-use crate::commands::characters::{ActionType, DEFAULT_BACKPACK_SLOTS};
-use crate::commands::{characters, find_character, send_error, Context, Error};
-use crate::{emoji, helpers};
+use std::time::Duration;
+
 use poise::{CreateReply, ReplyHandle};
 use serenity::all::{ButtonStyle, CreateActionRow};
-use std::time::Duration;
+
+use crate::commands::autocompletion::autocomplete_owned_character_name;
+use crate::commands::characters::{ActionType, DEFAULT_BACKPACK_SLOTS};
+use crate::commands::{
+    characters, find_character, send_error, update_character_post, Context, Error,
+};
+use crate::{emoji, helpers};
 
 const CONFIRM: &str = "upgrade_backpack_proceed";
 const ABORT: &str = "upgrade_backpack_abort";
@@ -33,19 +37,19 @@ pub async fn upgrade_backpack(
     let target_slots = DEFAULT_BACKPACK_SLOTS + character_record.backpack_upgrade_count + 1;
     if character_record.money < required_money {
         return send_error(
-                &ctx,
-                format!(
-                    "**Unable to upgrade {}'s backpack.**\n*Upgrading to {} slots would require {} {}. Right now, {} only owns {} {}.*",
-                    character.name,
-                    target_slots,
-                    required_money,
-                    emoji::POKE_COIN,
-                    character.name,
-                    character_record.money,
-                    emoji::POKE_COIN
-                )
-                .as_str(),
+            &ctx,
+            format!(
+                "**Unable to upgrade {}'s backpack.**\n*Upgrading to {} slots would require {} {}. Right now, {} only owns {} {}.*",
+                character.name,
+                target_slots,
+                required_money,
+                emoji::POKE_COIN,
+                character.name,
+                character_record.money,
+                emoji::POKE_COIN
             )
+                .as_str(),
+        )
             .await;
     }
 
@@ -93,8 +97,8 @@ pub async fn upgrade_backpack(
                         character_record.money,
                         character_record.backpack_upgrade_count,
                     )
-                    .execute(&ctx.data().database)
-                    .await;
+                .execute(&ctx.data().database)
+                .await;
 
             if query_result.is_ok() && query_result.unwrap().rows_affected() == 1 {
                 characters::log_action(
@@ -117,7 +121,7 @@ pub async fn upgrade_backpack(
                 .await?;
 
                 respond_to_success(ctx, reply, original_message).await?;
-                characters::update_character_post(&ctx, character.id).await;
+                update_character_post(&ctx, character.id).await;
                 return Ok(());
             }
         } else {
@@ -161,7 +165,7 @@ async fn respond_to_unexpected_behaviour<'a>(
         ctx,
         reply,
         original_message + "\n\n**Something went wrong.**\n*This should only happen if you're actively trying to game the system... and if that's the case, thanks for trying, but... please stop? xD*")
-    .await
+        .await
 }
 
 async fn respond_to_timeout<'a>(

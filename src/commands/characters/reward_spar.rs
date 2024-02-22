@@ -1,10 +1,11 @@
 use crate::cache::CharacterCacheItem;
 use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::characters::{
-    build_character_list, change_character_stat_after_validation, log_action,
-    update_character_post, ActionType,
+    build_character_list, change_character_stat_after_validation, log_action, ActionType,
 };
-use crate::commands::{parse_character_names, parse_variadic_args, send_error, Context, Error};
+use crate::commands::{
+    parse_character_names, parse_variadic_args, send_error, update_character_post, Context, Error,
+};
 
 /// Reward players for sparring outside of quests.
 #[allow(clippy::too_many_arguments)]
@@ -49,14 +50,14 @@ pub async fn reward_spar(
                     "Tracked a sparring session for {}.\n*Everyone's already reached the weekly limit for sparring exp rewards.*",
                     build_character_list(&result.participants),
                 ))
-                .await?;
+                    .await?;
             } else if result.participants_who_gained_exp.len() != result.participants.len() {
                 ctx.say(format!(
-                        "Tracked a sparring session for {}.\n{} received {} experience points. *(Everyone who did not receive any already reached the weekly limit)*",
-                        build_character_list(&result.participants),
-                        build_character_list(&result.participants_who_gained_exp),
-                        result.experience_value,
-                    ))
+                    "Tracked a sparring session for {}.\n{} received {} experience points. *(Everyone who did not receive any already reached the weekly limit)*",
+                    build_character_list(&result.participants),
+                    build_character_list(&result.participants_who_gained_exp),
+                    result.experience_value,
+                ))
                     .await?;
             } else {
                 ctx.say(format!(

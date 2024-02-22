@@ -2,12 +2,10 @@ use serenity::all::{CreateMessage, GetMessages};
 use serenity::model::user::User;
 
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::commands::characters::{
-    log_action, update_character_post, validate_user_input, ActionType,
-};
+use crate::commands::characters::{log_action, validate_user_input, ActionType};
 use crate::commands::{
     create_emojis, ensure_guild_exists, ensure_user_exists, pokemon_from_autocomplete_string,
-    send_ephemeral_reply, send_error, Context, Error,
+    send_ephemeral_reply, send_error, update_character_post, Context, Error,
 };
 use crate::enums::Gender;
 use crate::{emoji, helpers};

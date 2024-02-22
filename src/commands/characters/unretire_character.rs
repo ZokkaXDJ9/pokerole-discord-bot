@@ -1,6 +1,6 @@
 use crate::commands::autocompletion::autocomplete_retired_character_name;
-use crate::commands::characters::{log_action, update_character_post, ActionType};
-use crate::commands::{find_character, Context, Error};
+use crate::commands::characters::{log_action, ActionType};
+use crate::commands::{find_character, update_character_post, Context, Error};
 use crate::helpers;
 
 /// Unretire a character.

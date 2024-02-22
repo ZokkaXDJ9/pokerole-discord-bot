@@ -1,8 +1,10 @@
+use serenity::all::CreateMessage;
+
 use crate::cache::CharacterCacheItem;
 use crate::commands::autocompletion::autocomplete_character_name;
-use crate::commands::characters::update_character_post;
-use crate::commands::{find_character, send_ephemeral_reply, send_error, Context, Error};
-use serenity::all::CreateMessage;
+use crate::commands::{
+    find_character, send_ephemeral_reply, send_error, update_character_post, Context, Error,
+};
 
 async fn post_character_post<'a>(
     ctx: &Context<'a>,

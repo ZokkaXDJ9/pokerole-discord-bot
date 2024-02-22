@@ -1,7 +1,7 @@
 use crate::cache::CharacterCacheItem;
 use crate::commands::autocompletion::autocomplete_character_name;
-use crate::commands::characters::{log_action, update_character_post, ActionType};
-use crate::commands::{find_character, Context, Error};
+use crate::commands::characters::{log_action, ActionType};
+use crate::commands::{find_character, update_character_post, Context, Error};
 use crate::game_data::PokemonApiId;
 use crate::helpers;
 
@@ -44,8 +44,8 @@ pub async fn reset_db_stats(
         "SELECT name, species_api_id, experience, species_override_for_stats FROM character WHERE id = ?",
         character.id
     )
-    .fetch_one(&ctx.data().database)
-    .await?;
+        .fetch_one(&ctx.data().database)
+        .await?;
 
     let species_id = PokemonApiId(record.species_api_id as u16);
     let used_poke_species = ctx
