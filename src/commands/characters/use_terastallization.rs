@@ -1,7 +1,7 @@
 use crate::commands::autocompletion::{
     autocomplete_owned_character_name, autocomplete_pokemon_type,
 };
-use crate::commands::{find_character, Context, Error};
+use crate::commands::{ensure_user_owns_character, find_character, Context, Error};
 use crate::enums::PokemonTypeWithoutShadow;
 use crate::errors::ValidationError;
 
@@ -25,6 +25,7 @@ pub async fn use_terastallization(
 ) -> Result<(), Error> {
     let guild_id = ctx.guild_id().expect("Command is guild_only").get();
     let character = find_character(ctx.data(), guild_id, &character).await?;
+    ensure_user_owns_character(ctx.author(), &character)?;
 
     let tera_used_column = tera_type.get_tera_used_column();
     let tera_unlocked_column = tera_type.get_tera_unlocked_column();
