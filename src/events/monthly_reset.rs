@@ -11,16 +11,23 @@ use sqlx::{Pool, Sqlite};
 use crate::data::Data;
 use crate::events::character_stat_edit::update_character_post;
 use crate::events::send_error_to_log_channel;
+use crate::game_data::GameData;
 
 pub async fn start_monthly_reset_thread(ctx: &Context, data: &Data) {
     let ctx = Arc::new(ctx.clone());
     if !data.is_monthly_reset_thread_running.load(Ordering::Relaxed) {
         let ctx_in_thread = Arc::clone(&ctx);
         let database = data.database.clone();
+        let game_data_in_thread = Arc::clone(&data.game);
         tokio::spawn(async move {
             loop {
                 tokio::time::sleep(calculate_duration_until_next_run()).await;
-                execute_monthly_reset(Arc::clone(&ctx_in_thread), database.clone()).await;
+                execute_monthly_reset(
+                    Arc::clone(&ctx_in_thread),
+                    database.clone(),
+                    Arc::clone(&game_data_in_thread),
+                )
+                .await;
             }
         });
 
@@ -56,7 +63,11 @@ fn calculate_duration_until_next_run() -> std::time::Duration {
     std::time::Duration::from_secs(seconds_until_next_run)
 }
 
-async fn execute_monthly_reset(ctx: Arc<Context>, database: Pool<Sqlite>) {
+async fn execute_monthly_reset(
+    ctx: Arc<Context>,
+    database: Pool<Sqlite>,
+    game_data: Arc<GameData>,
+) {
     match sqlx::query!(
         "UPDATE character SET 
 tera_used_normal = 0,
@@ -77,14 +88,17 @@ tera_used_ice = 0,
 tera_used_dragon = 0,
 tera_used_dark = 0,
 tera_used_fairy = 0
+    RETURNING id
 "
     )
-    .execute(&database)
+    .fetch_all(&database)
     .await
     {
-        Ok(_) => {
+        Ok(records) => {
             notify_guilds(&ctx, &database).await;
-            // Updating character posts is disabled until we figure out how to reopen forum threads without sending a message...
+            for record in records {
+                update_character_post(&ctx, &database, &game_data, record.id).await;
+            }
         }
         Err(error) => {
             send_error_to_log_channel(&ctx, error.to_string()).await;

@@ -1,3 +1,7 @@
+use std::str::FromStr;
+
+use serenity::all::{ComponentInteraction, Context, EditInteractionResponse};
+
 use crate::character_stats::SingleCharacterStatType;
 use crate::data::Data;
 use crate::events::character_stat_edit::{
@@ -6,8 +10,6 @@ use crate::events::character_stat_edit::{
 };
 use crate::events::send_error;
 use crate::{helpers, Error};
-use serenity::all::{ComponentInteraction, Context, EditInteractionResponse};
-use std::str::FromStr;
 
 pub async fn handle_edit_stat_request(
     ctx: &Context,
@@ -59,7 +61,7 @@ WHERE id = ?",
         )
         .await;
 
-    update_character_post(ctx, data, character_id).await;
+    update_character_post(ctx, &data.database, &data.game, character_id).await;
     Ok(())
 }
 
@@ -94,7 +96,7 @@ WHERE id = ?",
         )
         .await;
 
-    update_character_post(ctx, data, character_id).await;
+    update_character_post(ctx, &data.database, &data.game, character_id).await;
     Ok(())
 }
 

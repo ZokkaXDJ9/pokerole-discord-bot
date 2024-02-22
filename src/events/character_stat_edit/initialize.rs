@@ -1,3 +1,7 @@
+use std::str::FromStr;
+
+use serenity::all::{ComponentInteraction, Context, CreateInteractionResponse};
+
 use crate::character_stats::GenericCharacterStats;
 use crate::data::Data;
 use crate::enums::MysteryDungeonRank;
@@ -7,8 +11,6 @@ use crate::events::character_stat_edit::{
 use crate::events::send_error;
 use crate::game_data::PokemonApiId;
 use crate::{helpers, Error};
-use serenity::all::{ComponentInteraction, Context, CreateInteractionResponse};
-use std::str::FromStr;
 
 pub async fn initialize(
     ctx: &Context,
@@ -64,7 +66,7 @@ async fn initialize_combat(
                 let pokemon_evolution_form_for_stats = helpers::get_usual_evolution_stage_for_level(
                     level,
                     pokemon,
-                    data,
+                    &data.game,
                     record.species_override_for_stats,
                 );
                 let combat_stats = GenericCharacterStats::from_combat(
@@ -156,7 +158,7 @@ async fn initialize_social(
                 let pokemon_evolution_form_for_stats = helpers::get_usual_evolution_stage_for_level(
                     level,
                     pokemon,
-                    data,
+                    &data.game,
                     record.species_override_for_stats,
                 );
                 let social_stats = GenericCharacterStats::from_social(

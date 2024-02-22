@@ -60,7 +60,7 @@ pub async fn reset_db_stats(
     let pokemon_evolution_form_for_stats = helpers::get_usual_evolution_stage_for_level(
         level,
         used_poke_species,
-        ctx.data(),
+        &ctx.data().game,
         record.species_override_for_stats,
     );
 
