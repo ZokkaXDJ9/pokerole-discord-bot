@@ -1,3 +1,7 @@
+use rand::seq::IteratorRandom;
+use rand::seq::SliceRandom;
+use rand::{thread_rng, Rng};
+
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::commands::{pokemon_from_autocomplete_string, Context, Error};
 use crate::enums::{CombatOrSocialStat, Gender, MysteryDungeonRank, PokemonType, SocialStat, Stat};
@@ -5,9 +9,6 @@ use crate::game_data::pokemon::Pokemon;
 use crate::game_data::r#move::Move;
 use crate::game_data::GameData;
 use crate::helpers;
-use rand::seq::IteratorRandom;
-use rand::seq::SliceRandom;
-use rand::{thread_rng, Rng};
 
 /// Encounter some wild pokemon!
 #[poise::command(slash_command)]
@@ -283,17 +284,13 @@ INS: {:>2} / {:>2}      Cute:   {} / 5
             )
             .as_str(),
         );
-        result.push_str(
-            std::format!(
-                "**Ability**: {}\n*{}*\n",
-                self.ability,
-                data.abilities
-                    .get(&self.ability.to_lowercase())
-                    .unwrap()
-                    .effect
-            )
-            .as_str(),
-        );
+        if let Some(ability) = data.abilities.get(&self.ability.to_lowercase()) {
+            result.push_str(
+                std::format!("**Ability**: {}\n*{}*\n", ability.name, ability.effect).as_str(),
+            );
+        } else {
+            result.push_str(std::format!("**Ability**: {}\n*Not Found!*\n", self.ability).as_str());
+        }
 
         result.push_str("## Moves\n");
         for move_name in &self.moves {
@@ -301,45 +298,50 @@ INS: {:>2} / {:>2}      Cute:   {} / 5
                 .trim_end_matches('¹')
                 .trim_end_matches('²')
                 .to_lowercase();
-            let m = data
-                .moves
-                .get(&move_name)
-                .unwrap_or_else(|| panic!("Every move should be set! {}", move_name));
-            result.push_str(
-                std::format!(
-                    "**{}** – {} | {} | {}\n",
-                    m.name,
-                    m.typing,
-                    m.category,
-                    m.target
-                )
-                .as_str(),
-            );
-            if m.damage1.unwrap_or(Stat::Strength) == Stat::Copy {
-                result.push_str("ACC: **Copy** | DMG: **Copy** \n");
-            } else {
-                let accuracy = self.calculate_accuracy(m);
-                let damage = self.calculate_damage(m);
-                if damage > 0 {
-                    if m.typing.has_stab(&Some(self.type1)) || m.typing.has_stab(&self.type2) {
-                        result.push_str(
-                            std::format!("ACC: **{}** | DMG: **{} + STAB**\n", accuracy, damage)
-                                .as_str(),
-                        );
-                    } else {
-                        result.push_str(
-                            std::format!("ACC: **{}** | DMG: **{}**\n", accuracy, damage).as_str(),
-                        );
-                    }
+            if let Some(m) = data.moves.get(&move_name) {
+                result.push_str(
+                    std::format!(
+                        "**{}** – {} | {} | {}\n",
+                        m.name,
+                        m.typing,
+                        m.category,
+                        m.target
+                    )
+                    .as_str(),
+                );
+                if m.damage1.unwrap_or(Stat::Strength) == Stat::Copy {
+                    result.push_str("ACC: **Copy** | DMG: **Copy** \n");
                 } else {
-                    result.push_str(std::format!("ACC: **{}**\n", accuracy).as_str());
+                    let accuracy = self.calculate_accuracy(m);
+                    let damage = self.calculate_damage(m);
+                    if damage > 0 {
+                        if m.typing.has_stab(&Some(self.type1)) || m.typing.has_stab(&self.type2) {
+                            result.push_str(
+                                std::format!(
+                                    "ACC: **{}** | DMG: **{} + STAB**\n",
+                                    accuracy,
+                                    damage
+                                )
+                                .as_str(),
+                            );
+                        } else {
+                            result.push_str(
+                                std::format!("ACC: **{}** | DMG: **{}**\n", accuracy, damage)
+                                    .as_str(),
+                            );
+                        }
+                    } else {
+                        result.push_str(std::format!("ACC: **{}**\n", accuracy).as_str());
+                    }
                 }
-            }
-            if let Some(effect) = &m.effect {
-                result.push_str(effect.as_str());
-                result.push_str("\n\n");
+                if let Some(effect) = &m.effect {
+                    result.push_str(effect.as_str());
+                    result.push_str("\n\n");
+                } else {
+                    result.push('\n');
+                }
             } else {
-                result.push('\n');
+                result.push_str(std::format!("**{}** – Not Found! :(\n", move_name,).as_str());
             }
         }
 
