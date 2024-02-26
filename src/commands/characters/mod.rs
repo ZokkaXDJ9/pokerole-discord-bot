@@ -11,17 +11,16 @@ use serenity::all::{
 use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
 
+use crate::{emoji, Error, helpers};
 use crate::cache::CharacterCacheItem;
 use crate::character_stats::GenericCharacterStats;
 use crate::commands::{
-    parse_character_names, send_ephemeral_reply, send_error, update_character_post,
-    BuildUpdatedStatMessageStringResult, Context,
+    BuildUpdatedStatMessageStringResult, Context, parse_character_names, send_error,
+    update_character_post,
 };
 use crate::data::Data;
 use crate::enums::{Gender, MysteryDungeonRank, PokemonTypeWithoutShadow};
 use crate::game_data::{GameData, PokemonApiId};
-use crate::helpers::{ADMIN_ID, ADMIN_PING_STRING};
-use crate::{emoji, helpers, Error};
 
 mod character_sheet;
 mod edit_character;
@@ -47,7 +46,6 @@ const DEFAULT_BACKPACK_SLOTS: i64 = 6;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     vec![
-        reset_all_character_stats(),
         character_sheet::character_sheet(),
         edit_character::edit_character(),
         give_money::give_money(),
@@ -100,34 +98,6 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
 //     let _ = send_ephemeral_reply(&ctx, "Done!").await;
 //     Ok(())
 // }
-
-/// Reset all character stats.
-#[poise::command(
-    slash_command,
-    guild_only,
-    default_member_permissions = "ADMINISTRATOR"
-)]
-async fn reset_all_character_stats(ctx: Context<'_>) -> Result<(), Error> {
-    if ctx.author().id.get() != ADMIN_ID {
-        return send_error(
-            &ctx,
-            &format!(
-                "Sorry, but this command is so unbelievably spam-inducing that it's only available for {}.",
-                ADMIN_PING_STRING
-            ),
-        )
-            .await;
-    }
-
-    let _ = ctx.defer_ephemeral().await;
-    for cache_item in ctx.data().cache.get_characters().await.iter() {
-        let _ = reset_character_stats::reset_db_stats(&ctx, cache_item).await;
-        update_character_post(&ctx, cache_item.id).await;
-    }
-
-    let _ = send_ephemeral_reply(&ctx, "Done!").await;
-    Ok(())
-}
 
 pub async fn send_stale_data_error<'a>(ctx: &Context<'a>) -> Result<(), Error> {
     send_error(ctx, "Something went wrong!
