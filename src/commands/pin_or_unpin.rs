@@ -8,10 +8,20 @@ pub async fn pin_or_unpin(
     #[description = "Message which should be (un)pinned."]
     message: poise::serenity_prelude::Message,
 ) -> Result<(), Error> {
+    let audit_log = format!(
+        "Requested by {} (ID: {})",
+        ctx.author().name,
+        ctx.author().id
+    );
+
     match if message.pinned {
-        message.unpin(&ctx).await
+        ctx.http()
+            .unpin_message(message.channel_id, message.id, Some(&audit_log))
+            .await
     } else {
-        message.pin(&ctx).await
+        ctx.http()
+            .pin_message(message.channel_id, message.id, Some(&audit_log))
+            .await
     } {
         Ok(_) => {
             let _ = if message.pinned {
