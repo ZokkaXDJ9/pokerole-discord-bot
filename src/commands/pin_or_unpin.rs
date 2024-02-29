@@ -33,13 +33,10 @@ pub async fn pin_or_unpin(
         }
         Err(e) => {
             let pin_or_unpin = if message.pinned { "unpin" } else { "pin" };
-            Err(Box::new(
-                CommandInvocationError::new(&format!(
-                    "Failed to {} message.\n```{}```",
-                    pin_or_unpin, e
-                ))
-                .log(),
-            ))
+            Err(Box::new(CommandInvocationError::new(&format!(
+                "Failed to {} message.\n```{}```",
+                pin_or_unpin, e
+            ))))
         }
     }
 }
