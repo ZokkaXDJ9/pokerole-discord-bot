@@ -14,7 +14,11 @@ pub async fn pin_or_unpin(
         message.pin(&ctx).await
     } {
         Ok(_) => {
-            let _ = send_ephemeral_reply(&ctx, "Done!").await;
+            let _ = if message.pinned {
+                send_ephemeral_reply(&ctx, "Message has been unpinned!").await
+            } else {
+                send_ephemeral_reply(&ctx, "Message has been pinned!").await
+            };
             Ok(())
         }
         Err(e) => {
