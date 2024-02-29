@@ -6,12 +6,12 @@ use serenity::model::guild::Member;
 use serenity::model::id::{GuildId, UserId};
 use serenity::model::prelude::User;
 
+use crate::{discord_error_codes, Error, helpers};
 use crate::cache::{CharacterCacheItem, WalletCacheItem};
 use crate::commands::characters::build_character_string;
 use crate::data::Data;
 use crate::errors::{ParseError, ValidationError};
 use crate::game_data::pokemon::Pokemon;
-use crate::{discord_error_codes, helpers, Error};
 
 type Context<'a> = poise::Context<'a, Data, Error>;
 
@@ -41,6 +41,7 @@ pub mod timestamp;
 pub mod weather;
 
 pub mod characters;
+mod pin_or_unpin;
 mod player_info;
 mod prune_emojis;
 mod quests;
@@ -82,6 +83,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         about::about(),
         //prune_emojis::prune_emojis(),
         server_stats::server_stats(),
+        pin_or_unpin::pin_or_unpin(),
     ];
 
     for x in characters::get_all_commands() {
