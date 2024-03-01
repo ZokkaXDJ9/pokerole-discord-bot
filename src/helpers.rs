@@ -5,13 +5,12 @@ use serenity::all::{
     EditThread, HttpError, Message, MessageId,
 };
 
+use crate::{discord_error_codes, emoji, Error};
 use crate::data::Data;
 use crate::enums::{MysteryDungeonRank, QuestParticipantSelectionMechanism};
-use crate::game_data::pokemon::Pokemon;
 use crate::game_data::{GameData, PokemonApiId};
-use crate::{discord_error_codes, emoji, Error};
+use crate::game_data::pokemon::Pokemon;
 
-pub const ADMIN_ID: u64 = 878982444412448829;
 pub const ADMIN_PING_STRING: &str = "<@878982444412448829>";
 pub const ERROR_LOG_CHANNEL: ChannelId = ChannelId::new(1188864512439369779);
 
@@ -371,7 +370,18 @@ pub async fn handle_error_during_message_edit(
                                 ))).await;
                             }
                         }
-                        Err(e) => {}
+                        Err(e) => {
+                            let name = name.into();
+                            let _ = ERROR_LOG_CHANNEL.send_message(ctx, CreateMessage::new().content(format!(
+                                "Some very random error occurred when updating the stat message for {}.\n**The requested change has been applied, but it isn't shown in the message there right now.**\n Error:\n```{:?}```",
+                                &name, e)
+                            )).await;
+                            if let Some(reply_channel_id) = reply_channel_id {
+                                let _ = reply_channel_id.say(ctx, &format!(
+                                    "Some very random error occurred when updating the stat message for {}.\n**The requested change has been applied, but it isn't shown in the message there right now.**\n*This has been logged.*",
+                                    &name)).await;
+                            }
+                        }
                     }
 
                     return;
