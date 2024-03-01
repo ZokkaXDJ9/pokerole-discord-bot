@@ -1,17 +1,20 @@
 use std::borrow::Cow;
 
 use poise::{Command, CreateReply, ReplyHandle};
-use serenity::all::{ChannelId, CreateActionRow, EditMessage, HttpError, Message, MessageId};
+use serenity::all::{
+    ChannelId, CreateActionRow, CreateMessage, EditMessage, EditThread, HttpError, Message,
+    MessageId,
+};
 use serenity::model::guild::Member;
 use serenity::model::id::{GuildId, UserId};
 use serenity::model::prelude::User;
 
-use crate::{discord_error_codes, Error, helpers};
 use crate::cache::{CharacterCacheItem, WalletCacheItem};
 use crate::commands::characters::build_character_string;
 use crate::data::Data;
 use crate::errors::{ParseError, ValidationError};
 use crate::game_data::pokemon::Pokemon;
+use crate::{discord_error_codes, helpers, Error};
 
 type Context<'a> = poise::Context<'a, Data, Error>;
 
@@ -460,28 +463,30 @@ async fn handle_error_during_message_edit<'a>(
     if let serenity::Error::Http(HttpError::UnsuccessfulRequest(e)) = &e {
         if e.error.code == discord_error_codes::ARCHIVED_THREAD {
             if let Ok(channel) = message_to_edit.channel(ctx).await {
-                if let Some(channel) = channel.guild() {
-                    if let Ok(response) = channel
-                        .say(ctx, "This thread was (probably) automagically archived, and I'm sending this message to reopen it so I can update some values. This message should be deleted right away, sorry if it pinged you!").await
+                if let Some(mut channel) = channel.guild() {
+                    match channel
+                        .edit_thread(ctx, EditThread::new().archived(false))
+                        .await
                     {
-                        let _ = response.delete(ctx).await;
-                        let mut edit_message = EditMessage::new().content(updated_message_content);
-                        if let Some(components) = components {
-                            edit_message = edit_message.components(components);
-                        }
+                        Ok(_) => {
+                            let mut edit_message =
+                                EditMessage::new().content(updated_message_content);
+                            if let Some(components) = components {
+                                edit_message = edit_message.components(components);
+                            }
 
-                        if let Err(e) = message_to_edit.edit(ctx, edit_message).await {
-                            let _ = ctx.say(format!(
-                                "**Failed to update the stat message for {}!**.\nThe change has been tracked, but whilst updating the message some error occurred:\n```{:?}```\nTechnically this issue should have been fixed, so I'll ping {} to have a look at it. For now, just proceed as if nothing went wrong. Sorry for the inconvenience!",
-                                name.into(),
-                                e,
-                                helpers::ADMIN_PING_STRING
-                            ))
-                                .await;
+                            if let Err(e) = message_to_edit.edit(ctx, edit_message).await {
+                                let _ = helpers::ERROR_LOG_CHANNEL.send_message(ctx, CreateMessage::new().content(format!(
+                                    "**Failed to update the stat message for {}!**.\nThe change has been tracked, but whilst updating the message some error occurred:\n```{:?}```\n",
+                                    name.into(),
+                                    e,
+                                ))).await;
+                            }
                         }
-
-                        return;
+                        Err(_) => {}
                     }
+
+                    return;
                 }
             }
         }
