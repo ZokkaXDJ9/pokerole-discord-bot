@@ -1,5 +1,5 @@
-use std::sync::atomic::Ordering;
 use std::sync::Arc;
+use std::sync::atomic::Ordering;
 
 use chrono::{Datelike, NaiveDate, Utc};
 use serenity::all::CreateMessage;
@@ -84,7 +84,7 @@ tera_used_ice = 0,
 tera_used_dragon = 0,
 tera_used_dark = 0,
 tera_used_fairy = 0
-    RETURNING id
+    RETURNING id, is_retired
 "
     )
     .fetch_all(&database)
@@ -93,6 +93,9 @@ tera_used_fairy = 0
         Ok(records) => {
             notify_guilds(&ctx, &database).await;
             for record in records {
+                if record.is_retired {
+                    continue;
+                }
                 update_character_post(&ctx, &database, &game_data, record.id).await;
             }
         }
