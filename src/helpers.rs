@@ -1,14 +1,15 @@
 use std::sync::Arc;
 
 use serenity::all::{
-    ButtonStyle, ChannelId, Context, CreateActionRow, CreateButton, EditMessage, MessageId,
+    ButtonStyle, ChannelId, Context, CreateActionRow, CreateButton, CreateMessage, EditMessage,
+    EditThread, HttpError, Message, MessageId,
 };
 
 use crate::data::Data;
 use crate::enums::{MysteryDungeonRank, QuestParticipantSelectionMechanism};
 use crate::game_data::pokemon::Pokemon;
 use crate::game_data::{GameData, PokemonApiId};
-use crate::{emoji, Error};
+use crate::{discord_error_codes, emoji, Error};
 
 pub const ADMIN_ID: u64 = 878982444412448829;
 pub const ADMIN_PING_STRING: &str = "<@878982444412448829>";
@@ -336,4 +337,57 @@ pub fn channel_id_link(channel_id: ChannelId) -> String {
 
 pub fn calculate_next_limit_break_cost(limit_break_count: i64) -> i64 {
     2 + limit_break_count
+}
+
+pub async fn handle_error_during_message_edit(
+    ctx: &serenity::client::Context,
+    e: serenity::Error,
+    mut message_to_edit: Message,
+    updated_message_content: impl Into<String>,
+    components: Option<Vec<CreateActionRow>>,
+    name: impl Into<String>,
+    reply_channel_id: Option<ChannelId>,
+) {
+    if let serenity::Error::Http(HttpError::UnsuccessfulRequest(e)) = &e {
+        if e.error.code == discord_error_codes::ARCHIVED_THREAD {
+            if let Ok(channel) = message_to_edit.channel(ctx).await {
+                if let Some(mut channel) = channel.guild() {
+                    match channel
+                        .edit_thread(ctx, EditThread::new().archived(false))
+                        .await
+                    {
+                        Ok(_) => {
+                            let mut edit_message =
+                                EditMessage::new().content(updated_message_content);
+                            if let Some(components) = components {
+                                edit_message = edit_message.components(components);
+                            }
+
+                            if let Err(e) = message_to_edit.edit(ctx, edit_message).await {
+                                let _ = ERROR_LOG_CHANNEL.send_message(ctx, CreateMessage::new().content(format!(
+                                    "**Failed to update the stat message for {}!**.\nThe change has been tracked, but whilst updating the message some error occurred:\n```{:?}```\n",
+                                    name.into(),
+                                    e,
+                                ))).await;
+                            }
+                        }
+                        Err(e) => {}
+                    }
+
+                    return;
+                }
+            }
+        }
+    }
+
+    let name = name.into();
+    let _ = ERROR_LOG_CHANNEL.send_message(ctx, CreateMessage::new().content(format!(
+        "Some very random error occurred when updating the stat message for {}.\n**The requested change has been applied, but it isn't shown in the message there right now.**\n Error:\n```{:?}```",
+        &name, e)
+    )).await;
+    if let Some(reply_channel_id) = reply_channel_id {
+        let _ = reply_channel_id.say(ctx, &format!(
+            "Some very random error occurred when updating the stat message for {}.\n**The requested change has been applied, but it isn't shown in the message there right now.**\n*This has been logged.*",
+            &name)).await;
+    }
 }

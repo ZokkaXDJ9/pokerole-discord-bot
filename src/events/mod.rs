@@ -3,15 +3,14 @@ use std::sync::Arc;
 use serenity::all::{
     ComponentInteraction, ComponentInteractionDataKind, CreateActionRow, CreateAllowedMentions,
     CreateInteractionResponse, CreateInteractionResponseMessage, CreateMessage, EditMessage,
-    FullEvent, GuildId, GuildMemberUpdateEvent, HttpError, Interaction, Member, Message, MessageId,
+    FullEvent, GuildId, GuildMemberUpdateEvent, Interaction, Member, Message, MessageId,
     User,
 };
-use serenity::builder::EditThread;
 use serenity::client::Context;
 use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
 
-use crate::{discord_error_codes, Error, helpers};
+use crate::{Error, helpers};
 use crate::data::Data;
 use crate::game_data::GameData;
 
@@ -313,45 +312,19 @@ async fn update_character_post<'a>(
 async fn handle_error_during_message_edit(
     ctx: &Context,
     e: serenity::Error,
-    mut message_to_edit: Message,
+    message_to_edit: Message,
     updated_message_content: impl Into<String>,
     components: Option<Vec<CreateActionRow>>,
     name: impl Into<String>,
 ) {
-    if let serenity::Error::Http(HttpError::UnsuccessfulRequest(e)) = &e {
-        if e.error.code == discord_error_codes::ARCHIVED_THREAD {
-            if let Ok(channel) = message_to_edit.channel(ctx).await {
-                if let Some(mut channel) = channel.guild() {
-                    match channel
-                        .edit_thread(ctx, EditThread::new().archived(false))
-                        .await
-                    {
-                        Ok(_) => {
-                            let mut edit_message =
-                                EditMessage::new().content(updated_message_content);
-                            if let Some(components) = components {
-                                edit_message = edit_message.components(components);
-                            }
-
-                            if let Err(e) = message_to_edit.edit(ctx, edit_message).await {
-                                let _ = helpers::ERROR_LOG_CHANNEL.send_message(ctx, CreateMessage::new().content(format!(
-                                    "**Failed to update the stat message for {}!**.\nThe change has been tracked, but whilst updating the message some error occurred:\n```{:?}```\n",
-                                    name.into(),
-                                    e,
-                                ))).await;
-                            }
-                        }
-                        Err(e) => {}
-                    }
-
-                    return;
-                }
-            }
-        }
-    }
-
-    let _ = helpers::ERROR_LOG_CHANNEL.send_message(ctx, CreateMessage::new().content(format!(
-        "Some very random error occurred when updating the stat message for {}.\n**The requested change has been applied, but it isn't shown in the message there right now.**\n Error:\n```{:?}```",
-        name.into(), e)
-    )).await;
+    helpers::handle_error_during_message_edit(
+        ctx,
+        e,
+        message_to_edit,
+        updated_message_content,
+        components,
+        name,
+        None,
+    )
+    .await;
 }
