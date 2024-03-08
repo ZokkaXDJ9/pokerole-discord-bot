@@ -352,6 +352,14 @@ pub async fn build_character_string(
 
                 components.push(CreateActionRow::Buttons(action_row));
             }
+            // TODO: Only do this if finished quest count > 0
+            let mut general_buttons = Vec::new();
+            general_buttons.push(
+                CreateButton::new(format!("quest-history_{}", character_id))
+                    .label("Show Quest History")
+                    .style(ButtonStyle::Primary),
+            );
+            components.push(CreateActionRow::Buttons(general_buttons));
 
             Some(BuildUpdatedStatMessageStringResult {
                 message,

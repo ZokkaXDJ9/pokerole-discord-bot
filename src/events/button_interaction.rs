@@ -1,12 +1,18 @@
-use crate::commands::{efficiency, learns};
-use crate::events::{character_stat_edit, parse_interaction_command, quests, FrameworkContext};
-use crate::{commands, emoji, helpers, Error};
+use std::str::FromStr;
+
 use serenity::all::{
     ActionRow, ActionRowComponent, Button, ButtonKind, ComponentInteraction,
     CreateInteractionResponse, CreateInteractionResponseFollowup, CreateInteractionResponseMessage,
 };
 use serenity::builder::{CreateActionRow, CreateButton};
 use serenity::client::Context;
+
+use crate::commands::{efficiency, learns};
+use crate::errors::CommandInvocationError;
+use crate::events::{
+    character_stat_edit, parse_interaction_command, quests, send_ephemeral_reply, FrameworkContext,
+};
+use crate::{commands, emoji, helpers, Error};
 
 pub async fn handle_button_interaction(
     context: &Context,
@@ -136,6 +142,40 @@ pub async fn handle_button_interaction(
                 framework.user_data,
             )
             .await?;
+        }
+        "quest-history" => {
+            let Ok(character_id) = i64::from_str(args[0]) else {
+                return Err(Box::new(
+                    CommandInvocationError::new(&format!(
+                        "Invalid character ID in request: {}",
+                        args[0]
+                    ))
+                    .log(),
+                ));
+            };
+
+            return match sqlx::query!(
+                "SELECT quest_id FROM quest_completion WHERE character_id = ?",
+                character_id
+            )
+            .fetch_all(&framework.user_data.database)
+            .await
+            {
+                Ok(records) => {
+                    let mut result = String::from("### Quest History\n");
+
+                    for x in records {
+                        let channel_id = serenity::model::id::ChannelId::from(x.quest_id as u64);
+                        result.push_str(&helpers::channel_id_link(channel_id));
+                        result.push('\n');
+                    }
+
+                    let _ = send_ephemeral_reply(interaction, context, &result).await;
+
+                    Ok(())
+                }
+                Err(_) => Ok(()),
+            };
         }
         "ce" => {
             character_stat_edit::handle_character_editor_command(
