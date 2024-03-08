@@ -7,12 +7,12 @@ use serenity::all::{
 use serenity::builder::{CreateActionRow, CreateButton};
 use serenity::client::Context;
 
+use crate::{commands, emoji, Error, helpers};
 use crate::commands::{efficiency, learns};
 use crate::errors::CommandInvocationError;
 use crate::events::{
-    character_stat_edit, parse_interaction_command, quests, send_ephemeral_reply, FrameworkContext,
+    character_stat_edit, FrameworkContext, parse_interaction_command, quests, send_ephemeral_reply,
 };
-use crate::{commands, emoji, helpers, Error};
 
 pub async fn handle_button_interaction(
     context: &Context,
@@ -182,6 +182,16 @@ async fn post_quest_history(
     .await
     {
         Ok(records) => {
+            if records.is_empty() {
+                let _ = send_ephemeral_reply(
+                    interaction,
+                    context,
+                    "Seems like this character hasn't completed any quests yet!",
+                )
+                .await;
+                return Ok(());
+            }
+
             let mut result = String::from("### Quest History\n");
 
             for x in records {
