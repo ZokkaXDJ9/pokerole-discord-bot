@@ -200,7 +200,11 @@ async fn post_quest_history(
                 result.push('\n');
             }
 
-            let _ = send_ephemeral_reply(interaction, context, &result).await;
+            result.push_str("\n(If any of these say 'Unknown', you need to tap on them to load the channel name. That's just how Discord works, sorry!)");
+
+            for message in helpers::split_long_messages(result) {
+                let _ = send_ephemeral_reply(interaction, context, &message).await;
+            }
 
             Ok(())
         }
