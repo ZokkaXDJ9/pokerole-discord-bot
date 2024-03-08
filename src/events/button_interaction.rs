@@ -144,38 +144,7 @@ pub async fn handle_button_interaction(
             .await?;
         }
         "quest-history" => {
-            let Ok(character_id) = i64::from_str(args[0]) else {
-                return Err(Box::new(
-                    CommandInvocationError::new(&format!(
-                        "Invalid character ID in request: {}",
-                        args[0]
-                    ))
-                    .log(),
-                ));
-            };
-
-            return match sqlx::query!(
-                "SELECT quest_id FROM quest_completion WHERE character_id = ?",
-                character_id
-            )
-            .fetch_all(&framework.user_data.database)
-            .await
-            {
-                Ok(records) => {
-                    let mut result = String::from("### Quest History\n");
-
-                    for x in records {
-                        let channel_id = serenity::model::id::ChannelId::from(x.quest_id as u64);
-                        result.push_str(&helpers::channel_id_link(channel_id));
-                        result.push('\n');
-                    }
-
-                    let _ = send_ephemeral_reply(interaction, context, &result).await;
-
-                    Ok(())
-                }
-                Err(_) => Ok(()),
-            };
+            return post_quest_history(context, &framework, interaction, args).await;
         }
         "ce" => {
             character_stat_edit::handle_character_editor_command(
@@ -190,6 +159,43 @@ pub async fn handle_button_interaction(
     }
 
     Ok(())
+}
+
+async fn post_quest_history(
+    context: &Context,
+    framework: &FrameworkContext<'_>,
+    interaction: &&ComponentInteraction,
+    args: Vec<&str>,
+) -> Result<(), Error> {
+    let Ok(character_id) = i64::from_str(args[0]) else {
+        return Err(Box::new(
+            CommandInvocationError::new(&format!("Invalid character ID in request: {}", args[0]))
+                .log(),
+        ));
+    };
+
+    match sqlx::query!(
+        "SELECT quest_id FROM quest_completion WHERE character_id = ?",
+        character_id
+    )
+    .fetch_all(&framework.user_data.database)
+    .await
+    {
+        Ok(records) => {
+            let mut result = String::from("### Quest History\n");
+
+            for x in records {
+                let channel_id = serenity::model::id::ChannelId::from(x.quest_id as u64);
+                result.push_str(&helpers::channel_id_link(channel_id));
+                result.push('\n');
+            }
+
+            let _ = send_ephemeral_reply(interaction, context, &result).await;
+
+            Ok(())
+        }
+        Err(_) => Ok(()),
+    }
 }
 
 async fn disable_button_on_original_message(
