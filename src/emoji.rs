@@ -1,8 +1,9 @@
+use sqlx::{Pool, Sqlite};
+
 use crate::data::Data;
 use crate::enums::{Gender, PokemonType, RegionalVariant};
 use crate::game_data::pokemon::Pokemon;
 use crate::game_data::PokemonApiId;
-use sqlx::{Pool, Sqlite};
 
 pub const POKE_COIN: &str = "<:poke_coin:1120237132200546304>";
 pub const BATTLE_POINT: &str = "<:battle_point:1202570025802661938>";
@@ -154,6 +155,7 @@ pub fn pokemon_to_emoji_name(
         .name
         .to_lowercase()
         .replace(' ', "_")
+        .replace('-', "_")
         .replace(['(', ')'], "");
 
     let regional_prefix = if let Some(regional_variant) = pokemon.regional_variant {
