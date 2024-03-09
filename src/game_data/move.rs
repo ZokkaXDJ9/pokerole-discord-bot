@@ -1,8 +1,10 @@
+use std::str::FromStr;
+
+use log::error;
+
 use crate::enums::{CombatOrSocialStat, HappinessDamageModifier, MoveCategory, MoveType, Stat};
 use crate::game_data::parser::custom_data::custom_move::CustomMove;
 use crate::game_data::pokerole_data::raw_move::RawPokeroleMove;
-use log::error;
-use std::str::FromStr;
 
 pub struct Move {
     pub name: String,
@@ -32,7 +34,9 @@ fn replace_effect_string(raw: &str) -> Option<String> {
             .replace("Lethal", "Inflicts Wounds")
             .replace("Basic Heal", "Heal 5 HP")
             .replace("Complete Heal", "Heal 10 HP")
-            .replace("Full Heal", "Heal 10 HP"),
+            .replace("Full Heal", "Heal 10 HP")
+            .replace("Freeze", "Frostbite")
+            .replace("freeze", "Frostbite"),
     )
 }
 
