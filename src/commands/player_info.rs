@@ -1,11 +1,12 @@
 use serenity::all::{ChannelId, Member, User};
+use tokio::join;
 
+use crate::{emoji, helpers};
 use crate::commands::{Context, Error};
 use crate::data::Data;
 use crate::errors::DatabaseError;
 use crate::game_data::PokemonApiId;
 use crate::helpers::split_long_messages;
-use crate::{emoji, helpers};
 
 /// Display Stats for a player
 #[poise::command(slash_command, guild_only)]
@@ -16,36 +17,17 @@ pub async fn player_info(
     let user_id = player.id.get() as i64;
     let guild = ctx.guild().expect("Command is guild_only").clone();
     let guild_id = guild.id.get() as i64;
-    let user_in_guild = guild
-        .member(&ctx, player.id)
-        .await
-        .expect("Player must be part of this server!");
 
+    let user_in_guild = guild.member(&ctx, player.id);
     let characters = sqlx::query_as!(QueryObject, "SELECT id, name, species_api_id, experience, is_shiny, phenotype, stat_channel_id FROM character WHERE user_id = ? AND guild_id = ? AND is_retired = false", user_id, guild_id)
-        .fetch_all(&ctx.data().database)
-        .await;
+        .fetch_all(&ctx.data().database);
+    let hosted_quest_count = query_hosted_quest_count(&ctx, user_id);
+    let gm_experience = query_gm_experience(&ctx, user_id, guild_id);
 
-    let hosted_quest_count = match sqlx::query!(
-        "SELECT COUNT(*) as count FROM quest WHERE creator_id = ? AND completion_timestamp IS NOT NULL",
-        user_id,
-    )
-    .fetch_one(&ctx.data().database)
-    .await {
-        Ok(record) => Some(record.count),
-        Err(_) => None
-    };
+    let (user_in_guild, characters, hosted_quest_count, gm_experience) =
+        join!(user_in_guild, characters, hosted_quest_count, gm_experience);
 
-    let gm_experience = match sqlx::query!(
-        "SELECT gm_experience FROM user_in_guild WHERE user_id = ? AND guild_id = ?",
-        user_id,
-        guild_id
-    )
-    .fetch_one(&ctx.data().database)
-    .await
-    {
-        Ok(record) => Some(record.gm_experience),
-        Err(_) => None,
-    };
+    let user_in_guild = user_in_guild.expect("Player must be part of this server!");
 
     match characters {
         Ok(characters) => {
@@ -70,6 +52,32 @@ pub async fn player_info(
     }
 
     Ok(())
+}
+
+async fn query_hosted_quest_count(ctx: &Context<'_>, user_id: i64) -> Option<i32> {
+    match sqlx::query!(
+        "SELECT COUNT(*) as count FROM quest WHERE creator_id = ? AND completion_timestamp IS NOT NULL",
+        user_id,
+    )
+        .fetch_one(&ctx.data().database)
+        .await {
+        Ok(record) => Some(record.count),
+        Err(_) => None
+    }
+}
+
+async fn query_gm_experience(ctx: &Context<'_>, user_id: i64, guild_id: i64) -> Option<i64> {
+    match sqlx::query!(
+        "SELECT gm_experience FROM user_in_guild WHERE user_id = ? AND guild_id = ?",
+        user_id,
+        guild_id
+    )
+    .fetch_one(&ctx.data().database)
+    .await
+    {
+        Ok(record) => Some(record.gm_experience),
+        Err(_) => None,
+    }
 }
 
 async fn build_reply(
