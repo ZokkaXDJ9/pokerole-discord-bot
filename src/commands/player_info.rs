@@ -1,11 +1,11 @@
 use serenity::all::{ChannelId, Member, User};
 
+use crate::{emoji, helpers};
 use crate::commands::{Context, Error};
 use crate::data::Data;
 use crate::errors::DatabaseError;
 use crate::game_data::PokemonApiId;
 use crate::helpers::split_long_messages;
-use crate::{emoji, helpers};
 
 /// Display Stats for a player
 #[poise::command(slash_command, guild_only)]
@@ -35,10 +35,28 @@ pub async fn player_info(
         Err(_) => {0}
     };
 
+    let gm_experience = match sqlx::query!(
+        "SELECT gm_experience FROM user_in_guild WHERE user_id = ? AND guild_id = ?",
+        user_id,
+        guild_id
+    )
+    .fetch_one(&ctx.data().database)
+    .await
+    {
+        Ok(record) => Some(record.gm_experience),
+        Err(_) => None,
+    };
+
     match characters {
         Ok(characters) => {
-            let reply =
-                build_reply(ctx.data(), &user_in_guild, characters, hosted_quest_count).await;
+            let reply = build_reply(
+                ctx.data(),
+                &user_in_guild,
+                characters,
+                hosted_quest_count,
+                gm_experience,
+            )
+            .await;
             for message in split_long_messages(reply) {
                 let _ = ctx.reply(message).await;
             }
@@ -59,6 +77,7 @@ async fn build_reply(
     user_in_guild: &Member,
     characters: Vec<QueryObject>,
     hosted_quest_count: i32,
+    gm_experience: Option<i64>,
 ) -> String {
     let mut character_list = String::new();
     let character_count = characters.len();
@@ -104,6 +123,12 @@ async fn build_reply(
         String::new()
     };
 
+    let gm_experience = if let Some(gm_experience) = gm_experience {
+        format!("\nGM Experience: {}", gm_experience)
+    } else {
+        String::new()
+    };
+
     let character_slots = 1 + total_levels / 5;
 
     format!(
@@ -111,7 +136,7 @@ async fn build_reply(
 **Joined at**: {}
 **Total Character Level**: {} 
 **Total Experience**: {}
-**Character Slots**: {}/{}{}
+**Character Slots**: {}/{}{}{}
 {}",
         user_in_guild.display_name(),
         joined,
@@ -120,6 +145,7 @@ async fn build_reply(
         character_count,
         character_slots,
         hosted_quest_count,
+        gm_experience,
         character_list
     )
 }
