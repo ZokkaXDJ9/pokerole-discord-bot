@@ -1,3 +1,5 @@
+use tokio::join;
+
 use crate::commands::{Context, ensure_user_exists, Error};
 use crate::commands::characters::{ActionType, log_action};
 use crate::errors::CommandInvocationError;
@@ -29,8 +31,10 @@ pub async fn store_gm_experience(ctx: Context<'_>, amount: i64) -> Result<(), Er
                 .await
             {
                 Ok(_) => {
-                    let _ = ctx.say(format!("Applied {} GM Experience to {}!", amount, ctx.author())).await;
-                    let _ = log_action(&ActionType::StoreGMExperience, &ctx, &format!("Stored {} GM Experience.", amount)).await;
+                    let text = format!("{} stored {} GM Experience!", ctx.author(), amount);
+                    let reply = ctx.say(&text);
+                    let log = log_action(&ActionType::StoreGMExperience, &ctx, &text);
+                    let _ = join!(reply, log);
                 }
                 Err(e) => {
                     return Err(Box::new(
