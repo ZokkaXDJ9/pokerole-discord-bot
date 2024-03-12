@@ -85,6 +85,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         //prune_emojis::prune_emojis(),
         server_stats::server_stats(),
         pin_or_unpin::pin_or_unpin(),
+        store_gm_experience::store_gm_experience(),
     ];
 
     for x in characters::get_all_commands() {
