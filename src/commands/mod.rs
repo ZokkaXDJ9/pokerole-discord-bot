@@ -1,10 +1,7 @@
 use std::borrow::Cow;
 
 use poise::{Command, CreateReply, ReplyHandle};
-use serenity::all::{
-    ChannelId, CreateActionRow, EditMessage, Message,
-    MessageId,
-};
+use serenity::all::{ChannelId, CreateActionRow, EditMessage, Message, MessageId};
 use serenity::model::guild::Member;
 use serenity::model::id::{GuildId, UserId};
 use serenity::model::prelude::User;
@@ -51,6 +48,7 @@ mod quests;
 mod say;
 mod server_stats;
 mod setting_time_offset;
+mod store_gm_experience;
 mod update_user_names;
 mod wallets;
 

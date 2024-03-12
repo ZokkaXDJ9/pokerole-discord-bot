@@ -395,6 +395,8 @@ pub enum ActionType {
     CharacterRetirement,
     CharacterUnRetirement,
     TerastallizationUnlock,
+    StoreGMExperience,
+    UseGMExperience,
 }
 
 impl fmt::Display for ActionType {
@@ -420,6 +422,8 @@ impl fmt::Display for ActionType {
             ActionType::CharacterRetirement => "💤 [Retirement]",
             ActionType::CharacterUnRetirement => "⏰ [UnRetirement]",
             ActionType::TerastallizationUnlock => "💎 [Terastallization Unlock]",
+            ActionType::StoreGMExperience => "🏦⬅️ [GM Experience]",
+            ActionType::UseGMExperience => "🏦➡️ [GM Experience]",
         })
     }
 }
