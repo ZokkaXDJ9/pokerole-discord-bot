@@ -50,6 +50,7 @@ mod server_stats;
 mod setting_time_offset;
 mod store_gm_experience;
 mod update_user_names;
+mod use_gm_experience;
 mod wallets;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
@@ -86,6 +87,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         server_stats::server_stats(),
         pin_or_unpin::pin_or_unpin(),
         store_gm_experience::store_gm_experience(),
+        use_gm_experience::use_gm_experience(),
     ];
 
     for x in characters::get_all_commands() {
@@ -361,14 +363,14 @@ fn ensure_money_record_has_money(
 
 pub fn ensure_user_owns_character(
     user: &User,
-    giver: &CharacterCacheItem,
+    character: &CharacterCacheItem,
 ) -> Result<(), ValidationError> {
-    if giver.user_id == user.id.get() {
+    if character.user_id == user.id.get() {
         Ok(())
     } else {
         Err(ValidationError::new(&format!(
             "You don't seem to own a character named {} on this server.",
-            giver.name
+            character.name
         )))
     }
 }

@@ -374,6 +374,7 @@ pub async fn build_character_string(
     }
 }
 
+#[derive(PartialEq)]
 pub enum ActionType {
     Initialization,
     Reward,
@@ -397,6 +398,7 @@ pub enum ActionType {
     TerastallizationUnlock,
     StoreGMExperience,
     UseGMExperience,
+    DoNotLog,
 }
 
 impl fmt::Display for ActionType {
@@ -424,6 +426,7 @@ impl fmt::Display for ActionType {
             ActionType::TerastallizationUnlock => "💎 [Terastallization Unlock]",
             ActionType::StoreGMExperience => "🏦⬅️ [GM Experience]",
             ActionType::UseGMExperience => "🏦➡️ [GM Experience]",
+            ActionType::DoNotLog => "",
         })
     }
 }
@@ -525,7 +528,10 @@ pub async fn change_character_stat_after_validation<'a>(
     amount: i64,
     action_type: &ActionType,
 ) -> Result<(), Error> {
-    ctx.defer().await?;
+    if action_type != &ActionType::DoNotLog {
+        // Replying should be handled before calling this in DoNotLog scenarios.
+        ctx.defer().await?;
+    }
     let record = sqlx::query_as::<_, EntityWithNameAndNumericValue>(
         format!(
             "SELECT id, name, {} as value FROM character WHERE id = ?",
@@ -602,7 +608,11 @@ pub async fn change_character_stat_after_validation<'a>(
                 to_or_from = "from";
             }
 
-            log_action(action_type, ctx, format!("{} {} {} {} {}", added_or_removed, amount.abs(), action, to_or_from, record.name).as_str()).await
+            if action_type != &ActionType::DoNotLog {
+                log_action(action_type, ctx, format!("{} {} {} {} {}", added_or_removed, amount.abs(), action, to_or_from, record.name).as_str()).await
+            } else {
+                Ok(())
+            }
         }
         Err(_) => {
             send_error(ctx, format!("Unable to find a character named {}.\n**Internal cache must be out of date. Please let me know if this ever happens.**", character.name).as_str()).await
