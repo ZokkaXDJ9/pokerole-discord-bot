@@ -1,4 +1,4 @@
-use crate::commands::{Context, Error};
+use crate::commands::{Context, ensure_user_exists, Error};
 use crate::commands::characters::{ActionType, log_action};
 use crate::errors::CommandInvocationError;
 
@@ -7,6 +7,7 @@ use crate::errors::CommandInvocationError;
 pub async fn store_gm_experience(ctx: Context<'_>, amount: i64) -> Result<(), Error> {
     let user_id = ctx.author().id.get() as i64;
     let guild_id = ctx.guild().expect("Command is guild_only!").id.get() as i64;
+    ensure_user_exists(&ctx, user_id, guild_id).await;
 
     match sqlx::query!(
         "SELECT gm_experience FROM user_in_guild WHERE user_id = ? AND guild_id = ?",

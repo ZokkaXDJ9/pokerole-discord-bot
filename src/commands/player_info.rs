@@ -1,11 +1,11 @@
 use serenity::all::{ChannelId, Member, User};
 
-use crate::{emoji, helpers};
 use crate::commands::{Context, Error};
 use crate::data::Data;
 use crate::errors::DatabaseError;
 use crate::game_data::PokemonApiId;
 use crate::helpers::split_long_messages;
+use crate::{emoji, helpers};
 
 /// Display Stats for a player
 #[poise::command(slash_command, guild_only)]
@@ -31,8 +31,8 @@ pub async fn player_info(
     )
     .fetch_one(&ctx.data().database)
     .await {
-        Ok(record) => {record.count}
-        Err(_) => {0}
+        Ok(record) => Some(record.count),
+        Err(_) => None
     };
 
     let gm_experience = match sqlx::query!(
@@ -76,7 +76,7 @@ async fn build_reply(
     data: &Data,
     user_in_guild: &Member,
     characters: Vec<QueryObject>,
-    hosted_quest_count: i32,
+    hosted_quest_count: Option<i32>,
     gm_experience: Option<i64>,
 ) -> String {
     let mut character_list = String::new();
@@ -117,14 +117,14 @@ async fn build_reply(
         String::from("Unknown")
     };
 
-    let hosted_quest_count = if hosted_quest_count > 0 {
+    let hosted_quest_count = if let Some(hosted_quest_count) = hosted_quest_count {
         format!("\n**Hosted Quests:** {}", hosted_quest_count)
     } else {
         String::new()
     };
 
     let gm_experience = if let Some(gm_experience) = gm_experience {
-        format!("\nGM Experience: {}", gm_experience)
+        format!("\n**GM Experience**: {}", gm_experience)
     } else {
         String::new()
     };
