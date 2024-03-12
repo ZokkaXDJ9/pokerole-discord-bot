@@ -9,7 +9,11 @@ use crate::emoji::get_character_emoji;
 use crate::errors::{CommandInvocationError, ValidationError};
 
 /// Store your GM Experience after a quest.
-#[poise::command(slash_command, guild_only)]
+#[poise::command(
+    slash_command,
+    guild_only,
+    default_member_permissions = "ADMINISTRATOR"
+)]
 pub async fn use_gm_experience(
     ctx: Context<'_>,
     #[min = 1_i64] amount: i64,

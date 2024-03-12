@@ -5,7 +5,11 @@ use crate::commands::{ensure_user_exists, Context, Error};
 use crate::errors::CommandInvocationError;
 
 /// Store your GM Experience after a quest.
-#[poise::command(slash_command, guild_only)]
+#[poise::command(
+    slash_command,
+    guild_only,
+    default_member_permissions = "ADMINISTRATOR"
+)]
 pub async fn store_gm_experience(
     ctx: Context<'_>,
     #[min = 1_i64]
