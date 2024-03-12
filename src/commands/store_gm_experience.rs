@@ -1,12 +1,17 @@
 use tokio::join;
 
-use crate::commands::{Context, ensure_user_exists, Error};
-use crate::commands::characters::{ActionType, log_action};
+use crate::commands::characters::{log_action, ActionType};
+use crate::commands::{ensure_user_exists, Context, Error};
 use crate::errors::CommandInvocationError;
 
 /// Store your GM Experience after a quest.
 #[poise::command(slash_command, guild_only)]
-pub async fn store_gm_experience(ctx: Context<'_>, amount: i64) -> Result<(), Error> {
+pub async fn store_gm_experience(
+    ctx: Context<'_>,
+    #[min = 1_i64]
+    #[max = 100_i64]
+    amount: i64,
+) -> Result<(), Error> {
     let user_id = ctx.author().id.get() as i64;
     let guild_id = ctx.guild().expect("Command is guild_only!").id.get() as i64;
     ensure_user_exists(&ctx, user_id, guild_id).await;

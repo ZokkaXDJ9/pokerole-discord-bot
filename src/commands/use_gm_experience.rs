@@ -12,7 +12,7 @@ use crate::errors::{CommandInvocationError, ValidationError};
 #[poise::command(slash_command, guild_only)]
 pub async fn use_gm_experience(
     ctx: Context<'_>,
-    amount: i64,
+    #[min = 1_i64] amount: i64,
     #[autocomplete = "autocomplete_owned_character_name"] character: String,
 ) -> Result<(), Error> {
     let user_id = ctx.author().id.get() as i64;
