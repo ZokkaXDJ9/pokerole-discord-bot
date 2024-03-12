@@ -49,7 +49,6 @@ mod say;
 mod server_stats;
 mod setting_time_offset;
 mod store_gm_experience;
-mod update_user_names;
 mod use_gm_experience;
 mod wallets;
 
@@ -81,7 +80,6 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         create_role_reaction_post::create_role_reaction_post(),
         setting_time_offset::setting_time_offset(),
         say::say(),
-        update_user_names::update_user_names(),
         about::about(),
         //prune_emojis::prune_emojis(),
         server_stats::server_stats(),
