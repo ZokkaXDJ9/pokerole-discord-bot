@@ -1,12 +1,14 @@
+use crate::commands::{
+    Context, Error, find_character, pokemon_from_autocomplete_string,
+    send_ephemeral_reply, send_error, update_character_post,
+};
 use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::autocompletion::autocomplete_pokemon;
-use crate::commands::characters::{log_action, reset_character_stats, ActionType};
+use crate::commands::autocompletion::autocomplete_pokemon_type;
+use crate::commands::characters::{ActionType, log_action, reset_character_stats};
 use crate::commands::create_emojis::create_emojis_for_pokemon;
-use crate::commands::{
-    find_character, pokemon_from_autocomplete_string, send_ephemeral_reply, send_error,
-    update_character_post, Context, Error,
-};
-use crate::enums::Gender;
+use crate::enums::{Gender, PokemonTypeWithoutShadow};
+use crate::errors::ValidationError;
 use crate::game_data::PokemonApiId;
 
 /// Update character data. All arguments are optional.
@@ -29,6 +31,12 @@ pub async fn edit_character(
     #[autocomplete = "autocomplete_pokemon"]
     species_override_for_stats: Option<String>,
     #[description = "Change the characters' shiny state."] is_shiny: Option<bool>,
+    #[description = "Change Tera Charges for specific Type. Also set tera_count."]
+    #[autocomplete = "autocomplete_pokemon_type"]
+    tera_type: Option<PokemonTypeWithoutShadow>,
+    #[description = "Change Tera Charges for specific Type. Also set tera_type."]
+    #[min = 0_i64]
+    tera_count: Option<i64>,
 ) -> Result<(), Error> {
     if species.is_some() && species_override_for_stats.is_some() {
         send_error(&ctx, "\
@@ -112,6 +120,23 @@ You can't (and probably also don't really want to) edit a character's species an
         record.is_shiny
     };
 
+    if let Some(tera_type) = tera_type {
+        if let Some(tera_count) = tera_count {
+            action_log.push(format!(
+                "{} Terastallization count to {}",
+                tera_type, tera_count
+            ));
+        } else {
+            return Err(Box::new(ValidationError::new("To set tera_type, also set tera_count to the amount of tera charges that type should have.")));
+        }
+    } else if tera_count.is_some() {
+        return Err(Box::new(ValidationError::new(
+            "To set tera_count, also set tera_type so I know which type you want to change.",
+        )));
+    }
+
+    if let Some(tera_type) = tera_type {}
+
     if action_log.is_empty() {
         send_error(&ctx, "No changes requested, aborting.").await?;
         return Ok(());
@@ -131,6 +156,17 @@ You can't (and probably also don't really want to) edit a character's species an
     )
         .execute(&ctx.data().database)
         .await?;
+
+    if let Some(tera_type) = tera_type {
+        if let Some(tera_count) = tera_count {
+            let column = tera_type.get_tera_unlocked_column();
+            sqlx::query(&format!("UPDATE character SET {} = ? WHERE id = ?", column))
+                .bind(tera_count)
+                .bind(character.id)
+                .execute(&ctx.data().database)
+                .await?;
+        }
+    }
 
     if should_stats_be_reset {
         let _ = reset_character_stats::reset_db_stats(&ctx, &character).await;
