@@ -1,6 +1,6 @@
 use crate::commands::{
     Context, Error, find_character, pokemon_from_autocomplete_string,
-    send_ephemeral_reply, send_error, update_character_post,
+    send_ephemeral_reply, update_character_post,
 };
 use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::autocompletion::autocomplete_pokemon;
@@ -39,11 +39,11 @@ pub async fn edit_character(
     tera_count: Option<i64>,
 ) -> Result<(), Error> {
     if species.is_some() && species_override_for_stats.is_some() {
-        send_error(&ctx, "\
+        return Err(Box::new(ValidationError::new("\
 You can't (and probably also don't really want to) edit a character's species and its override at the same time:
 - Changing the species will remove any existing overrides.
-- Overrides are meant for situations where you aren't able to change the species due to to other external constraints.").await?;
-        return Ok(());
+- Overrides are meant for situations where you aren't able to change the species due to to other external constraints."
+        )));
     }
 
     let guild_id = ctx.guild_id().expect("Command is guild_only").get();
@@ -135,11 +135,10 @@ You can't (and probably also don't really want to) edit a character's species an
         )));
     }
 
-    if let Some(tera_type) = tera_type {}
-
     if action_log.is_empty() {
-        send_error(&ctx, "No changes requested, aborting.").await?;
-        return Ok(());
+        return Err(Box::new(ValidationError::new(
+            "No changes requested, aborting.",
+        )));
     }
 
     if create_emojis {
