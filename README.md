@@ -1,15 +1,13 @@
 A discord bot to support playing a homebrewed, Mystery-Dungeon Themed version
-of [Pokerole](https://www.pokeroleproject.com).
+of [Pokèrole](https://www.pokeroleproject.com).
 
-You can add it to your own
-server [using this link](https://discord.com/oauth2/authorize?client_id=1113153708201615430&permissions=9089493346368&scope=applications.commands%20bot).
-If you are fine with our
-custom changes to the Pokerole Systems, feel free to just use it there for your own needs. Any persistent
-data is server specific, so there's no need to worry about breaking anything.
+If you are fine with our custom changes to the Pokèrole Systems, feel free to
+just [add it to your own server using this link](https://discord.com/oauth2/authorize?client_id=1113153708201615430&permissions=9089493346368&scope=applications.commands%20bot)!
+Any persistent data is server specific, so there's no need to worry about breaking anything.
 
 # Features
 
-Quickly get an overview of any Pokemon's stats, moves, abilities...
+Quickly get an overview of any Pokèmon's stats, moves, abilities...
 ![Stat Screenshot](screenshots/stats.png)
 ![Stat Screenshot](screenshots/moves.png)
 
@@ -25,6 +23,25 @@ Lots of tiny quality of life things
 - Automated database backup into a discord channel of your choice
 - Separate Wallets for shops, guilds, NPCs...
   ...and a bunch more, pretty much anything to run your Pokerole campaign!
+
+# Bot Commands
+
+You can browse all commands and their descriptions in a discord server by just entering /, so keeping an updated list
+with every command under the sun here is a little silly, but here's the most important ones for running a server.
+
+**It might be best to browse the Command list in `Server Settings -> Integrations -> Manage` after adding the bot to
+your server.** You can set custom overrides on which roles can access specific commands there. By default, anything that
+changes stuff in the Database is only available to admins.
+
+- `/setup_guild`: Used to set up some specific bits for your server.
+- `/create_character`: Creates characters. This will also create emojis for them, if there isn't one already.
+- `/edit_character`: Allows you to change pretty much anything about a character.
+- `/reward_[experience/money/...]`: Add stuff to a character. Some of these are fairly specific to the main server this
+  bot was initially created for, just ignore them if you don't need them.
+- `/create_quest`: Creates Quests. We recommend using a single forum thread per quest to keep things organized. There's
+  a built-in failsafe to ensure this won't be used in a used channel.
+
+To quickly look up things, there are `/pokemon`, `/ability`, `/move` and `/item`.
 
 # Contributing
 
