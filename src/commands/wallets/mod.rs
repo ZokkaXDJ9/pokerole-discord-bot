@@ -9,15 +9,15 @@ use poise::Command;
 use serenity::all::{ChannelId, EditMessage, MessageId};
 
 mod add_wallet_owner;
+mod create_wallet;
 mod edit_wallet;
-mod initialize_wallet;
 mod pay;
 mod wallet_info;
 mod withdraw;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     vec![
-        initialize_wallet::initialize_wallet(),
+        create_wallet::create_wallet(),
         add_wallet_owner::add_wallet_owner(),
         pay::pay(),
         withdraw::withdraw(),

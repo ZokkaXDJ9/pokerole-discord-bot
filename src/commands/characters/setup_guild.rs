@@ -8,7 +8,7 @@ use serenity::model::channel::Channel;
     guild_only,
     default_member_permissions = "ADMINISTRATOR"
 )]
-pub async fn initialize_guild(ctx: Context<'_>, action_log_channel: Channel) -> Result<(), Error> {
+pub async fn setup_guild(ctx: Context<'_>, action_log_channel: Channel) -> Result<(), Error> {
     let guild_id = ctx.guild_id().expect("Command is guild_only").get() as i64;
     let action_log_channel_id = action_log_channel.id().get() as i64;
 

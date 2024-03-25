@@ -12,7 +12,7 @@ use serenity::all::CreateMessage;
     guild_only,
     default_member_permissions = "ADMINISTRATOR"
 )]
-pub async fn initialize_wallet(
+pub async fn create_wallet(
     ctx: Context<'_>,
     #[description = "What name should we use?"] name: String,
     #[min = 0_i64] money: Option<i64>,
@@ -39,7 +39,7 @@ pub async fn initialize_wallet(
     let message_id = message.id.get() as i64;
     let channel_id = message.channel_id.get() as i64;
 
-    let result = create_wallet(
+    let result = execute_create_wallet(
         name.clone(),
         guild_id,
         message_id,
@@ -79,7 +79,7 @@ pub async fn initialize_wallet(
     Ok(())
 }
 
-async fn create_wallet(
+async fn execute_create_wallet(
     name: String,
     guild_id: i64,
     message_id: i64,
@@ -108,7 +108,7 @@ async fn create_wallet(
 
 #[cfg(test)]
 mod tests {
-    use crate::commands::wallets::initialize_wallet::create_wallet;
+    use crate::commands::wallets::create_wallet::execute_create_wallet;
     use crate::{database_helpers, Error};
     use chrono::Utc;
     use more_asserts::{assert_ge, assert_le};
@@ -127,7 +127,8 @@ mod tests {
 
         let timestamp_before = Utc::now().timestamp();
 
-        let _ = create_wallet(name.clone(), guild_id, message_id, channel_id, money, &data).await?;
+        let _ = execute_create_wallet(name.clone(), guild_id, message_id, channel_id, money, &data)
+            .await?;
         let timestamp_after = Utc::now().timestamp();
 
         let wallets = sqlx::query!(
@@ -159,10 +160,12 @@ mod tests {
 
         database_helpers::create_mock::guild(&data.database, guild_id).await;
 
-        let _ = create_wallet(name.clone(), guild_id, message_id, channel_id, money, &data).await?;
+        let _ = execute_create_wallet(name.clone(), guild_id, message_id, channel_id, money, &data)
+            .await?;
 
         let result =
-            create_wallet(name.clone(), guild_id, message_id, channel_id, money, &data).await;
+            execute_create_wallet(name.clone(), guild_id, message_id, channel_id, money, &data)
+                .await;
 
         assert!(result.is_err());
 

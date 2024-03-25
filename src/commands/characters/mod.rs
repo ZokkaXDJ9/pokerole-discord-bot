@@ -11,23 +11,22 @@ use serenity::all::{
 use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
 
-use crate::{emoji, Error, helpers};
 use crate::cache::CharacterCacheItem;
 use crate::character_stats::GenericCharacterStats;
 use crate::commands::{
-    BuildUpdatedStatMessageStringResult, Context, parse_character_names, send_error,
-    update_character_post,
+    parse_character_names, send_error, update_character_post, BuildUpdatedStatMessageStringResult,
+    Context,
 };
 use crate::data::Data;
 use crate::enums::{Gender, MysteryDungeonRank, PokemonTypeWithoutShadow};
 use crate::game_data::{GameData, PokemonApiId};
+use crate::{emoji, helpers, Error};
 
 mod character_sheet;
+mod create_character;
 mod edit_character;
 mod give_money;
-mod initialize_character;
 mod initialize_character_post;
-mod initialize_guild;
 mod reset_character_stats;
 mod retire_character;
 mod reward_battle_points;
@@ -37,6 +36,7 @@ mod reward_giving_tour;
 mod reward_money;
 mod reward_spar;
 mod reward_terastallization;
+mod setup_guild;
 mod unlock_hidden_ability;
 mod unretire_character;
 mod upgrade_backpack;
@@ -49,9 +49,9 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         character_sheet::character_sheet(),
         edit_character::edit_character(),
         give_money::give_money(),
-        initialize_character::initialize_character(),
+        create_character::initialize_character(),
         initialize_character_post::initialize_character_post(),
-        initialize_guild::initialize_guild(),
+        setup_guild::setup_guild(),
         reward_experience::reward_experience(),
         reward_money::reward_money(),
         upgrade_backpack::upgrade_backpack(),

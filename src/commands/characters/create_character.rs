@@ -17,6 +17,44 @@ use crate::{emoji, helpers};
     guild_only,
     default_member_permissions = "ADMINISTRATOR"
 )]
+pub async fn create_character(
+    ctx: Context<'_>,
+    #[description = "Who owns the character?"] player: User,
+    #[description = "What's the character's name?"] name: String,
+    #[autocomplete = "autocomplete_pokemon"]
+    #[description = "What kind of pokemon are you?"]
+    pokemon_species: String,
+    #[description = "Optional. Does it glow in the dark? Defaults to false."] is_shiny: Option<
+        bool,
+    >,
+    #[description = "Which phenotype?"] gender: Gender,
+    #[description = "Optional. Defaults to 0."]
+    #[min = 0_i64]
+    exp: Option<i64>,
+    #[description = "Optional. Defaults to 500."]
+    #[min = 0_i64]
+    money: Option<i64>,
+) -> Result<(), Error> {
+    execute(
+        ctx,
+        player,
+        name,
+        pokemon_species,
+        is_shiny,
+        gender,
+        exp,
+        money,
+    )
+    .await
+}
+
+/// Deprecated. Use create_character instead.
+#[allow(clippy::too_many_arguments)]
+#[poise::command(
+    slash_command,
+    guild_only,
+    default_member_permissions = "ADMINISTRATOR"
+)]
 pub async fn initialize_character(
     ctx: Context<'_>,
     #[description = "Who owns the character?"] player: User,
@@ -33,6 +71,29 @@ pub async fn initialize_character(
     exp: Option<i64>,
     #[description = "Optional. Defaults to 500."]
     #[min = 0_i64]
+    money: Option<i64>,
+) -> Result<(), Error> {
+    execute(
+        ctx,
+        player,
+        name,
+        pokemon_species,
+        is_shiny,
+        gender,
+        exp,
+        money,
+    )
+    .await
+}
+
+async fn execute(
+    ctx: Context<'_>,
+    player: User,
+    name: String,
+    pokemon_species: String,
+    is_shiny: Option<bool>,
+    gender: Gender,
+    exp: Option<i64>,
     money: Option<i64>,
 ) -> Result<(), Error> {
     if let Err(e) = validate_user_input(name.as_str()) {
