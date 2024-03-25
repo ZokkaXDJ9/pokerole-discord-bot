@@ -36,7 +36,6 @@ mod reward_giving_tour;
 mod reward_money;
 mod reward_spar;
 mod reward_terastallization;
-mod setup_guild;
 mod unlock_hidden_ability;
 mod unretire_character;
 mod upgrade_backpack;
@@ -49,9 +48,9 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         character_sheet::character_sheet(),
         edit_character::edit_character(),
         give_money::give_money(),
+        create_character::create_character(),
         create_character::initialize_character(),
         initialize_character_post::initialize_character_post(),
-        setup_guild::setup_guild(),
         reward_experience::reward_experience(),
         reward_money::reward_money(),
         upgrade_backpack::upgrade_backpack(),

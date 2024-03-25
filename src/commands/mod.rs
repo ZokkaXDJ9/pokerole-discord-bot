@@ -6,12 +6,12 @@ use serenity::model::guild::Member;
 use serenity::model::id::{GuildId, UserId};
 use serenity::model::prelude::User;
 
-use crate::{Error, helpers};
 use crate::cache::{CharacterCacheItem, WalletCacheItem};
 use crate::commands::characters::build_character_string;
 use crate::data::Data;
 use crate::errors::{ParseError, ValidationError};
 use crate::game_data::pokemon::Pokemon;
+use crate::{helpers, Error};
 
 type Context<'a> = poise::Context<'a, Data, Error>;
 
@@ -48,12 +48,14 @@ mod quests;
 mod say;
 mod server_stats;
 mod setting_time_offset;
+mod setup_guild;
 mod store_gm_experience;
 mod use_gm_experience;
 mod wallets;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     let mut result = vec![
+        setup_guild::setup_guild(),
         roll::roll(),
         roll::r(),
         r#move::poke_move(),
