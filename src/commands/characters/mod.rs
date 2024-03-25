@@ -24,9 +24,9 @@ use crate::{emoji, helpers, Error};
 
 mod character_sheet;
 mod create_character;
+mod create_character_post;
 mod edit_character;
 mod give_money;
-mod initialize_character_post;
 mod reset_character_stats;
 mod retire_character;
 mod reward_battle_points;
@@ -50,7 +50,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         give_money::give_money(),
         create_character::create_character(),
         create_character::initialize_character(),
-        initialize_character_post::initialize_character_post(),
+        create_character_post::create_character_post(),
         reward_experience::reward_experience(),
         reward_money::reward_money(),
         upgrade_backpack::upgrade_backpack(),

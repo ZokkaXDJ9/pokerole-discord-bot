@@ -50,13 +50,13 @@ async fn post_character_post<'a>(
     Ok(())
 }
 
-/// Posts a new character stat post in case the old one got lost or deleted.
+/// Posts a new character stat post which will be auto-updated whenever changes occur.
 #[poise::command(
     slash_command,
     guild_only,
     default_member_permissions = "ADMINISTRATOR"
 )]
-pub async fn initialize_character_post(
+pub async fn create_character_post(
     ctx: Context<'_>,
     #[description = "Which character?"]
     #[autocomplete = "autocomplete_character_name"]
