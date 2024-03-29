@@ -1,12 +1,12 @@
 use serenity::all::{ChannelId, Member, User};
 use tokio::join;
 
-use crate::{emoji, helpers};
 use crate::commands::{Context, Error};
 use crate::data::Data;
 use crate::errors::DatabaseError;
 use crate::game_data::PokemonApiId;
 use crate::helpers::split_long_messages;
+use crate::{emoji, helpers};
 
 /// Display Stats for a player
 #[poise::command(slash_command, guild_only)]
@@ -159,11 +159,8 @@ async fn build_reply(
 }
 
 struct QueryObject {
-    id: i64,
     name: String,
     species_api_id: i64,
     experience: i64,
-    phenotype: i64,
-    is_shiny: bool,
     stat_channel_id: i64,
 }

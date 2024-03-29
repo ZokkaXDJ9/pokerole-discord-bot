@@ -2,7 +2,6 @@ use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::characters::{log_action, ActionType};
 use crate::commands::{find_character, update_character_post, Context, Error};
 use crate::errors::CommandInvocationError;
-use crate::helpers;
 use serenity::all::{ChannelId, EditThread};
 use tokio::join;
 
