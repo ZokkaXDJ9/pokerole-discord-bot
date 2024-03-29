@@ -1,6 +1,7 @@
 use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::characters::{log_action, ActionType};
 use crate::commands::{find_character, update_character_post, Context, Error};
+use crate::errors::CommandInvocationError;
 use crate::helpers;
 use serenity::all::{ChannelId, EditThread};
 use tokio::join;
@@ -40,14 +41,13 @@ pub async fn retire_character(
             archive_character_post(&ctx, character.id).await;
         }
         Err(e) => {
-            let _ = ctx
-                .reply(&format!(
-                    "Something went wrong when trying to retire {}:\n```{:?}```\n{}, please look into this.",
-                    character.name,
-                    e,
-                    helpers::ADMIN_PING_STRING
+            return Err(Box::new(
+                CommandInvocationError::new(&format!(
+                    "Something went wrong when trying to retire {}:\n```{:?}```",
+                    character.name, e,
                 ))
-                .await;
+                .log(),
+            ));
         }
     }
 
