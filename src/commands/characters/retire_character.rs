@@ -3,6 +3,7 @@ use crate::commands::characters::{log_action, ActionType};
 use crate::commands::{find_character, update_character_post, Context, Error};
 use crate::helpers;
 use serenity::all::{ChannelId, EditThread};
+use tokio::join;
 
 /// Removes a character from this guilds roster.
 #[allow(clippy::too_many_arguments)]
@@ -28,19 +29,14 @@ pub async fn retire_character(
     .await
     {
         Ok(_) => {
-            let _ = ctx
-                .reply(&format!("{} has been retired.", character.name))
-                .await;
+            let message = format!("{} has been retired.", character.name);
+            let a = ctx.reply(&message);
+            let b = log_action(&ActionType::CharacterRetirement, &ctx, &message);
+            let c = ctx.data().cache.reset(&ctx.data().database);
+            let d = update_character_post(&ctx, character.id);
 
-            let _ = log_action(
-                &ActionType::CharacterRetirement,
-                &ctx,
-                &format!("{} has been retired.", character.name),
-            )
-            .await;
+            let (_, _, _, _) = join!(a, b, c, d);
 
-            ctx.data().cache.reset(&ctx.data().database).await;
-            update_character_post(&ctx, character.id).await;
             archive_character_post(&ctx, character.id).await;
         }
         Err(e) => {
