@@ -2,6 +2,7 @@ use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::characters::{log_action, ActionType};
 use crate::commands::{find_character, update_character_post, Context, Error};
 use crate::helpers;
+use serenity::all::{ChannelId, EditThread};
 
 /// Removes a character from this guilds roster.
 #[allow(clippy::too_many_arguments)]
@@ -40,6 +41,7 @@ pub async fn retire_character(
 
             ctx.data().cache.reset(&ctx.data().database).await;
             update_character_post(&ctx, character.id).await;
+            archive_character_post(&ctx, character.id).await;
         }
         Err(e) => {
             let _ = ctx
@@ -54,4 +56,19 @@ pub async fn retire_character(
     }
 
     Ok(())
+}
+
+async fn archive_character_post(ctx: &Context<'_>, character_id: i64) {
+    if let Ok(result) = sqlx::query!(
+        "SELECT stat_channel_id FROM character WHERE id = ?",
+        character_id
+    )
+    .fetch_one(&ctx.data().database)
+    .await
+    {
+        let channel_id = ChannelId::new(result.stat_channel_id as u64);
+        let _ = channel_id
+            .edit_thread(&ctx, EditThread::new().archived(true))
+            .await;
+    }
 }
