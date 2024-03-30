@@ -19,7 +19,7 @@ pub async fn player_info(
     let guild_id = guild.id.get() as i64;
 
     let user_in_guild = guild.member(&ctx, player.id);
-    let characters = sqlx::query_as!(QueryObject, "SELECT id, name, species_api_id, experience, is_shiny, phenotype, stat_channel_id FROM character WHERE user_id = ? AND guild_id = ? AND is_retired = false", user_id, guild_id)
+    let characters = sqlx::query_as!(QueryObject, "SELECT name, species_api_id, experience, stat_channel_id FROM character WHERE user_id = ? AND guild_id = ? AND is_retired = false", user_id, guild_id)
         .fetch_all(&ctx.data().database);
     let hosted_quest_count = query_hosted_quest_count(&ctx, user_id);
     let gm_experience = query_gm_experience(&ctx, user_id, guild_id);
