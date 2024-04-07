@@ -88,7 +88,7 @@ async fn print_timestamp<'a>(
         .expect("hms should be valid!");
 
     let timestamp_utc = Utc.from_local_datetime(&timestamp).unwrap().naive_utc();
-    let unix_timestamp = timestamp_utc.timestamp()
+    let unix_timestamp = timestamp_utc.and_utc().timestamp()
         - Duration::hours(hour_offset).num_seconds()
         - Duration::minutes(minute_offset).num_seconds();
 

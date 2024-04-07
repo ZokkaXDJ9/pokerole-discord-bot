@@ -6,7 +6,7 @@ use crate::commands::{
 use crate::enums::Gender;
 use crate::game_data::pokemon::Pokemon;
 use crate::{emoji, Error};
-use image::{DynamicImage, GenericImageView, ImageOutputFormat};
+use image::{DynamicImage, GenericImageView, ImageFormat};
 use log::info;
 use serenity::all::{CreateAttachment, Emoji};
 use sqlx::{Pool, Sqlite};
@@ -140,7 +140,7 @@ fn get_emoji_data(
 
     let image = crop_whitespace(image::open(path)?);
     let mut cursor = Cursor::new(Vec::new());
-    image.write_to(&mut cursor, ImageOutputFormat::Png)?;
+    image.write_to(&mut cursor, ImageFormat::Png)?;
 
     cursor.rewind()?;
     let reader = &mut BufReader::new(&mut cursor);
