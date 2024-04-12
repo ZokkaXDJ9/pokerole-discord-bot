@@ -5,11 +5,11 @@ use serenity::all::{
     EditThread, HttpError, Message, MessageId,
 };
 
-use crate::{discord_error_codes, emoji, Error};
 use crate::data::Data;
 use crate::enums::{MysteryDungeonRank, QuestParticipantSelectionMechanism};
-use crate::game_data::{GameData, PokemonApiId};
 use crate::game_data::pokemon::Pokemon;
+use crate::game_data::{GameData, PokemonApiId};
+use crate::{discord_error_codes, emoji, Error};
 
 pub const ADMIN_PING_STRING: &str = "<@878982444412448829>";
 pub const ERROR_LOG_CHANNEL: ChannelId = ChannelId::new(1188864512439369779);
@@ -42,7 +42,7 @@ pub fn split_long_messages(message: String) -> Vec<String> {
         let split = remaining.split_at(split_index);
 
         result.push(split.0.to_string());
-        remaining = split.1;
+        remaining = split.1.trim_start();
     }
     result.push(remaining.to_string());
 
@@ -72,6 +72,9 @@ fn find_best_split_pos(message: &str) -> usize {
         return index;
     }
     if let Some(index) = split.rfind("\n\n") {
+        return index;
+    }
+    if let Some(index) = split.rfind("\n- ") {
         return index;
     }
     if let Some(index) = split.rfind('\n') {
