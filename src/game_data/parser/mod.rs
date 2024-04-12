@@ -140,6 +140,10 @@ fn parse_pokemon(
             // Custom overrides for male & female variations
             continue;
         }
+        if x.name.contains("Mega ") {
+            // Our Mega Evolutions are fully customized.
+            continue;
+        }
         pokemon_names.push(x.name.clone());
 
         let pokemon = Pokemon::from_pokerole_data(x, pokemon_api_data);
