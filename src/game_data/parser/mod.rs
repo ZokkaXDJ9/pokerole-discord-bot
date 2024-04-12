@@ -162,7 +162,7 @@ fn parse_pokemon(
             learnable_moves_by_api_id.insert(pokemon.poke_api_id, pokemon.moves.clone());
             parsed_pokemon.push(pokemon);
         } else {
-            error!("Was unable to find a pokeapi implementation for {}", x.name)
+            warn!("Was unable to find a pokeapi implementation for {}", x.name)
         }
     }
 

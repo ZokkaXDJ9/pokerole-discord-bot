@@ -393,7 +393,7 @@ impl Pokemon {
             .collect();
 
         if options.is_empty() {
-            error!("Found no matches for {}", fixed_name);
+            warn!("Found no matches for {}", fixed_name);
             return (Some(ApiIssueType::FoundNothing), None);
         }
 
