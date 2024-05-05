@@ -8,7 +8,7 @@ use crate::game_data::pokemon_api::PokemonApiId;
 use crate::game_data::pokerole_data::raw_pokemon::{
     RawPokemonMoveLearnedByLevelUp, RawPokerolePokemon,
 };
-use log::{error, warn};
+use log::warn;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fmt;

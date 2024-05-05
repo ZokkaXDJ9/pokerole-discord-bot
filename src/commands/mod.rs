@@ -48,6 +48,7 @@ mod quests;
 mod say;
 mod server_stats;
 mod setting_time_offset;
+mod setup_emoji_guild;
 mod setup_guild;
 mod store_gm_experience;
 mod use_gm_experience;
@@ -56,6 +57,7 @@ mod wallets;
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     let mut result = vec![
         setup_guild::setup_guild(),
+        setup_emoji_guild::setup_emoji_guild(),
         roll::roll(),
         roll::r(),
         r#move::poke_move(),

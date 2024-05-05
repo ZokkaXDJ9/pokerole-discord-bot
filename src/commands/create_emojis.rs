@@ -8,7 +8,7 @@ use crate::game_data::pokemon::Pokemon;
 use crate::{emoji, Error};
 use image::{DynamicImage, GenericImageView, ImageFormat};
 use log::info;
-use serenity::all::{CreateAttachment, Emoji};
+use serenity::all::{CreateAttachment, Emoji, GuildId};
 use sqlx::{Pool, Sqlite};
 use std::fs::File;
 use std::io::{BufReader, Cursor, Read, Seek};
@@ -188,7 +188,47 @@ async fn upload_emoji_to_discord<'a>(
             let _ = send_ephemeral_reply(ctx, &format!("Created new emoji: {}", emoji)).await;
             Ok(emoji)
         }
-        Err(e) => Err(e),
+        Err(e) => {
+            // Server is probably at emoji capacity, upload to emoji server instead.
+            match sqlx::query!("SELECT id, emoji_count FROM emoji_guild ORDER BY emoji_count DESC")
+                .fetch_one(&ctx.data().database)
+                .await
+            {
+                Ok(record) => {
+                    let guild_id = GuildId::new(record.id as u64);
+                    match guild_id
+                        .create_emoji(&ctx, emoji_data.name.as_str(), &attachment.to_base64())
+                        .await
+                    {
+                        Ok(emoji) => {
+                            let _ = send_ephemeral_reply(
+                                ctx,
+                                &format!(
+                                    "\
+Created new emoji: {}\n\
+This server has reached its emoji capacity, but I won't be stopped by such trivial things!",
+                                    emoji
+                                ),
+                            )
+                            .await;
+
+                            let new_count = record.emoji_count + 1;
+                            let _ = sqlx::query!(
+                                "UPDATE emoji_guild SET emoji_count = ? WHERE id = ?",
+                                new_count,
+                                record.id
+                            )
+                            .execute(&ctx.data().database)
+                            .await;
+
+                            Ok(emoji)
+                        }
+                        Err(e) => Err(e),
+                    }
+                }
+                Err(_) => Err(e),
+            }
+        }
     }
 }
 
