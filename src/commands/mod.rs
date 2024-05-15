@@ -29,7 +29,6 @@ pub mod learns;
 pub mod metronome;
 pub mod r#move;
 pub mod nature;
-pub mod poll;
 pub mod potion;
 pub mod roll;
 pub mod rule;
@@ -74,7 +73,6 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         metronome::metronome(),
         efficiency::efficiency(),
         select_random::select_random(),
-        poll::poll(),
         player_info::player_info(),
         scale::scale(),
         create_emojis::create_emojis(),
