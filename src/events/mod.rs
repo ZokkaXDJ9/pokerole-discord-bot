@@ -1,18 +1,19 @@
+use std::future::Future;
 use std::sync::Arc;
 
 use serenity::all::{
     ComponentInteraction, ComponentInteractionDataKind, CreateActionRow, CreateAllowedMentions,
     CreateInteractionResponse, CreateInteractionResponseMessage, CreateMessage, EditMessage,
-    FullEvent, GuildId, GuildMemberUpdateEvent, Interaction, Member, Message, MessageId,
+    FullEvent, GuildId, GuildMemberUpdateEvent, Interaction, Member, Message, MessageId, RoleId,
     User,
 };
 use serenity::client::Context;
 use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
 
-use crate::{Error, helpers};
 use crate::data::Data;
 use crate::game_data::GameData;
+use crate::{helpers, Error};
 
 mod backups;
 mod button_interaction;
@@ -49,7 +50,7 @@ pub async fn handle_events<'a>(
             event,
         } => {
             if let Some(new) = new {
-                handle_guild_member_update(context, &framework, new, event).await
+                handle_guild_member_update(context, &framework.user_data, new).await
             } else {
                 let _ = helpers::ERROR_LOG_CHANNEL
                     .send_message(&context, CreateMessage::new().content(
@@ -61,8 +62,7 @@ pub async fn handle_events<'a>(
             }
         }
         FullEvent::GuildMemberAddition { new_member } => {
-            // TODO: Send greeting, add default roles
-            Ok(())
+            handle_guild_member_addition(context, &framework.user_data, new_member).await
         }
         FullEvent::MessageDelete {
             channel_id,
@@ -91,12 +91,43 @@ pub async fn handle_events<'a>(
     }
 }
 
-async fn handle_guild_member_update(
+async fn handle_guild_member_addition(
     ctx: &Context,
-    framework: &FrameworkContext<'_>,
-    new: &Member,
-    event: &GuildMemberUpdateEvent,
+    data: &Data,
+    new_member: &Member,
 ) -> Result<(), Error> {
+    let guild_id = new_member.guild_id.get() as i64;
+
+    match sqlx::query!(
+        "SELECT default_member_role_id FROM guild WHERE id = ?",
+        guild_id
+    )
+    .fetch_optional(&data.database)
+    .await
+    {
+        Ok(record) => {
+            if let Some(record) = record {
+                if let Some(default_member_role_id) = record.default_member_role_id {
+                    let role = RoleId::new(default_member_role_id as u64);
+                    if let Err(e) = new_member.add_role(ctx, role).await {
+                        send_error_to_log_channel(
+                            ctx,
+                            format!("Failed setting default role for new user: {e}"),
+                        )
+                        .await;
+                    }
+                }
+            }
+        }
+        Err(_) => {
+            // database ded?
+        }
+    }
+    handle_guild_member_update(ctx, data, new_member).await?;
+    Ok(())
+}
+
+async fn handle_guild_member_update(ctx: &Context, data: &Data, new: &Member) -> Result<(), Error> {
     let user_id = new.user.id.get() as i64;
     let guild_id = new.guild_id.get() as i64;
 
@@ -114,14 +145,10 @@ ON CONFLICT(user_id, guild_id) DO UPDATE SET name = ?",
         guild_id,
         nickname,
     )
-    .execute(&framework.user_data.database)
+    .execute(&data.database)
     .await;
 
-    framework
-        .user_data
-        .cache
-        .reset(&framework.user_data.database)
-        .await;
+    data.cache.reset(&data.database).await;
 
     Ok(())
 }

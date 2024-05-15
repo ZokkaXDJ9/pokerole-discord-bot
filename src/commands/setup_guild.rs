@@ -1,6 +1,6 @@
 use crate::commands::characters::{log_action, validate_user_input, ActionType};
-use crate::commands::{send_ephemeral_reply, send_error, Context, Error};
-use crate::errors::{CommandInvocationError, DatabaseError};
+use crate::commands::{send_ephemeral_reply, Context, Error};
+use crate::errors::CommandInvocationError;
 use serenity::all::{Mention, Role, RoleId};
 use serenity::model::channel::Channel;
 
