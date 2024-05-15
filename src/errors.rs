@@ -11,9 +11,9 @@ pub struct CommandInvocationError {
 }
 
 impl CommandInvocationError {
-    pub fn new(message: &str) -> Self {
+    pub fn new(message: impl Into<String>) -> Self {
         Self {
-            message: message.to_string(),
+            message: message.into(),
             log: false,
         }
     }

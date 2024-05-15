@@ -433,7 +433,7 @@ impl fmt::Display for ActionType {
 pub async fn log_action<'a>(
     action_type: &ActionType,
     ctx: &Context<'a>,
-    message: &str,
+    message: impl Into<String>,
 ) -> Result<(), Error> {
     let guild_id = ctx.guild_id();
     if guild_id.is_none() {
@@ -470,7 +470,7 @@ pub async fn log_action<'a>(
                         .content(std::format!(
                             "{} {} (triggered by {}{})",
                             action_type,
-                            message,
+                            message.into(),
                             ctx.author(),
                             origin
                         ))
