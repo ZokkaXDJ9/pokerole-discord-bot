@@ -1,15 +1,18 @@
-use crate::commands::{
-    Context, Error, find_character, pokemon_from_autocomplete_string,
-    send_ephemeral_reply, update_character_post,
-};
 use crate::commands::autocompletion::autocomplete_character_name;
 use crate::commands::autocompletion::autocomplete_pokemon;
 use crate::commands::autocompletion::autocomplete_pokemon_type;
-use crate::commands::characters::{ActionType, log_action, reset_character_stats};
+use crate::commands::characters::{log_action, reset_character_stats, ActionType};
 use crate::commands::create_emojis::create_emojis_for_pokemon;
+use crate::commands::{
+    ensure_user_exists, find_character, pokemon_from_autocomplete_string, send_ephemeral_reply,
+    update_character_post, Context, Error,
+};
 use crate::enums::{Gender, PokemonTypeWithoutShadow};
 use crate::errors::ValidationError;
 use crate::game_data::PokemonApiId;
+use log::info;
+use serenity::all::User;
+use serenity::prelude::Mentionable;
 
 /// Update character data. All arguments are optional.
 #[allow(clippy::too_many_arguments)]
@@ -37,6 +40,7 @@ pub async fn edit_character(
     #[description = "Change Tera Charges for specific Type. Also set tera_type."]
     #[min = 0_i64]
     tera_count: Option<i64>,
+    #[description = "Transfer ownership to another player."] new_owner: Option<User>,
 ) -> Result<(), Error> {
     if species.is_some() && species_override_for_stats.is_some() {
         return Err(Box::new(ValidationError::new("\
@@ -50,7 +54,7 @@ You can't (and probably also don't really want to) edit a character's species an
     let character = find_character(ctx.data(), guild_id, &character).await?;
 
     let record = sqlx::query!(
-        "SELECT name, species_api_id, phenotype, is_shiny, species_override_for_stats FROM character WHERE id = ?",
+        "SELECT user_id, name, species_api_id, phenotype, is_shiny, species_override_for_stats FROM character WHERE id = ?",
         character.id
     )
         .fetch_one(&ctx.data().database)
@@ -61,6 +65,7 @@ You can't (and probably also don't really want to) edit a character's species an
 
     let gender = Gender::from_phenotype(record.phenotype);
 
+    let mut invalidate_cache = false;
     let mut should_stats_be_reset = false;
     let mut reset_species_override = false;
     let species = if let Some(species) = species {
@@ -135,6 +140,16 @@ You can't (and probably also don't really want to) edit a character's species an
         )));
     }
 
+    let user_id = if let Some(new_owner) = new_owner {
+        action_log.push(format!("owner to {}", new_owner.mention()));
+        invalidate_cache = true;
+        let user_id = new_owner.id.get() as i64;
+        ensure_user_exists(&ctx, user_id, guild_id as i64).await;
+        user_id
+    } else {
+        record.user_id
+    };
+
     if action_log.is_empty() {
         return Err(Box::new(ValidationError::new(
             "No changes requested, aborting.",
@@ -146,11 +161,12 @@ You can't (and probably also don't really want to) edit a character's species an
     }
 
     sqlx::query!(
-        "UPDATE character SET name = ?, species_api_id = ?, species_override_for_stats = ?, is_shiny = ? WHERE id = ?",
+        "UPDATE character SET name = ?, species_api_id = ?, species_override_for_stats = ?, is_shiny = ?, user_id = ? WHERE id = ?",
         name,
         species.poke_api_id.0,
         species_override_for_stats,
         is_shiny,
+        user_id,
         character.id,
     )
         .execute(&ctx.data().database)
@@ -170,6 +186,13 @@ You can't (and probably also don't really want to) edit a character's species an
     if should_stats_be_reset {
         let _ = reset_character_stats::reset_db_stats(&ctx, &character).await;
         action_log.push("and reset their stats".to_string());
+    }
+
+    if invalidate_cache {
+        ctx.data()
+            .cache
+            .update_character_names(&ctx.data().database)
+            .await;
     }
 
     update_character_post(&ctx, character.id).await;
