@@ -1,8 +1,7 @@
 use crate::commands::{send_ephemeral_reply, Context};
 use crate::Error;
 
-// TODO: Discord doesn't seem to ever delete emoji data. So neither should we. We should still track whether emojis actually exist on the server, though.
-/// Removes emojis which have been deleted from the server from the database.
+/// Removes emoji which have been manually deleted from the server from the database.
 #[poise::command(
     slash_command,
     guild_only,
@@ -37,6 +36,6 @@ pub async fn prune_emojis(ctx: Context<'_>) -> Result<(), Error> {
         }
     }
 
-    send_ephemeral_reply(&ctx, &format!("Pruned {} emojis.", count)).await?;
+    send_ephemeral_reply(&ctx, &format!("Removed {} emojis.", count)).await?;
     Ok(())
 }

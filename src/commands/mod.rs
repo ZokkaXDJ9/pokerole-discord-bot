@@ -74,6 +74,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         efficiency::efficiency(),
         select_random::select_random(),
         player_info::player_info(),
+        prune_emojis::prune_emojis(),
         scale::scale(),
         create_emojis::create_emojis(),
         encounter::encounter(),
