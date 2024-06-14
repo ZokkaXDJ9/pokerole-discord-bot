@@ -19,7 +19,7 @@ pub async fn prune_emojis(ctx: Context<'_>) -> Result<(), Error> {
     .fetch_all(&ctx.data().database)
     .await?;
 
-    let mut count = 0;
+    let mut list = Vec::new();
     for record in db_emojis {
         if !emojis
             .iter()
@@ -32,10 +32,34 @@ pub async fn prune_emojis(ctx: Context<'_>) -> Result<(), Error> {
             .execute(&ctx.data().database)
             .await?;
 
-            count += 1;
+            list.push(record.discord_string);
         }
     }
 
-    send_ephemeral_reply(&ctx, &format!("Removed {} emojis.", count)).await?;
+    if list.is_empty() {
+        send_ephemeral_reply(&ctx, "Didn't find any deleted emojis!").await?;
+        return Ok(());
+    }
+
+    // In case this is an emoji_guild, also reduce the emoji_count column accordingly.
+    if let Some(record) = sqlx::query!("SELECT emoji_count FROM emoji_guild WHERE id = ?", guild_id)
+        .fetch_optional(&ctx.data().database)
+        .await?
+    {
+        let new_count = record.emoji_count - list.len() as i64;
+        sqlx::query!(
+            "UPDATE emoji_guild SET emoji_count = ? WHERE id = ?",
+            new_count,
+            guild_id
+        )
+        .execute(&ctx.data().database)
+        .await?;
+    }
+
+    send_ephemeral_reply(
+        &ctx,
+        &format!("Removed {} emojis.\n```{}```", list.len(), list.join("\n")),
+    )
+    .await?;
     Ok(())
 }
