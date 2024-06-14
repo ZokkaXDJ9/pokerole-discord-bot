@@ -174,10 +174,10 @@ fn crop_whitespace(image: DynamicImage) -> DynamicImage {
     image.crop_imm(left_border, top_border, width, bottom_border - top_border)
 }
 
-async fn upload_emoji_to_discord<'a>(
+async fn upload_emoji_to_server_or_emoji_guild<'a>(
     ctx: &Context<'a>,
     emoji_data: EmojiData,
-) -> Result<Emoji, serenity::all::Error> {
+) -> Result<(GuildId, Emoji), serenity::all::Error> {
     let guild_id = ctx.guild_id().expect("create_emoji Command is guild_only!");
     let attachment = CreateAttachment::bytes(emoji_data.data, &emoji_data.name);
     match guild_id
@@ -186,7 +186,7 @@ async fn upload_emoji_to_discord<'a>(
     {
         Ok(emoji) => {
             let _ = send_ephemeral_reply(ctx, &format!("Created new emoji: {}", emoji)).await;
-            Ok(emoji)
+            Ok((guild_id, emoji))
         }
         Err(e) => {
             // Server is probably at emoji capacity, upload to emoji server instead.
@@ -221,7 +221,7 @@ This server has reached its emoji capacity, but I won't be stopped by such trivi
                             .execute(&ctx.data().database)
                             .await;
 
-                            Ok(emoji)
+                            Ok((guild_id, emoji))
                         }
                         Err(e) => Err(e),
                     }
@@ -298,13 +298,14 @@ pub async fn create_emojis_for_pokemon<'a>(
 
 pub async fn store_emoji_in_database(
     database: &Pool<Sqlite>,
-    guild_id: i64,
+    guild_id: GuildId,
     emoji: &Emoji,
     pokemon: &Pokemon,
     gender: &Gender,
     is_shiny: bool,
     is_animated: bool,
 ) {
+    let guild_id = guild_id.get() as i64;
     let api_id = pokemon.poke_api_id.0 as i64;
     let is_female = pokemon.species_data.has_gender_differences && gender == &Gender::Female;
     let discord_string = emoji.to_string();
@@ -347,8 +348,8 @@ async fn create_emoji_and_notify_user<'a>(
     ensure_guild_exists(ctx, guild_id).await;
 
     match get_emoji_data(pokemon, gender, is_shiny, is_animated) {
-        Ok(emoji_data) => match upload_emoji_to_discord(ctx, emoji_data).await {
-            Ok(emoji) => {
+        Ok(emoji_data) => match upload_emoji_to_server_or_emoji_guild(ctx, emoji_data).await {
+            Ok((guild_id, emoji)) => {
                 store_emoji_in_database(
                     &ctx.data().database,
                     guild_id,
