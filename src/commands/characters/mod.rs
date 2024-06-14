@@ -5,8 +5,7 @@ use std::sync::Arc;
 use poise::Command;
 use regex::Regex;
 use serenity::all::{
-    AutoArchiveDuration, ButtonStyle, CreateActionRow, CreateAllowedMentions, CreateButton,
-    CreateMessage, EditThread, GetMessages,
+    ButtonStyle, CreateActionRow, CreateAllowedMentions, CreateButton, CreateMessage, GetMessages,
 };
 use serenity::model::id::ChannelId;
 use sqlx::{Pool, Sqlite};
@@ -639,39 +638,4 @@ pub fn build_character_list(characters: &[CharacterCacheItem]) -> String {
         .map(|x| x.name.as_str())
         .collect::<Vec<&str>>()
         .join(", ")
-}
-
-async fn update_thread_title_to_match_character(ctx: &Context<'_>, character: CharacterCacheItem) {
-    let record = sqlx::query!(
-        "SELECT experience, species_api_id FROM character WHERE id = ?",
-        character.id
-    )
-    .fetch_one(&ctx.data().database)
-    .await
-    .expect("Characters with an ID should always exist!");
-
-    let rank = MysteryDungeonRank::from_level(helpers::calculate_level_from_experience(
-        record.experience,
-    ) as u8);
-
-    let api_id = PokemonApiId(record.species_api_id as u16);
-    let species = ctx.data().game.pokemon_by_api_id.get(&api_id).unwrap();
-
-    let result = ctx
-        .channel_id()
-        .edit_thread(
-            ctx,
-            EditThread::new()
-                .name(format!(
-                    "{} – {} – {}",
-                    character.name,
-                    species.name,
-                    rank.name_without_emoji(),
-                ))
-                .auto_archive_duration(AutoArchiveDuration::OneWeek),
-        )
-        .await;
-    if let Err(e) = result {
-        let _ = send_error(ctx, &format!("{}", e)).await;
-    }
 }

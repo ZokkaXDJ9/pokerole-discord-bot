@@ -1,4 +1,3 @@
-use crate::commands::characters::{log_action, ActionType};
 use crate::commands::{send_ephemeral_reply, send_error, Context, Error};
 use crate::errors::ValidationError;
 

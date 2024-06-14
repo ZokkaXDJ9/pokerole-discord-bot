@@ -10,7 +10,6 @@ use crate::commands::{
 use crate::enums::{Gender, PokemonTypeWithoutShadow};
 use crate::errors::ValidationError;
 use crate::game_data::PokemonApiId;
-use log::info;
 use serenity::all::User;
 use serenity::prelude::Mentionable;
 

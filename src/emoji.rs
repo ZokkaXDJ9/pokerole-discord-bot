@@ -144,8 +144,7 @@ pub fn pokemon_to_emoji_name(
     let mut name = pokemon
         .name
         .to_lowercase()
-        .replace(' ', "_")
-        .replace('-', "_")
+        .replace([' ', '-'], "_")
         .replace(['(', ')'], "");
 
     let regional_prefix = if let Some(regional_variant) = pokemon.regional_variant {

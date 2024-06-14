@@ -1,11 +1,9 @@
-use std::future::Future;
 use std::sync::Arc;
 
 use serenity::all::{
     ComponentInteraction, ComponentInteractionDataKind, CreateActionRow, CreateAllowedMentions,
     CreateInteractionResponse, CreateInteractionResponseMessage, CreateMessage, EditMessage,
-    FullEvent, GuildId, GuildMemberUpdateEvent, Interaction, Member, Message, MessageId, RoleId,
-    User,
+    FullEvent, GuildId, Interaction, Member, Message, MessageId, RoleId, User,
 };
 use serenity::client::Context;
 use serenity::model::id::ChannelId;
