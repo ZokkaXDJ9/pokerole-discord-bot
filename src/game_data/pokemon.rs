@@ -109,7 +109,7 @@ impl Pokemon {
 
 impl Pokemon {
     pub(crate) fn has_animated_sprite(&self) -> bool {
-        self.species_data.generation.has_animated_sprite()
+        self.species_data.generation.has_animated_sprite() && self.regional_variant.is_none()
     }
 }
 
