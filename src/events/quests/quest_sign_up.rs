@@ -2,7 +2,7 @@ use crate::data::Data;
 use crate::{helpers, Error};
 use chrono::Utc;
 use serenity::all::{
-    ComponentInteraction, CreateInteractionResponse, CreateInteractionResponseMessage,
+    ComponentInteraction, CreateButton, CreateInteractionResponse, CreateInteractionResponseMessage,
 };
 use serenity::builder::CreateActionRow;
 use serenity::client::Context;
@@ -78,7 +78,10 @@ pub async fn quest_sign_up(
                 false,
             )
         })
-        .collect();
+        .collect::<Vec<CreateButton>>()
+        .chunks(5)
+        .map(|chunk| CreateActionRow::Buttons(chunk.to_vec()))
+        .collect::<Vec<CreateActionRow>>();
 
     interaction
         .create_response(
@@ -87,7 +90,7 @@ pub async fn quest_sign_up(
                 CreateInteractionResponseMessage::new()
                     .ephemeral(true)
                     .content("Which character would you like to sign up?")
-                    .components(vec![CreateActionRow::Buttons(character_buttons)]),
+                    .components(character_buttons),
             ),
         )
         .await?;
