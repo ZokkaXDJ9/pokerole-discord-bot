@@ -48,7 +48,9 @@ To quickly look up things, there are `/pokemon`, `/ability`, `/move` and `/item`
 Contributions of any kind are always welcome!
 If it's a bigger feature just let me know what you want to work on by creating an issue first, to avoid accidental
 duplicate work.
-Also feel free to join the [development discord server](https://discord.gg/jVrv2YG2zU)!
+Also feel free to join the [development discord server](https://discord.gg/jVrv2YG2zU) by clicking this fancy button:
+
+[![Discord](https://img.shields.io/discord/1115690620342763645.svg?logo=discord&logoColor=white&logoWidth=20&labelColor=7289DA&label=Discord&color=17cf48)](https://discord.gg/wf7eUEBk9w)
 
 # Running the bot yourself
 
