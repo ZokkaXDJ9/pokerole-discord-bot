@@ -164,23 +164,24 @@ ORDER BY quest_signup.accepted DESC, quest_signup.timestamp ASC
             .filter(|x| x.accepted)
             .collect::<Vec<&Signup>>();
 
-        let max_display = MAX_SIGNUP_DISPLAY_COUNT - accepted_participants.len();
         let mut floating_participants: Vec<&Signup> = quest_signups
             .iter()
             .filter(|x| !x.accepted)
-            .take(max_display)
             .collect::<Vec<&Signup>>();
 
         let (displayable_accepted, displayable_floating) = if stop_at_character_limit {
             (
                 MAX_SIGNUP_DISPLAY_COUNT,
-                MAX_SIGNUP_DISPLAY_COUNT - accepted_participants.len(),
+                MAX_SIGNUP_DISPLAY_COUNT
+                    - accepted_participants.len().min(MAX_SIGNUP_DISPLAY_COUNT),
             )
         } else {
             (usize::MAX, usize::MAX)
         };
 
-        hidden_signup_count = quest_signups.len() - MAX_SIGNUP_DISPLAY_COUNT;
+        if quest_signups.len() > MAX_SIGNUP_DISPLAY_COUNT {
+            hidden_signup_count = quest_signups.len() - MAX_SIGNUP_DISPLAY_COUNT;
+        }
 
         match selection_mechanism {
             QuestParticipantSelectionMechanism::FirstComeFirstServe => {
@@ -263,7 +264,7 @@ pub fn create_quest_signup_buttons(
                 "Show all participants!",
                 "quest-list-all-participants",
                 false,
-                ButtonStyle::Success,
+                ButtonStyle::Primary,
             )]),
         ]
     } else {

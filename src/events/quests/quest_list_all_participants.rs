@@ -2,7 +2,7 @@ use crate::data::Data;
 use crate::enums::QuestParticipantSelectionMechanism;
 use crate::events::send_ephemeral_reply;
 use crate::{helpers, Error};
-use serenity::all::{ComponentInteraction, CreateInteractionResponseFollowup, CreateMessage};
+use serenity::all::{ComponentInteraction, CreateInteractionResponseFollowup};
 use serenity::client::Context;
 
 pub async fn quest_list_all_participants(
@@ -39,12 +39,14 @@ pub async fn quest_list_all_participants(
             let _ = send_ephemeral_reply(&interaction, context, &text).await;
             first = false;
         } else {
-            let _ = interaction.create_followup(
-                context,
-                CreateInteractionResponseFollowup::new()
-                    .content(text)
-                    .ephemeral(true),
-            );
+            let _ = interaction
+                .create_followup(
+                    context,
+                    CreateInteractionResponseFollowup::new()
+                        .content(text)
+                        .ephemeral(true),
+                )
+                .await;
         }
     }
 
