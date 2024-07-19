@@ -54,7 +54,7 @@ pub async fn create_quest(
 
     match result {
         Ok(_) => {
-            let text = helpers::generate_quest_post_message_content(
+            let (text, too_many_signups) = helpers::generate_quest_post_message_content(
                 ctx.data(),
                 channel_id,
                 max_participants,
@@ -64,9 +64,9 @@ pub async fn create_quest(
             reply
                 .edit(
                     ctx,
-                    CreateReply::default().content(text).components(vec![
-                        helpers::create_quest_signup_buttons(selection_mechanism),
-                    ]),
+                    CreateReply::default().content(text).components(
+                        helpers::create_quest_signup_buttons(selection_mechanism, too_many_signups),
+                    ),
                 )
                 .await?;
 

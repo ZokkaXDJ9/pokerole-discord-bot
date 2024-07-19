@@ -7,12 +7,12 @@ use serenity::all::{
 use serenity::builder::{CreateActionRow, CreateButton};
 use serenity::client::Context;
 
-use crate::{commands, emoji, Error, helpers};
 use crate::commands::{efficiency, learns};
 use crate::errors::CommandInvocationError;
 use crate::events::{
-    character_stat_edit, FrameworkContext, parse_interaction_command, quests, send_ephemeral_reply,
+    character_stat_edit, parse_interaction_command, quests, send_ephemeral_reply, FrameworkContext,
 };
+use crate::{commands, emoji, helpers, Error};
 
 pub async fn handle_button_interaction(
     context: &Context,
@@ -137,6 +137,14 @@ pub async fn handle_button_interaction(
         }
         "quest-add-random-participants" => {
             quests::quest_add_random_participants::quest_add_random_participants(
+                context,
+                interaction,
+                framework.user_data,
+            )
+            .await?;
+        }
+        "quest-list-all-participants" => {
+            quests::quest_list_all_participants::quest_list_all_participants(
                 context,
                 interaction,
                 framework.user_data,
