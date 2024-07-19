@@ -174,7 +174,7 @@ ORDER BY quest_signup.accepted DESC, quest_signup.timestamp ASC
         let (displayable_accepted, displayable_floating) = if stop_at_character_limit {
             (
                 MAX_SIGNUP_DISPLAY_COUNT,
-                MAX_SIGNUP_DISPLAY_COUNT - floating_participants.len(),
+                MAX_SIGNUP_DISPLAY_COUNT - accepted_participants.len(),
             )
         } else {
             (usize::MAX, usize::MAX)
@@ -214,9 +214,9 @@ ORDER BY quest_signup.accepted DESC, quest_signup.timestamp ASC
             }
         }
 
-        if hidden_signup_count > 0 {
+        if stop_at_character_limit && hidden_signup_count > 0 {
             text.push_str(&format!(
-                "\n- And {hidden_signup_count} more! Press the button below to see all."
+                "- **And {hidden_signup_count} more!** Press the button below to see all.\n"
             ));
         }
     }
