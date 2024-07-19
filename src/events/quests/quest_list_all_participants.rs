@@ -2,7 +2,7 @@ use crate::data::Data;
 use crate::enums::QuestParticipantSelectionMechanism;
 use crate::events::send_ephemeral_reply;
 use crate::{helpers, Error};
-use serenity::all::ComponentInteraction;
+use serenity::all::{ComponentInteraction, CreateInteractionResponseFollowup, CreateMessage};
 use serenity::client::Context;
 
 pub async fn quest_list_all_participants(
@@ -32,8 +32,20 @@ pub async fn quest_list_all_participants(
     )
     .await?;
 
+    // Could also add pagination when this gets too ridiculous
+    let mut first = true;
     for text in helpers::split_long_messages(text) {
-        let _ = send_ephemeral_reply(&interaction, context, &text).await;
+        if first {
+            let _ = send_ephemeral_reply(&interaction, context, &text).await;
+            first = false;
+        } else {
+            let _ = interaction.create_followup(
+                context,
+                CreateInteractionResponseFollowup::new()
+                    .content(text)
+                    .ephemeral(true),
+            );
+        }
     }
 
     Ok(())
