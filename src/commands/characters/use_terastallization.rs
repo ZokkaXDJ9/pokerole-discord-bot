@@ -1,7 +1,9 @@
 use crate::commands::autocompletion::{
     autocomplete_owned_character_name, autocomplete_pokemon_type,
 };
-use crate::commands::{ensure_user_owns_character, find_character, Context, Error};
+use crate::commands::{
+    ensure_user_owns_character, find_character, update_character_post, Context, Error,
+};
 use crate::enums::PokemonTypeWithoutShadow;
 use crate::errors::ValidationError;
 
@@ -62,6 +64,8 @@ pub async fn use_terastallization(
         character.name, tera_type
     ))
     .await?;
+
+    update_character_post(&ctx, character.id).await;
 
     Ok(())
 }
