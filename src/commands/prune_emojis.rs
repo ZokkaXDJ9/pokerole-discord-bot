@@ -1,5 +1,5 @@
 use crate::commands::{send_ephemeral_reply, Context};
-use crate::Error;
+use crate::{helpers, Error};
 
 /// Removes emoji which have been manually deleted from the server from the database.
 #[poise::command(
@@ -56,10 +56,10 @@ pub async fn prune_emojis(ctx: Context<'_>) -> Result<(), Error> {
         .await?;
     }
 
-    send_ephemeral_reply(
-        &ctx,
-        &format!("Removed {} emojis.\n```{}```", list.len(), list.join("\n")),
-    )
-    .await?;
+    let text = format!("Removed {} emojis.\n```{}```", list.len(), list.join("\n"));
+    for text in helpers::split_long_messages(text) {
+        send_ephemeral_reply(&ctx, &text).await?;
+    }
+
     Ok(())
 }
