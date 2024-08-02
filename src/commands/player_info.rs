@@ -54,7 +54,7 @@ pub async fn player_info(
     Ok(())
 }
 
-async fn query_hosted_quest_count(ctx: &Context<'_>, user_id: i64) -> Option<i32> {
+async fn query_hosted_quest_count(ctx: &Context<'_>, user_id: i64) -> Option<i64> {
     match sqlx::query!(
         "SELECT COUNT(*) as count FROM quest WHERE creator_id = ? AND completion_timestamp IS NOT NULL",
         user_id,
@@ -84,7 +84,7 @@ async fn build_reply(
     data: &Data,
     user_in_guild: &Member,
     characters: Vec<QueryObject>,
-    hosted_quest_count: Option<i32>,
+    hosted_quest_count: Option<i64>,
     gm_experience: Option<i64>,
 ) -> String {
     let mut character_list = String::new();

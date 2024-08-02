@@ -105,7 +105,7 @@ You can copy the command string either by just pressing the up key inside the te
     ).await
 }
 
-async fn count_completed_quests<'a>(database: &Pool<Sqlite>, character_id: i64) -> i32 {
+async fn count_completed_quests<'a>(database: &Pool<Sqlite>, character_id: i64) -> i64 {
     let result = sqlx::query!(
         "SELECT COUNT(*) as count FROM quest_completion WHERE character_id = ?",
         character_id
