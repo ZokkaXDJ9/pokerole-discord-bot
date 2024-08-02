@@ -227,6 +227,8 @@ impl EncounterMon {
                 }
             }
             Stat::Rank => self.rank.die_count(),
+            Stat::StrengthPlusRank => self.strength + self.rank.die_count(),
+            Stat::StrengthMinusRank => self.strength - self.rank.die_count(),
         }
     }
 

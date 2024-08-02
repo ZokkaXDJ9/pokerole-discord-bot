@@ -363,6 +363,10 @@ pub enum Stat {
     Copy,
     /// Used for Fixed Damage moves
     Rank,
+    // Used for Return
+    StrengthPlusRank,
+    // Used for Frustration
+    StrengthMinusRank,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -412,6 +416,8 @@ impl fmt::Display for Stat {
             Stat::StrengthOrSpecial => "Strength / Special",
             Stat::Copy => "Copy",
             Stat::Rank => "Rank",
+            Stat::StrengthPlusRank => "Strength + Rank",
+            Stat::StrengthMinusRank => "Strength - Rank",
         })
     }
 }
