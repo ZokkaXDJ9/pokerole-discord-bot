@@ -641,7 +641,7 @@ impl Pokemon {
             species_data: PokemonSpeciesData::from(api_data),
             regional_variant,
             api_issue,
-            evolves_from: api_data.evolves_from,
+            evolves_from: raw.evolves_from_override.or(api_data.evolves_from),
             type1: api_data.type1,
             type2: api_data.type2,
             base_hp: raw.base_hp,

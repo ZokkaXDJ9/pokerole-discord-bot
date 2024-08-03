@@ -7,6 +7,7 @@ pub struct CustomPokemon {
     pub number: u16,
     pub api_id: Option<PokemonApiId>,
     pub variant: Option<RegionalVariant>,
+    pub evolves_from_override: Option<PokemonApiId>,
     pub name: String,
     pub base_hp: u8,
     pub strength: String,
