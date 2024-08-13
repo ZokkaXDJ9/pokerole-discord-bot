@@ -5,14 +5,14 @@ use crate::enums::{Gender, PokemonType, RegionalVariant};
 use crate::game_data::pokemon::Pokemon;
 use crate::game_data::PokemonApiId;
 
-pub const POKE_COIN: &str = "<:poke_coin:1120237132200546304>";
-pub const BATTLE_POINT: &str = "<:battle_point:1202570025802661938>";
+pub const POKE_COIN: &str = "<:pokecoin:1272536303430270986>";
+pub const BATTLE_POINT: &str = "<:battlepoint:1272533678714519612>";
 
-pub const RANK_BRONZE: &str = "<:badge_bronze:1119186018793435177>";
-pub const RANK_SILVER: &str = "<:badge_silver:1119185975545954314>";
-pub const RANK_GOLD: &str = "<:badge_gold:1119185974149251092>";
-pub const RANK_PLATINUM: &str = "<:badge_platinum:1119185972635107378>";
-pub const RANK_DIAMOND: &str = "<:badge_diamond:1119185970374389760>";
+pub const RANK_BRONZE: &str = "<:badgebronze:1272532685197152349>";
+pub const RANK_SILVER: &str = "<:badgesilver:1272533590697185391>";
+pub const RANK_GOLD: &str = "<:badgegold:1272532681992962068>";
+pub const RANK_PLATINUM: &str = "<:badgeplatinum:1272533593750507570>";
+pub const RANK_DIAMOND: &str = "<:badgediamond:1272532683431481445>";
 
 pub const UNICODE_CROSS_MARK_BUTTON: &str = "❎";
 pub const UNICODE_CROSS_MARK: &str = "❌";
@@ -177,25 +177,26 @@ pub fn pokemon_to_emoji_name(
 }
 
 pub fn type_to_emoji(pokemon_type: &PokemonType) -> &str {
-    match pokemon_type {
-        PokemonType::Normal => "<:type_normal:1118590014931095662>",
-        PokemonType::Fighting => "<:type_fighting:1118590013194649730>",
-        PokemonType::Flying => "<:type_flying:1118590010359283773>",
-        PokemonType::Poison => "<:type_poison:1118590008778047529>",
-        PokemonType::Ground => "<:type_ground:1118590006081114325>",
-        PokemonType::Rock => "<:type_rock:1118590005082861820>",
-        PokemonType::Bug => "<:type_bug:1118594892566908959>",
-        PokemonType::Ghost => "<:type_ghost:1118594890461368350>",
-        PokemonType::Steel => "<:type_steel:1118594889131765821>",
-        PokemonType::Fire => "<:type_fire:1118594887399514145>",
-        PokemonType::Water => "<:type_water:1118594885344297062>",
-        PokemonType::Grass => "<:type_grass:1118594883754664107>",
-        PokemonType::Electric => "<:type_electric:1118594871272415243>",
-        PokemonType::Psychic => "<:type_psychic:1118594873755435009>",
-        PokemonType::Ice => "<:type_ice:1118594875085041825>",
-        PokemonType::Dragon => "<:type_dragon:1118594876444000357>",
-        PokemonType::Dark => "<:type_dark:1118594879195447387>",
-        PokemonType::Fairy => "<:type_fairy:1118594881368100894>",
+        println!("Emoji.rs is being used!");    
+        match pokemon_type {
+        PokemonType::Normal => "<:typenormal:1272535965893791824>",
+        PokemonType::Fighting => "<:typefighting:1272535949569429586>",
+        PokemonType::Flying => "<:typeflying:1272536305380753440>",
+        PokemonType::Poison => "<:typepoison:1272536309147238440>",
+        PokemonType::Ground => "<:typeground:1272535961682579496>",
+        PokemonType::Rock => "<:typerock:1272535973481283596>",
+        PokemonType::Bug => "<:typebug:1272535941420027924>",
+        PokemonType::Ghost => "<:typeghost:1272535956733300879>",
+        PokemonType::Steel => "<:typesteel:1272536310984212491>",
+        PokemonType::Fire => "<:typefire:1272535951129968780>",
+        PokemonType::Water => "<:typewater:1272535976794652673>",
+        PokemonType::Grass => "<:typegrass:1272535959677960222>",
+        PokemonType::Electric => "<:typeelectric:1272535946788606123>",
+        PokemonType::Psychic => "<:typepsychic:1272535970897592330>",
+        PokemonType::Ice => "<:typeice:1272536307276709898>",
+        PokemonType::Dragon => "<:typedragon:1272535944804962335>",
+        PokemonType::Dark => "<:typedark:1272535943060000800>",
+        PokemonType::Fairy => "<:typefairy:1272535948357537894>",
         PokemonType::Shadow => "",
     }
 }

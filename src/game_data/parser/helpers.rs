@@ -27,6 +27,7 @@ fn parse_file<T: DeserializeOwned>(file_path: &str) -> Result<T, Box<dyn std::er
 pub fn parse_directory<P: AsRef<Path>, T: DeserializeOwned>(path: P) -> Vec<T> {
     let mut result = Vec::new();
 
+    println!("Attempting to read directory: {:?}", path.as_ref());
     let entries = std::fs::read_dir(path).expect("Failed to read directory");
     for entry in entries.flatten() {
         if REJECTED_DATA_FILE_NAMES

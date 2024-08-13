@@ -35,24 +35,24 @@ pub enum PokemonType {
 impl Display for PokemonType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
-            PokemonType::Normal => "<:type_normal:1118590014931095662> Normal",
-            PokemonType::Fighting => "<:type_fighting:1118590013194649730> Fighting",
-            PokemonType::Flying => "<:type_flying:1118590010359283773> Flying",
-            PokemonType::Poison => "<:type_poison:1118590008778047529> Poison",
-            PokemonType::Ground => "<:type_ground:1118590006081114325> Ground",
-            PokemonType::Rock => "<:type_rock:1118590005082861820> Rock",
-            PokemonType::Bug => "<:type_bug:1118594892566908959> Bug",
-            PokemonType::Ghost => "<:type_ghost:1118594890461368350> Ghost",
-            PokemonType::Steel => "<:type_steel:1118594889131765821> Steel",
-            PokemonType::Fire => "<:type_fire:1118594887399514145> Fire",
-            PokemonType::Water => "<:type_water:1118594885344297062> Water",
-            PokemonType::Grass => "<:type_grass:1118594883754664107> Grass",
-            PokemonType::Electric => "<:type_electric:1118594871272415243> Electric",
-            PokemonType::Psychic => "<:type_psychic:1118594873755435009> Psychic",
-            PokemonType::Ice => "<:type_ice:1118594875085041825> Ice",
-            PokemonType::Dragon => "<:type_dragon:1118594876444000357> Dragon",
-            PokemonType::Dark => "<:type_dark:1118594879195447387> Dark",
-            PokemonType::Fairy => "<:type_fairy:1118594881368100894> Fairy",
+            PokemonType::Normal => "<:typenormal:1272535965893791824> Normal",
+            PokemonType::Fighting => "<:typefighting:1272535949569429586> Fighting",
+            PokemonType::Flying => "<:typeflying:1272536305380753440> Flying",
+            PokemonType::Poison => "<:typepoison:1272536309147238440> Poison",
+            PokemonType::Ground => "<:typeground:1272535961682579496> Ground",
+            PokemonType::Rock => "<:typerock:1272535973481283596> Rock",
+            PokemonType::Bug => "<:typebug:1272535941420027924> Bug",
+            PokemonType::Ghost => "<:typeghost:1272535956733300879> Ghost",
+            PokemonType::Steel => "<:typesteel:1272536310984212491> Steel",
+            PokemonType::Fire => "<:typefire:1272535951129968780> Fire",
+            PokemonType::Water => "<:typewater:1272535976794652673> Water",
+            PokemonType::Grass => "<:typegrass:1272535959677960222> Grass",
+            PokemonType::Electric => "<:typeelectric:1272535946788606123> Electric",
+            PokemonType::Psychic => "<:typepsychic:1272535970897592330> Psychic",
+            PokemonType::Ice => "<:typeice:1272536307276709898> Ice",
+            PokemonType::Dragon => "<:typedragon:1272535944804962335> Dragon",
+            PokemonType::Dark => "<:typedark:1272535943060000800> Dark",
+            PokemonType::Fairy => "<:typefairy:1272535948357537894> Fairy",
             PokemonType::Shadow => "Shadow",
         })
     }
@@ -155,24 +155,24 @@ impl PokemonTypeWithoutShadow {
 impl Display for PokemonTypeWithoutShadow {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
-            PokemonTypeWithoutShadow::Normal => "<:type_normal:1118590014931095662> Normal",
-            PokemonTypeWithoutShadow::Fighting => "<:type_fighting:1118590013194649730> Fighting",
-            PokemonTypeWithoutShadow::Flying => "<:type_flying:1118590010359283773> Flying",
-            PokemonTypeWithoutShadow::Poison => "<:type_poison:1118590008778047529> Poison",
-            PokemonTypeWithoutShadow::Ground => "<:type_ground:1118590006081114325> Ground",
-            PokemonTypeWithoutShadow::Rock => "<:type_rock:1118590005082861820> Rock",
-            PokemonTypeWithoutShadow::Bug => "<:type_bug:1118594892566908959> Bug",
-            PokemonTypeWithoutShadow::Ghost => "<:type_ghost:1118594890461368350> Ghost",
-            PokemonTypeWithoutShadow::Steel => "<:type_steel:1118594889131765821> Steel",
-            PokemonTypeWithoutShadow::Fire => "<:type_fire:1118594887399514145> Fire",
-            PokemonTypeWithoutShadow::Water => "<:type_water:1118594885344297062> Water",
-            PokemonTypeWithoutShadow::Grass => "<:type_grass:1118594883754664107> Grass",
-            PokemonTypeWithoutShadow::Electric => "<:type_electric:1118594871272415243> Electric",
-            PokemonTypeWithoutShadow::Psychic => "<:type_psychic:1118594873755435009> Psychic",
-            PokemonTypeWithoutShadow::Ice => "<:type_ice:1118594875085041825> Ice",
-            PokemonTypeWithoutShadow::Dragon => "<:type_dragon:1118594876444000357> Dragon",
-            PokemonTypeWithoutShadow::Dark => "<:type_dark:1118594879195447387> Dark",
-            PokemonTypeWithoutShadow::Fairy => "<:type_fairy:1118594881368100894> Fairy",
+            PokemonTypeWithoutShadow::Normal => "<:typenormal:1272535965893791824> Normal",
+            PokemonTypeWithoutShadow::Fighting => "<:typefighting:1272535949569429586> Fighting",
+            PokemonTypeWithoutShadow::Flying => "<:typeflying:1272536305380753440> Flying",
+            PokemonTypeWithoutShadow::Poison => "<:typepoison:1272536309147238440> Poison",
+            PokemonTypeWithoutShadow::Ground => "<:typeground:1272535961682579496> Ground",
+            PokemonTypeWithoutShadow::Rock => "<:typerock:1272535973481283596> Rock",
+            PokemonTypeWithoutShadow::Bug => "<:typebug:1272535941420027924> Bug",
+            PokemonTypeWithoutShadow::Ghost => "<:typeghost:1272535956733300879> Ghost",
+            PokemonTypeWithoutShadow::Steel => "<:typesteel:1272536310984212491> Steel",
+            PokemonTypeWithoutShadow::Fire => "<:typefire:1272535951129968780> Fire",
+            PokemonTypeWithoutShadow::Water => "<:typewater:1272535976794652673> Water",
+            PokemonTypeWithoutShadow::Grass => "<:typegrass:1272535959677960222> Grass",
+            PokemonTypeWithoutShadow::Electric => "<:typeelectric:1272535946788606123> Electric",
+            PokemonTypeWithoutShadow::Psychic => "<:typepsychic:1272535970897592330> Psychic",
+            PokemonTypeWithoutShadow::Ice => "<:typeice:1272536307276709898> Ice",
+            PokemonTypeWithoutShadow::Dragon => "<:typedragon:1272535944804962335> Dragon",
+            PokemonTypeWithoutShadow::Dark => "<:typedark:1272535943060000800> Dark",
+            PokemonTypeWithoutShadow::Fairy => "<:typefairy:1272535948357537894> Fairy",
         })
     }
 }
@@ -204,24 +204,24 @@ pub enum MoveType {
 impl fmt::Display for MoveType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
-            MoveType::Normal => "<:type_normal:1118590014931095662> Normal",
-            MoveType::Fighting => "<:type_fighting:1118590013194649730> Fighting",
-            MoveType::Flying => "<:type_flying:1118590010359283773> Flying",
-            MoveType::Poison => "<:type_poison:1118590008778047529> Poison",
-            MoveType::Ground => "<:type_ground:1118590006081114325> Ground",
-            MoveType::Rock => "<:type_rock:1118590005082861820> Rock",
-            MoveType::Bug => "<:type_bug:1118594892566908959> Bug",
-            MoveType::Ghost => "<:type_ghost:1118594890461368350> Ghost",
-            MoveType::Steel => "<:type_steel:1118594889131765821> Steel",
-            MoveType::Fire => "<:type_fire:1118594887399514145> Fire",
-            MoveType::Water => "<:type_water:1118594885344297062> Water",
-            MoveType::Grass => "<:type_grass:1118594883754664107> Grass",
-            MoveType::Electric => "<:type_electric:1118594871272415243> Electric",
-            MoveType::Psychic => "<:type_psychic:1118594873755435009> Psychic",
-            MoveType::Ice => "<:type_ice:1118594875085041825> Ice",
-            MoveType::Dragon => "<:type_dragon:1118594876444000357> Dragon",
-            MoveType::Dark => "<:type_dark:1118594879195447387> Dark",
-            MoveType::Fairy => "<:type_fairy:1118594881368100894> Fairy",
+            MoveType::Normal => "<:typenormal:1272535965893791824> Normal",
+            MoveType::Fighting => "<:typefighting:1272535949569429586> Fighting",
+            MoveType::Flying => "<:typeflying:1272536305380753440> Flying",
+            MoveType::Poison => "<:typepoison:1272536309147238440> Poison",
+            MoveType::Ground => "<:typeground:1272535961682579496> Ground",
+            MoveType::Rock => "<:typerock:1272535973481283596> Rock",
+            MoveType::Bug => "<:typebug:1272535941420027924> Bug",
+            MoveType::Ghost => "<:typeghost:1272535956733300879> Ghost",
+            MoveType::Steel => "<:typesteel:1272536310984212491> Steel",
+            MoveType::Fire => "<:typefire:1272535951129968780> Fire",
+            MoveType::Water => "<:typewater:1272535976794652673> Water",
+            MoveType::Grass => "<:typegrass:1272535959677960222> Grass",
+            MoveType::Electric => "<:typeelectric:1272535946788606123> Electric",
+            MoveType::Psychic => "<:typepsychic:1272535970897592330> Psychic",
+            MoveType::Ice => "<:typeice:1272536307276709898> Ice",
+            MoveType::Dragon => "<:typedragon:1272535944804962335> Dragon",
+            MoveType::Dark => "<:typedark:1272535943060000800> Dark",
+            MoveType::Fairy => "<:typefairy:1272535948357537894> Fairy",
             MoveType::Any => "Any",
             MoveType::Typeless => "Typeless",
         })
@@ -271,10 +271,10 @@ pub enum MoveCategory {
 impl fmt::Display for MoveCategory {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
-            MoveCategory::Physical => "<:move_physical:1118637143267487925> Physical",
-            MoveCategory::Special => "<:move_special:1118637141862404217> Special",
-            MoveCategory::PhysicalOrSpecial => "<:move_physical:1118637143267487925> Physical / <:move_special:1118637141862404217> Special",
-            MoveCategory::Support => "<:move_status:1118637139589091338> Support"
+            MoveCategory::Physical => "<:movephysical:1272535935279435968> Physical",
+            MoveCategory::Special => "<:movespecial:1272535937104220180> Special",
+            MoveCategory::PhysicalOrSpecial => "<:movephysical:1272535935279435968> Physical / <:movespecial:1272535937104220180> Special",
+            MoveCategory::Support => "<:movestatus:1272535939465478235> Support",
         })
     }
 }
@@ -291,11 +291,11 @@ pub enum MysteryDungeonRank {
 impl Display for MysteryDungeonRank {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            MysteryDungeonRank::Bronze => write!(f, "{} Bronze Rank", emoji::RANK_BRONZE),
-            MysteryDungeonRank::Silver => write!(f, "{} Silver Rank", emoji::RANK_SILVER),
-            MysteryDungeonRank::Gold => write!(f, "{} Gold Rank", emoji::RANK_GOLD),
-            MysteryDungeonRank::Platinum => write!(f, "{} Platinum Rank", emoji::RANK_PLATINUM),
-            MysteryDungeonRank::Diamond => write!(f, "{} Diamond Rank", emoji::RANK_DIAMOND),
+            MysteryDungeonRank::Bronze => write!(f, "<:badgebronze:1272532685197152349> Bronze Rank"),
+            MysteryDungeonRank::Silver => write!(f, "<:badgesilver:1272533590697185391> Silver Rank"),
+            MysteryDungeonRank::Gold => write!(f, "<:badgegold:1272532681992962068> Gold Rank"),
+            MysteryDungeonRank::Platinum => write!(f, "<:badgeplatinum:1272533593750507570> Platinum Rank"),
+            MysteryDungeonRank::Diamond => write!(f, "<:badgediamond:1272532683431481445> Diamond Rank"),
         }
     }
 }
@@ -333,11 +333,11 @@ impl MysteryDungeonRank {
 
     pub fn emoji_string(&self) -> &str {
         match self {
-            MysteryDungeonRank::Bronze => emoji::RANK_BRONZE,
-            MysteryDungeonRank::Silver => emoji::RANK_SILVER,
-            MysteryDungeonRank::Gold => emoji::RANK_GOLD,
-            MysteryDungeonRank::Platinum => emoji::RANK_PLATINUM,
-            MysteryDungeonRank::Diamond => emoji::RANK_DIAMOND,
+            MysteryDungeonRank::Bronze => "<:badgebronze:1272532685197152349>",
+            MysteryDungeonRank::Silver => "<:badgesilver:1272533590697185391>",
+            MysteryDungeonRank::Gold => "<:badgegold:1272532681992962068>",
+            MysteryDungeonRank::Platinum => "<:badgeplatinum:1272533593750507570>",
+            MysteryDungeonRank::Diamond => "<:badgediamond:1272532683431481445>",
         }
     }
 }
