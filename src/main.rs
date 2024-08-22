@@ -35,7 +35,7 @@ async fn main() {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: commands::get_all_commands(),
+            commands: commands::get_all_commands(),  // Load all commands
             event_handler: |serenity_ctx, event, ctx, _| {
                 Box::pin(events::handle_events(serenity_ctx, event, ctx))
             },
@@ -44,7 +44,9 @@ async fn main() {
         })
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
-                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                println!("Registering commands globally...");
+                poise::builtins::register_globally(ctx, &framework.options().commands).await?;  // Register commands globally
+                println!("Commands registered successfully.");
                 Ok(data)
             })
         })
@@ -54,14 +56,12 @@ async fn main() {
     let intents =
         serenity::GatewayIntents::non_privileged().union(serenity::GatewayIntents::GUILD_MEMBERS);
 
-    let client = serenity::ClientBuilder::new(token, intents)
+    let mut client = serenity::ClientBuilder::new(token, intents)  // Declare `client` as mutable
         .framework(framework)
-        .await;
-    client
-        .expect("Creating client failed!")
-        .start()
         .await
-        .unwrap();
+        .expect("Creating client failed!");
+
+    client.start().await.unwrap();
 }
 
 async fn handle_error(error: FrameworkError<'_, Data, Error>) {

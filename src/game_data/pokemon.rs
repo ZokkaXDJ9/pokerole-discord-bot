@@ -214,11 +214,8 @@ impl Pokemon {
         if let Some(issue) = self.api_issue {
             if issue == ApiIssueType::FoundNothing {
                 result.push_str("\nUnable to match any species to this particular pokemon when searching for TM Moves.");
-            } else if issue == ApiIssueType::IsLegendary {
-                result.push_str(
-                    "\nToo lazy to be bothered to get this to work for legendary pokemon, sorry!",
-                );
-            } else {
+            }  
+            else {
                 result.push_str("\n**Struggling to match an exact species to this particular pokemon when searching for TM Moves. Take the values here with a grain of salt!**\n");
                 self.append_all_learnable_moves(&mut result);
             }
