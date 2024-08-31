@@ -6,7 +6,7 @@ use serenity::model::channel::ReactionType;
 use serenity::model::guild::Role;
 use serenity::utils::MessageBuilder;
 
-/// WIP. Create a post for role reactions.
+/// Create a post for role reactions.
 #[poise::command(slash_command, default_member_permissions = "ADMINISTRATOR")]
 #[allow(clippy::too_many_arguments)]
 pub async fn create_role_reaction_post(
@@ -32,13 +32,14 @@ pub async fn create_role_reaction_post(
     emoji_9: Option<String>,
     role_9: Option<Role>,
 ) -> Result<(), Error> {
-    if ctx.author().id.get() != 878982444412448829 {
-        ctx.send(CreateReply::default()
-            .content("This command is currently highly WIP and requires some manual hacks to work. Sowwie! Contact Lilo if you really need to use it.")
-            .ephemeral(true)
-        ).await?;
-        return Ok(());
-    }
+    // Remove this block to allow all administrators to use the command:
+    // if ctx.author().id.get() != 878982444412448829 {
+    //     ctx.send(CreateReply::default()
+    //         .content("This command is currently highly WIP and requires some manual hacks to work. Sowwie! Contact Lilo if you really need to use it.")
+    //         .ephemeral(true)
+    //     ).await?;
+    //     return Ok(());
+    // }
 
     let mut reaction_message = MessageBuilder::default();
     let mut command_response = MessageBuilder::default();
@@ -59,6 +60,8 @@ pub async fn create_role_reaction_post(
         role_2,
         &mut reactions,
     );
+
+    // Handle all optional roles and emojis
     add_optional_role(
         &mut reaction_message,
         &mut command_response,
