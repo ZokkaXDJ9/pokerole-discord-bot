@@ -2,6 +2,9 @@
 
 /target
 
+database.sqlite-wal 
+database.sqlite-shm
+
 # Semi-Temporary files until we got Github Actions set up properly
 .env
 build_and_deploy.sh
