@@ -59,7 +59,7 @@ pub fn get_type_resistances_string(
     result
 }
 
-/// Display status effects
+/// Display Type Chart
 #[poise::command(slash_command)]
 pub async fn efficiency(
     ctx: Context<'_>,
