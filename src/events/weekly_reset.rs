@@ -95,7 +95,7 @@ async fn notify_guilds(ctx: &Arc<Context>, database: &Pool<Sqlite>) {
 // Added: Function to announce the season
 async fn announce_season(ctx: &Arc<Context>) {
     let current_season = get_current_season();
-    let season_channel = ChannelId(SEASON_CHANNEL_ID);
+    let season_channel = ChannelId::new(SEASON_CHANNEL_ID); // Updated line
 
     if let Err(error) = season_channel
         .send_message(
