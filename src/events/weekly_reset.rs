@@ -2,13 +2,17 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
 use chrono::{Datelike, Duration, NaiveDate, Utc, Weekday};
-use serenity::all::CreateMessage;
+use serenity::all::{CreateMessage};
 use serenity::model::id::ChannelId;
 use serenity::prelude::Context;
 use sqlx::{Pool, Sqlite};
 
 use crate::data::Data;
 use crate::events::send_error_to_log_channel;
+
+// Added: Seasonal constants
+const SEASON_CHANNEL_ID: u64 = 1290754769140580353; // Channel for season announcements
+const SEASONS: [&str; 4] = ["Spring", "Summer", "Autumn", "Winter"]; // Seasons in rotation
 
 pub async fn start_weekly_reset_thread(ctx: &Context, data: &Data) {
     let ctx = Arc::new(ctx.clone());
@@ -52,6 +56,7 @@ async fn execute_weekly_reset(ctx: Arc<Context>, database: Pool<Sqlite>) {
     {
         Ok(_) => {
             notify_guilds(&ctx, &database).await;
+            announce_season(&ctx).await; // Added: Announce the new season
             // Updating character posts is disabled until we figure out how to reopen forum threads without sending a message...
         }
         Err(error) => {
@@ -85,4 +90,43 @@ async fn notify_guilds(ctx: &Arc<Context>, database: &Pool<Sqlite>) {
             send_error_to_log_channel(ctx, error.to_string()).await;
         }
     }
+}
+
+// Added: Function to announce the season
+async fn announce_season(ctx: &Arc<Context>) {
+    let current_season = get_current_season();
+    let season_channel = ChannelId(SEASON_CHANNEL_ID);
+
+    if let Err(error) = season_channel
+        .send_message(
+            &ctx,
+            CreateMessage::new().content(format!(
+                "🌱 [System] Welcome to the new season: **{}**!",
+                current_season
+            )),
+        )
+        .await
+    {
+        send_error_to_log_channel(ctx, error.to_string()).await;
+    }
+}
+
+// Added: Function to calculate the current season
+fn get_current_season() -> &'static str {
+    // Fixed starting point (epoch)
+    let epoch = NaiveDate::from_ymd_opt(2021, 1, 4)
+        .unwrap()
+        .and_hms_opt(0, 0, 0)
+        .unwrap(); // Monday, Jan 4, 2021
+
+    let now = Utc::now().naive_utc();
+
+    // Calculate the number of weeks since the epoch
+    let duration_since_epoch = now.signed_duration_since(epoch);
+    let weeks_since_epoch = duration_since_epoch.num_weeks();
+
+    // Determine the season index
+    let season_index = (weeks_since_epoch as usize) % SEASONS.len();
+
+    SEASONS[season_index]
 }
