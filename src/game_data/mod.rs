@@ -1,10 +1,12 @@
 pub use crate::game_data::pokemon_api::PokemonApiId;
 use std::collections::HashMap;
 use std::sync::Arc;
+use crate::game_data::zmove::ZMove;
 
 pub(crate) mod ability;
 pub(crate) mod item;
 pub(crate) mod r#move;
+pub mod zmove;
 pub(crate) mod nature;
 pub(crate) mod pokemon;
 pub(crate) mod potion;
@@ -30,6 +32,8 @@ pub struct GameData {
     pub item_names: Arc<Vec<String>>,
     pub moves: Arc<HashMap<String, r#move::Move>>,
     pub move_names: Arc<Vec<String>>,
+    pub z_moves: Arc<HashMap<String, ZMove>>,
+    pub z_move_names: Arc<Vec<String>>,
     pub natures: Arc<HashMap<String, nature::Nature>>,
     pub nature_names: Arc<Vec<String>>,
     pub pokemon: Arc<HashMap<String, pokemon::Pokemon>>,

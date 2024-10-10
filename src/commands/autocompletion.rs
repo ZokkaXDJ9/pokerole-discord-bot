@@ -75,6 +75,19 @@ pub async fn autocomplete_pokemon_type<'a>(_ctx: Context<'a>, partial: &'a str) 
     filter_and_sort(partial, PokemonTypeWithoutShadow::get_names_vec().iter(), 0)
 }
 
+pub async fn autocomplete_zmove<'a>(
+    ctx: Context<'a>,
+    partial: &'a str,
+) -> impl Iterator<Item = String> + 'a {
+    let partial_lower = partial.to_lowercase();
+    ctx.data()
+        .game
+        .z_move_names
+        .iter()
+        .filter(move |name| name.to_lowercase().starts_with(&partial_lower))
+        .cloned()
+}
+
 pub async fn autocomplete_character_name<'a>(ctx: Context<'a>, partial: &'a str) -> Vec<String> {
     filter_and_sort(
         partial,

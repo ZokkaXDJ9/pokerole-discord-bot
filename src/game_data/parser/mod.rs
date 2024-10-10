@@ -12,6 +12,8 @@ use crate::game_data::pokerole_data;
 use crate::game_data::pokerole_data::parser::PokeroleParseResult;
 use crate::game_data::potion::Potion;
 use crate::game_data::r#move::Move;
+use crate::game_data::parser::custom_data::custom_zmove::CustomZMove;
+use crate::game_data::zmove::ZMove;
 use crate::game_data::rule::Rule;
 use crate::game_data::status_effect::StatusEffect;
 use crate::game_data::weather::Weather;
@@ -32,6 +34,7 @@ pub async fn initialize_data() -> GameData {
 
     let (rule_names, rule_hash_map) = parse_rules(&custom_data);
     let (move_names, move_hash_map) = parse_moves(&pokerole_data, &custom_data);
+    let (z_move_names, z_move_hash_map) = parse_z_moves(&custom_data);
     let (nature_names, nature_hash_map) = parse_natures(&pokerole_data);
     let (ability_names, ability_hash_map) = parse_abilities(&pokerole_data, &custom_data);
     let (weather_names, weather_hash_map) = parse_weather(&custom_data);
@@ -49,6 +52,8 @@ pub async fn initialize_data() -> GameData {
         item_names: Arc::new(item_names),
         moves: Arc::new(move_hash_map),
         move_names: Arc::new(move_names),
+        z_moves: Arc::new(z_move_hash_map),
+        z_move_names: Arc::new(z_move_names),
         natures: Arc::new(nature_hash_map),
         nature_names: Arc::new(nature_names),
         pokemon: Arc::new(pokemon_hash_map),
@@ -233,6 +238,19 @@ fn parse_moves(
     }
 
     (move_names, move_hash_map)
+}
+
+fn parse_z_moves(custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, ZMove>) {
+    let mut z_move_names = Vec::new();
+    let mut z_move_hash_map = HashMap::new();
+
+    for raw_z_move in &custom_data.z_moves {
+        let z_move = ZMove::from_custom(raw_z_move);
+        z_move_names.push(z_move.name.clone());
+        z_move_hash_map.insert(z_move.name.to_lowercase(), z_move);
+    }
+
+    (z_move_names, z_move_hash_map)
 }
 
 fn parse_weather(custom_data: &CustomDataParseResult) -> (Vec<String>, HashMap<String, Weather>) {

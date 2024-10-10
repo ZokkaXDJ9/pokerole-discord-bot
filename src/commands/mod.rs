@@ -28,6 +28,7 @@ pub mod item;
 pub mod learns;
 pub mod metronome;
 pub mod r#move;
+pub mod z_move;
 pub mod nature;
 pub mod potion;
 pub mod roll;
@@ -38,7 +39,7 @@ pub mod stats;
 pub mod status;
 pub mod timestamp;
 pub mod weather;
-pub mod open_box; // Add the new command module here
+pub mod open_box;
 pub mod season;
 
 pub mod characters;
@@ -62,6 +63,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         roll::roll(),
         roll::r(),
         r#move::poke_move(),
+        z_move::z_move(),
         ability::ability(),
         item::item(),
         stats::stats(),
