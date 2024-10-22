@@ -57,6 +57,7 @@ async fn execute_weekly_reset(ctx: Arc<Context>, database: Pool<Sqlite>) {
         Ok(_) => {
             notify_guilds(&ctx, &database).await;
             announce_season(&ctx).await; // Added: Announce the new season
+            notify_dragapult_bidding_over(&ctx).await; // Added: Notify Dragapult bidding is over
             // Updating character posts is disabled until we figure out how to reopen forum threads without sending a message...
         }
         Err(error) => {
@@ -129,4 +130,21 @@ fn get_current_season() -> &'static str {
     let season_index = (weeks_since_epoch as usize) % SEASONS.len();
 
     SEASONS[season_index]
+}
+
+// Added: Function to notify about Dragapult's Hoarded Goods Bidding being over
+async fn notify_dragapult_bidding_over(ctx: &Arc<Context>) {
+    let forum_thread_id = ChannelId::new(1271951519540842617); // Forum thread ID for Dragapult's Hoarded Goods
+
+    if let Err(error) = forum_thread_id
+        .send_message(
+            &ctx,
+            CreateMessage::new().content(format!(
+                "🚨 [System] Bidding is over! <@264426311789969408>",
+            )),
+        )
+        .await
+    {
+        send_error_to_log_channel(ctx, error.to_string()).await;
+    }
 }
