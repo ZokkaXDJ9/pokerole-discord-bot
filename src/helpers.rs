@@ -326,6 +326,7 @@ pub fn calculate_available_social_points(rank: &MysteryDungeonRank) -> u8 {
         MysteryDungeonRank::Gold => 4 + 4,
         MysteryDungeonRank::Platinum => 4 + 6,
         MysteryDungeonRank::Diamond => 4 + 8,
+        MysteryDungeonRank::Master => 4 + 10,
     }
 }
 
