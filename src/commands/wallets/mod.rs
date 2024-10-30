@@ -14,6 +14,7 @@ mod edit_wallet;
 mod pay;
 mod wallet_info;
 mod withdraw;
+mod remove_wallet_owner;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     vec![
@@ -23,6 +24,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         withdraw::withdraw(),
         wallet_info::wallet_info(),
         edit_wallet::edit_wallet(),
+        remove_wallet_owner::remove_wallet_owner(),
     ]
 }
 
