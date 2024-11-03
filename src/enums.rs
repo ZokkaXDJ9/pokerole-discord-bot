@@ -286,6 +286,7 @@ pub enum MysteryDungeonRank {
     Gold,
     Platinum,
     Diamond,
+    Master,
 }
 
 impl Display for MysteryDungeonRank {
@@ -296,6 +297,7 @@ impl Display for MysteryDungeonRank {
             MysteryDungeonRank::Gold => write!(f, "<:badgegold:1272532681992962068> Gold Rank"),
             MysteryDungeonRank::Platinum => write!(f, "<:badgeplatinum:1272533593750507570> Platinum Rank"),
             MysteryDungeonRank::Diamond => write!(f, "<:badgediamond:1272532683431481445> Diamond Rank"),
+            MysteryDungeonRank::Master => write!(f, "<:badgemaster:1299338926431014913> Master Rank"),
         }
     }
 }
@@ -308,6 +310,7 @@ impl MysteryDungeonRank {
             MysteryDungeonRank::Gold => "Gold Rank",
             MysteryDungeonRank::Platinum => "Platinum Rank",
             MysteryDungeonRank::Diamond => "Diamond Rank",
+            MysteryDungeonRank::Master => "Master Rank",
         }
     }
 
@@ -318,6 +321,7 @@ impl MysteryDungeonRank {
             MysteryDungeonRank::Gold => 3,
             MysteryDungeonRank::Platinum => 4,
             MysteryDungeonRank::Diamond => 5,
+            MysteryDungeonRank::Master => 5,
         }
     }
 
@@ -327,7 +331,8 @@ impl MysteryDungeonRank {
             2..=3 => MysteryDungeonRank::Silver,
             4..=7 => MysteryDungeonRank::Gold,
             8..=15 => MysteryDungeonRank::Platinum,
-            _ => MysteryDungeonRank::Diamond,
+            16..=19 => MysteryDungeonRank::Diamond,
+            _ => MysteryDungeonRank::Master,
         }
     }
 
@@ -338,6 +343,7 @@ impl MysteryDungeonRank {
             MysteryDungeonRank::Gold => "<:badgegold:1272532681992962068>",
             MysteryDungeonRank::Platinum => "<:badgeplatinum:1272533593750507570>",
             MysteryDungeonRank::Diamond => "<:badgediamond:1272532683431481445>",
+            MysteryDungeonRank::Master => "<:badgemaster:1299338926431014913>",
         }
     }
 }

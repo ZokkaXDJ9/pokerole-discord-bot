@@ -282,6 +282,13 @@ impl Pokemon {
             "Diamond",
             |x: &PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Diamond,
         );
+        self.filter_moves(
+            &mut result,
+            emoji::RANK_MASTER,
+            "Master",
+            |x: &PokemonMoveLearnedByRank| x.rank == MysteryDungeonRank::Master,
+        );
+
 
         result
     }
@@ -855,7 +862,7 @@ impl PokemonMoveLearnedByRank {
             PokeRoleRank::Ace => MysteryDungeonRank::Gold,
             PokeRoleRank::Pro => MysteryDungeonRank::Platinum,
             PokeRoleRank::Master => MysteryDungeonRank::Diamond,
-            PokeRoleRank::Champion => MysteryDungeonRank::Diamond,
+            PokeRoleRank::Champion => MysteryDungeonRank::Master,
         };
 
         PokemonMoveLearnedByRank {

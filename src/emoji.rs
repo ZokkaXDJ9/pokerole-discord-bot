@@ -13,6 +13,8 @@ pub const RANK_SILVER: &str = "<:badgesilver:1272533590697185391>";
 pub const RANK_GOLD: &str = "<:badgegold:1272532681992962068>";
 pub const RANK_PLATINUM: &str = "<:badgeplatinum:1272533593750507570>";
 pub const RANK_DIAMOND: &str = "<:badgediamond:1272532683431481445>";
+pub const RANK_MASTER: &str = "<:badgemaster:1299338926431014913>";
+
 
 pub const UNICODE_CROSS_MARK_BUTTON: &str = "❎";
 pub const UNICODE_CROSS_MARK: &str = "❌";
