@@ -199,6 +199,7 @@ pub enum MoveType {
     Fairy,
     Any,
     Typeless,
+    Shadow,
 }
 
 impl fmt::Display for MoveType {
@@ -224,6 +225,7 @@ impl fmt::Display for MoveType {
             MoveType::Fairy => "<:typefairy:1272535948357537894> Fairy",
             MoveType::Any => "Any",
             MoveType::Typeless => "Typeless",
+            MoveType::Shadow => "Shadow",
         })
     }
 }
@@ -250,7 +252,7 @@ impl MoveType {
                 PokemonType::Dragon => self == &MoveType::Dragon,
                 PokemonType::Dark => self == &MoveType::Dark,
                 PokemonType::Fairy => self == &MoveType::Fairy,
-                PokemonType::Shadow => false,
+                PokemonType::Shadow => self == &MoveType::Shadow,
             }
         } else {
             false
