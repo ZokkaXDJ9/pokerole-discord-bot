@@ -53,7 +53,7 @@ impl Display for PokemonType {
             PokemonType::Dragon => "<:typedragon:1272535944804962335> Dragon",
             PokemonType::Dark => "<:typedark:1272535943060000800> Dark",
             PokemonType::Fairy => "<:typefairy:1272535948357537894> Fairy",
-            PokemonType::Shadow => "Shadow",
+            PokemonType::Shadow => "<:typeshadow:1304155747969536152> Shadow",
         })
     }
 }
@@ -225,7 +225,7 @@ impl fmt::Display for MoveType {
             MoveType::Fairy => "<:typefairy:1272535948357537894> Fairy",
             MoveType::Any => "Any",
             MoveType::Typeless => "Typeless",
-            MoveType::Shadow => "Shadow",
+            MoveType::Shadow => "<:typeshadow:1304155747969536152> Shadow",
         })
     }
 }
