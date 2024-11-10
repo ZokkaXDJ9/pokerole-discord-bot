@@ -131,9 +131,16 @@ pub fn parse_type_efficacy(path: String) -> TypeEfficiency {
     }
     result.insert(PokemonType::Shadow, shadow);
     for x in PokemonType::iter() {
-        result.get_mut(&x).unwrap().insert(PokemonType::Shadow, 2.0);
+        if let Some(entry) = result.get_mut(&x) {
+            entry.insert(PokemonType::Shadow, 2.0);
+        } else {
+            warn!("PokemonType {:?} is missing from result", x);
+            // Optionally, initialize it if appropriate:
+            result.insert(x, HashMap::new());
+            result.get_mut(&x).unwrap().insert(PokemonType::Shadow, 2.0);
+        }
     }
-
+    
     TypeEfficiency::new(result)
 }
 

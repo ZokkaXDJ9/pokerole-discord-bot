@@ -39,15 +39,14 @@ impl Display for Efficiency {
 impl TypeEfficiency {
     pub fn against_pokemon(&self, move_type: &PokemonType, pokemon: &Pokemon) -> f32 {
         let type1 = self
-            .data
-            .get(move_type)
-            .unwrap()
-            .get(&pokemon.type1)
-            .unwrap();
+        .data
+        .get(move_type)
+        .and_then(|map| map.get(&pokemon.type1))
+        .unwrap_or(&1.0);
 
         let type2 = match pokemon.type2 {
             None => &1.0,
-            Some(t) => self.data.get(move_type).unwrap().get(&t).unwrap(),
+            Some(t) => self.data.get(move_type).and_then(|map| map.get(&t)).unwrap_or(&1.0),
         };
 
         type1 * type2

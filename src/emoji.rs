@@ -199,6 +199,7 @@ pub fn type_to_emoji(pokemon_type: &PokemonType) -> &str {
         PokemonType::Dragon => "<:typedragon:1272535944804962335>",
         PokemonType::Dark => "<:typedark:1272535943060000800>",
         PokemonType::Fairy => "<:typefairy:1272535948357537894>",
+        PokemonType::Virus => "<:typevirus:1305196521058205766>",
         PokemonType::Shadow => "",
     }
 }

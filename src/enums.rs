@@ -30,6 +30,7 @@ pub enum PokemonType {
     Dark,
     Fairy,
     Shadow,
+    Virus,
 }
 
 impl Display for PokemonType {
@@ -54,6 +55,7 @@ impl Display for PokemonType {
             PokemonType::Dark => "<:typedark:1272535943060000800> Dark",
             PokemonType::Fairy => "<:typefairy:1272535948357537894> Fairy",
             PokemonType::Shadow => "<:typeshadow:1304155747969536152> Shadow",
+            PokemonType::Virus => "<:typevirus:1305196521058205766> Virus",
         })
     }
 }
@@ -200,6 +202,7 @@ pub enum MoveType {
     Any,
     Typeless,
     Shadow,
+    Virus,
 }
 
 impl fmt::Display for MoveType {
@@ -226,6 +229,7 @@ impl fmt::Display for MoveType {
             MoveType::Any => "Any",
             MoveType::Typeless => "Typeless",
             MoveType::Shadow => "<:typeshadow:1304155747969536152> Shadow",
+            MoveType::Virus => "<:typevirus:1305196521058205766> Virus",
         })
     }
 }
@@ -253,6 +257,7 @@ impl MoveType {
                 PokemonType::Dark => self == &MoveType::Dark,
                 PokemonType::Fairy => self == &MoveType::Fairy,
                 PokemonType::Shadow => self == &MoveType::Shadow,
+                PokemonType::Virus => self == &MoveType::Virus,
             }
         } else {
             false
