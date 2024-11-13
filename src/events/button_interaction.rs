@@ -115,18 +115,31 @@ pub async fn handle_button_interaction(
                 .await?;
         }
         "roll-dice" => {
+            let user_id = interaction.user.id;
+            let super_luck = user_id == 307627785818603523;
             let message = commands::roll::parse_query(args[0])
-                .expect("This should always be a valid query in buttons!")
-                .execute();
-            interaction
-                .create_response(
-                    context,
-                    CreateInteractionResponse::Message(
-                        CreateInteractionResponseMessage::new().content(message),
-                    ),
-                )
-                .await?;
-        }
+            .expect("This should always be a valid query in buttons!")
+            .execute(super_luck);
+    interaction
+        .create_response(
+            context,
+            CreateInteractionResponse::Message(
+                CreateInteractionResponseMessage::new()
+                    .content("''No... I think you take that roll.''"),
+            ),
+        )
+        .await?;
+}
+//            interaction
+//            .create_response(
+//                context,
+//                CreateInteractionResponse::Message(
+//                    CreateInteractionResponseMessage::new().content(message),
+//                ),
+//            )
+//            .await?;
+//            }
+
         "quest-sign-up" => {
             quests::quest_sign_up::quest_sign_up(context, interaction, framework.user_data, args)
                 .await?;
