@@ -7,19 +7,19 @@ use crate::commands::{
     parse_character_names, parse_variadic_args, send_error, update_character_post, Context, Error,
 };
 
-/// Reward players for sparring outside of quests.
+/// Reward players for rp-ing outside of quests.
 #[allow(clippy::too_many_arguments)]
 #[poise::command(
     slash_command,
     guild_only,
     default_member_permissions = "ADMINISTRATOR"
 )]
-pub async fn reward_spar(
+pub async fn reward_rp(
     ctx: Context<'_>,
-    #[description = "Which characters are sparring?"]
+    #[description = "Which characters were in the rp?"]
     #[autocomplete = "autocomplete_character_name"]
     character1: String,
-    #[description = "Which characters are sparring?"]
+    #[description = "Which characters were in the rp?"]
     #[autocomplete = "autocomplete_character_name"]
     character2: String,
     #[autocomplete = "autocomplete_character_name"] character3: Option<String>,
@@ -47,13 +47,13 @@ pub async fn reward_spar(
         Ok(result) => {
             if result.participants_who_gained_exp.is_empty() {
                 ctx.say(format!(
-                    "Tracked a sparring session for {}.\n*Everyone's already reached the weekly limit for sparring exp rewards.*",
+                    "Tracked an rp session for {}.\n*Everyone's already reached the weekly limit for rp exp rewards.*",
                     build_character_list(&result.participants),
                 ))
                     .await?;
             } else if result.participants_who_gained_exp.len() != result.participants.len() {
                 ctx.say(format!(
-                    "Tracked a sparring session for {}.\n{} received {} experience points. *(Everyone who did not receive any already reached the weekly limit)*",
+                    "Tracked an rp session for {}.\n{} received {} experience points. *(Everyone who did not receive any already reached the weekly limit)*",
                     build_character_list(&result.participants),
                     build_character_list(&result.participants_who_gained_exp),
                     result.experience_value,
@@ -61,7 +61,7 @@ pub async fn reward_spar(
                     .await?;
             } else {
                 ctx.say(format!(
-                    "Tracked a sparring session for {}.\n{} received {} experience points!",
+                    "Tracked an rp session for {}.\n{} received {} experience points!",
                     build_character_list(&result.participants),
                     build_character_list(&result.participants_who_gained_exp),
                     result.experience_value,
@@ -156,7 +156,7 @@ async fn track_spar_for_character<'a>(
     let _ = log_action(
         &ActionType::Spar,
         ctx,
-        &format!("Tracked a sparring session for {}!", character.name),
+        &format!("Tracked an rp session for {}!", character.name),
     )
     .await;
 

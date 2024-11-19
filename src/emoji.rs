@@ -22,7 +22,7 @@ pub const UNICODE_CHECK_MARK: &str = "✔️";
 
 pub const TROPHY: &str = "🏆";
 pub const BACKPACK: &str = "🎒";
-pub const FENCING: &str = "🤺";
+pub const FENCING: &str = "🗣️";
 pub const TICKET: &str = "🎫";
 pub const CROSSED_SWORDS: &str = "⚔️";
 pub const PARTY_POPPER: &str = "🎉";

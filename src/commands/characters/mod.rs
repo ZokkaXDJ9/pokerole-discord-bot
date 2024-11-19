@@ -33,7 +33,7 @@ mod reward_experience;
 mod reward_giving_combat_tutorial;
 mod reward_giving_tour;
 mod reward_money;
-mod reward_spar;
+mod reward_rp;
 mod reward_terastallization;
 mod unlock_hidden_ability;
 mod unretire_character;
@@ -55,7 +55,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         upgrade_backpack::upgrade_backpack(),
         unlock_hidden_ability::unlock_hidden_ability(),
         reward_battle_points::reward_battle_points(),
-        reward_spar::reward_spar(),
+        reward_rp::reward_rp(),
         reward_giving_combat_tutorial::reward_giving_combat_tutorial(),
         reward_giving_tour::reward_giving_tour(),
         reset_character_stats::reset_character_stats(),
@@ -300,7 +300,7 @@ pub async fn build_character_string(
 
             if record.total_spar_count > 0 {
                 message.push_str(&format!(
-                    "{} Total Sparring Sessions: {}\n",
+                    "{} Total RP Sessions: {}\n",
                     emoji::FENCING,
                     record.total_spar_count
                 ));
@@ -413,7 +413,7 @@ impl fmt::Display for ActionType {
             ActionType::WalletPayment => "👛⬅️ [Payment]",
             ActionType::WalletWithdrawal => "👛➡️ [Withdrawal]",
             ActionType::Undo => "↩️ [Undo]",
-            ActionType::Spar => "🤺 [Spar]",
+            ActionType::Spar => "🗣️ [RP]",
             ActionType::NewPlayerCombatTutorial => "⚔️ [Combat Tutorial]",
             ActionType::NewPlayerTour => "🎫 [Tour]",
             ActionType::WalletEdit => "📝 [Edit]",
