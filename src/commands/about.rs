@@ -8,7 +8,7 @@ pub async fn about(ctx: Context<'_>) -> Result<(), Error> {
 ```Omniscient Xatu Guide```
 Made with love, cookies and <:ferrishappy:1272535933505503232>!
 **You may use this bot on other discord servers as you see fit. Character data is server specific, so there's no need to worry about breaking anything!**
-For help and support, check out the bot development & support discord server of the original bot we used to build our own: <https://discord.gg/jVrv2YG2zU>
+For help and support, check out the bot development & support discord server: <https://discord.gg/NMy7HgdV8H>
 
 ## Semi-Useful Links
 - Source Code: [GitHub Repository](<https://github.com/ZokkaXDJ9/pokerole-discord-bot>)
