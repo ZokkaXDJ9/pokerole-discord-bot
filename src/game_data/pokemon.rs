@@ -362,6 +362,7 @@ fn special_mon_to_api_id(name: &str) -> Option<PokemonApiId> {
         "Galarian Darmanitan (Galarian Zen Form)" => Some(PokemonApiId(10178)),
         "Charizard (Mega X Form)" => Some(PokemonApiId(10034)),
         "Charizard (Mega Y Form)" => Some(PokemonApiId(10035)),
+        "Mageporeon" => Some(PokemonApiId(20002)),
         _ => None,
     }
 }
