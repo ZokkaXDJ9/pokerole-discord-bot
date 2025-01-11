@@ -18,15 +18,23 @@ pub async fn scale(
 ) -> Result<(), Error> {
     let pokemon = pokemon_from_autocomplete_string(&ctx, &name)?;
     let mut builder = MessageBuilder::new();
-    builder.push_bold_line(std::format!("{} scaled to {}%", &pokemon.name, percent));
+
+    builder.push_bold_line(format!("{} scaled to {}%", &pokemon.name, percent));
+
+    // Show a warning for 50–66% and 134–200%.
+    if (50..=66).contains(&percent) || (134..=200).contains(&percent) {
+        builder.push_line("Warning: This size is only allowed after admin request!");
+    }
+
     builder.push_codeblock(
-        std::format!(
+        format!(
             "{}   |   {}",
             pokemon.height.scale(percent),
             pokemon.weight.scale(percent)
         ),
         None,
     );
+
     ctx.say(builder.to_string()).await?;
 
     Ok(())
