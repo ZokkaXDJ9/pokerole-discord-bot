@@ -269,7 +269,7 @@ impl MoveType {
 pub enum MoveCategory {
     Physical,
     Special,
-    #[serde(rename = "Physical/special")]
+    #[serde(rename = "Physical/Special")]
     /// Only used for struggle and tera blast
     PhysicalOrSpecial,
     Support,

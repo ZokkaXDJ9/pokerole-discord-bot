@@ -90,6 +90,7 @@ impl Move {
             Ok(result) => Some(result),
             Err(_) => match raw.as_str() {
                 "Strength/special" => Some(Stat::StrengthOrSpecial),
+                "Strength/Special" => Some(Stat::StrengthOrSpecial),
                 "Strength + Rank" => Some(Stat::StrengthPlusRank),
                 "Strength - Rank" => Some(Stat::StrengthMinusRank),
                 "Same as the copied move" => Some(Stat::Copy),
