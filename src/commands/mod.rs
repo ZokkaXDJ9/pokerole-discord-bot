@@ -93,7 +93,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         pin_or_unpin::pin_or_unpin(),
         store_gm_experience::store_gm_experience(),
         use_gm_experience::use_gm_experience(),
-        open_box::open_box(),
+        //open_box::open_box(),
         season::season(),
     ];
 
