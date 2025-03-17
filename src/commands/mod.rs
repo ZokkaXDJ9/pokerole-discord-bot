@@ -41,6 +41,7 @@ pub mod timestamp;
 pub mod weather;
 pub mod open_box;
 pub mod season;
+pub mod list_characters;
 
 pub mod characters;
 mod pin_or_unpin;
@@ -95,6 +96,7 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         use_gm_experience::use_gm_experience(),
         open_box::open_box(),
         season::season(),
+        list_characters::list_characters()
     ];
 
     for x in characters::get_all_commands() {
