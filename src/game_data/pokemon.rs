@@ -365,6 +365,7 @@ fn special_mon_to_api_id(name: &str) -> Option<PokemonApiId> {
         "Mystic Frill" => Some(PokemonApiId(20002)),
         "Sacred Iron" => Some(PokemonApiId(20004)),
         "Flaming Spears" => Some(PokemonApiId(20005)),
+        "Mizutsune" => Some(PokemonApiId(21001)),
         _ => None,
     }
 }
