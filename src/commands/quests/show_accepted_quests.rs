@@ -14,24 +14,24 @@ async fn autocomplete_filter(
     .into_iter()
 }
 
-/// Show all quests that the character has signed up for, with optional filters.
+/// Show all quests that a character has signed up for.
 #[poise::command(
     slash_command,
-    guild_only
+    guild_only,
+    rename = "show_character_quests"
 )]
 pub async fn show_accepted_quests(
     ctx: Context<'_>,
+    #[description = "Which character?"]
     #[autocomplete = "autocomplete_character_name"] character_name: String,
+    #[description = "Optionally filter by quest status."]
     #[autocomplete = "autocomplete_filter"]
-    #[description = "Filter by accepted quests or accepted and not completed quests"] filter: Option<String>, // 'accepted' or 'accepted_unfinished'
+    filter: Option<String>,
 ) -> Result<(), Error> {
     let guild_id = ctx.guild_id().expect("Command is guild_only").get() as i64;
 
-    // Clean the character name
-    let cleaned_character_name = character_name.trim().split(' ').next().unwrap_or(&character_name);
-
-    // Find the character by name
-    let character = find_character(ctx.data(), guild_id.try_into().unwrap(), cleaned_character_name).await?;
+    // Find the character by name (don't strip the autocomplete suffix - it's needed for disambiguation)
+    let character = find_character(ctx.data(), guild_id.try_into().unwrap(), &character_name).await?;
 
     // Collect quest IDs to return
     let quests: Vec<i64> = match filter.as_deref() {
@@ -87,13 +87,13 @@ pub async fn show_accepted_quests(
     if quests.is_empty() {
         send_ephemeral_reply(
             &ctx,
-            &format!("Character '{}' is not part of any quests.", cleaned_character_name),
+            &format!("Character '{}' is not part of any quests.", character.name),
         ).await?;
         return Ok(());
     }
 
     // Build the result message with quest links
-    let mut result = format!("Accepted quests for character '{}':\n", cleaned_character_name);
+    let mut result = format!("Accepted quests for character '{}':\n", character.name);
     for quest_id in quests {
         result.push_str(&format!("<#{}>\n", quest_id));
     }

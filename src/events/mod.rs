@@ -168,6 +168,9 @@ async fn handle_guild_member_removal(
     } else if guild_id == 1115690620342763645 {
         // Test Server
         channel_id = 1120344272571486309;
+    } else if guild_id == 1271249120526602342 {
+        // Citadel of Lost Legends
+        channel_id = 1278958683836911667;
     } else {
         return Ok(());
     }
@@ -201,8 +204,8 @@ async fn handle_guild_member_removal(
             context,
             CreateMessage::new()
                 .content(&format!(
-                    "{}/{} ({}) has left the server.",
-                    user_name, user, names
+                    "{}/{} ({}) has left the server. Characters that can be retired: **{}**",
+                    user_name, user, user.id, names
                 ))
                 .allowed_mentions(CreateAllowedMentions::default().empty_users()),
         )

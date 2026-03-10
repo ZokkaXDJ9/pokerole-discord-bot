@@ -7,6 +7,7 @@ mod complete_quest;
 mod create_quest;
 mod remove_quest_participant;
 mod show_accepted_quests;
+mod show_unfinished_quests;
 
 pub fn get_all_commands() -> Vec<Command<Data, Error>> {
     vec![
@@ -15,5 +16,6 @@ pub fn get_all_commands() -> Vec<Command<Data, Error>> {
         create_quest::create_quest(),
         remove_quest_participant::remove_quest_participant(),
         show_accepted_quests::show_accepted_quests(),
+        show_unfinished_quests::show_unfinished_quests(),
     ]
 }
